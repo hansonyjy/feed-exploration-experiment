@@ -1,0 +1,17 @@
+[project]
+name = "feed-exploration-experiment"
+version = "0.1.0"
+description = "How much of a short-video feed should go to exploration, and for which users (KuaiRand-27K)."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+# Exact pins (CLAUDE.md: pinned versions). uv.lock pins every transitive dependency.
+dependencies = [
+    "dbt-core==1.12.7",
+    "dbt-bigquery==1.12.3",
+    "duckdb==2.0.0",                  # local CSV -> Parquet conversion before loading
+    "google-cloud-bigquery==3.47.0",
+    "google-cloud-storage==3.17.1",
+]
+
+[tool.uv]
+package = false
