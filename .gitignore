@@ -1,0 +1,31 @@
+# Raw and intermediate data never enters git (KuaiRand-27K is ~46 GB)
+data/
+raw/
+*.tar.gz
+*.csv
+!exports/*.csv
+
+# Credentials and local config
+.env
+.env.*
+*.json.key
+*-key.json
+service-account*.json
+profiles.yml
+.gcloud/
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
