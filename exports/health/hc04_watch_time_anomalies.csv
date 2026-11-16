@@ -1,0 +1,3 @@
+period,n_rows,n_bad_duration,n_null_play,n_negative_play,n_play_over_5x,n_with_video_features,n_duration_within_1s
+pre,6349506,552789,0,0,18256,6349506,5796845
+treatment,8876657,766944,0,0,23716,8876657,8109891

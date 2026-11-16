@@ -1,0 +1,326 @@
+{
+  "hc01_sample_ratio": {
+    "scope": "full",
+    "bytes_billed": 6674186240,
+    "criteria": [
+      {
+        "criterion": "overall random share (reported, no band)",
+        "value": "0.6337%",
+        "passed": null,
+        "severity": "info"
+      },
+      {
+        "criterion": "day: max relative deviation within \u00b120% (17 of 17 cells judged)",
+        "value": "-61.2% (cell 2022-04-22)",
+        "passed": false,
+        "severity": "blocking"
+      },
+      {
+        "criterion": "activity_tercile: max relative deviation within \u00b120% (4 of 4 cells judged)",
+        "value": "+107.9% (cell 1)",
+        "passed": false,
+        "severity": "blocking"
+      },
+      {
+        "criterion": "active_group: max relative deviation within \u00b120% (4 of 5 cells judged)",
+        "value": "+27.2% (cell middle_active)",
+        "passed": false,
+        "severity": "blocking"
+      },
+      {
+        "criterion": "tenure_band: max relative deviation within \u00b120% (7 of 8 cells judged)",
+        "value": "+28.8% (cell 61-90)",
+        "passed": false,
+        "severity": "blocking"
+      },
+      {
+        "criterion": "tab: max relative deviation within \u00b150% (9 of 15 cells judged)",
+        "value": "-100.0% (cell 0)",
+        "passed": false,
+        "severity": "non-blocking"
+      }
+    ]
+  },
+  "hc02a_pool_exposure_spread": {
+    "scope": "full",
+    "bytes_billed": 19922944,
+    "criteria": [
+      {
+        "criterion": "distinct pool videos 7,500-7,583",
+        "value": "7,583",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "exposures per video CV <= 0.25",
+        "value": "0.197",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "max/min exposures <= 3",
+        "value": "214.00 (1-214)",
+        "passed": false,
+        "severity": "non-blocking"
+      }
+    ]
+  },
+  "hc02b_pool_attributes": {
+    "scope": "dev5",
+    "bytes_billed": 1260388352,
+    "criteria": [
+      {
+        "criterion": "pool: attributes (reported)",
+        "value": "n=7,583, normal=0.990, ad=0.0100, median dur=81066 ms, upload 2022-04-09..2022-04-11, uploaded in window=1.000",
+        "passed": null,
+        "severity": "info"
+      },
+      {
+        "criterion": "standard_exposed_dev5: attributes (reported)",
+        "value": "n=3,320,632, normal=0.998, ad=0.0024, median dur=33800 ms, upload 2018-12-21..2022-05-08, uploaded in window=0.773",
+        "passed": null,
+        "severity": "info"
+      }
+    ]
+  },
+  "hc03_user_overlap": {
+    "scope": "dev5",
+    "bytes_billed": 244318208,
+    "criteria": [
+      {
+        "criterion": "treatment users found in pre-period >= 95% (blocking < 80%)",
+        "value": "98.24%",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "random-log users with standard exposures >= 99%",
+        "value": "100.00%",
+        "passed": true,
+        "severity": "non-blocking"
+      }
+    ]
+  },
+  "hc04_watch_time_anomalies": {
+    "scope": "dev5",
+    "bytes_billed": 945815552,
+    "criteria": [
+      {
+        "criterion": "pre: bad duration <= 0.5%",
+        "value": "8.706%",
+        "passed": false,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "pre: negative play time = 0",
+        "value": "0",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "pre: play > 5x duration <= 1%",
+        "value": "0.288%",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "pre: log duration within 1 s of feature duration >= 99%",
+        "value": "91.30%",
+        "passed": false,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "treatment: bad duration <= 0.5%",
+        "value": "8.640%",
+        "passed": false,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "treatment: negative play time = 0",
+        "value": "0",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "treatment: play > 5x duration <= 1%",
+        "value": "0.267%",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "treatment: log duration within 1 s of feature duration >= 99%",
+        "value": "91.36%",
+        "passed": false,
+        "severity": "non-blocking"
+      }
+    ]
+  },
+  "hc05_duplicates": {
+    "scope": "dev5",
+    "bytes_billed": 2436890624,
+    "criteria": [
+      {
+        "criterion": "pre: exact duplicate rows <= 0.1%",
+        "value": "41,474 (0.653%)",
+        "passed": false,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "pre: rows in conflicting keys <= 0.1%",
+        "value": "6,234 rows in 3,117 keys (0.098%)",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "rnd: exact duplicate rows <= 0.1%",
+        "value": "1 (0.002%)",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "rnd: rows in conflicting keys <= 0.1%",
+        "value": "0 rows in 0 keys (0.000%)",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "treat: exact duplicate rows <= 0.1%",
+        "value": "77,163 (0.874%)",
+        "passed": false,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "treat: rows in conflicting keys <= 0.1%",
+        "value": "10,868 rows in 5,434 keys (0.123%)",
+        "passed": false,
+        "severity": "non-blocking"
+      }
+    ]
+  },
+  "hc06_extreme_users": {
+    "scope": "dev5",
+    "bytes_billed": 244318208,
+    "criteria": [
+      {
+        "criterion": "user-day exposures p50 / p99 / p99.9 / max (reported)",
+        "value": "269 / 2521 / 5495 / 11158",
+        "passed": null,
+        "severity": "info"
+      },
+      {
+        "criterion": "flagged users <= 0.5%",
+        "value": "171 (13.70%)",
+        "passed": false,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "flagged users' exposures <= 2%",
+        "value": "36.54%",
+        "passed": false,
+        "severity": "non-blocking"
+      }
+    ]
+  },
+  "hc07_random_by_tab": {
+    "scope": "full",
+    "bytes_billed": 19922944,
+    "criteria": [
+      {
+        "criterion": "random rows by tab (reported)",
+        "value": "tab 1: 1,178,025 (99.3%), tab 2: 764 (0.1%), tab 11: 6,755 (0.6%), tab 14: 515 (0.0%)",
+        "passed": null,
+        "severity": "info"
+      }
+    ]
+  },
+  "hc09_random_in_standard": {
+    "scope": "full",
+    "bytes_billed": 9658433536,
+    "criteria": [
+      {
+        "criterion": "is_rand = 0 on every standard-log row",
+        "value": "pre 0 / treat 0 rows not 0",
+        "passed": true,
+        "severity": "blocking"
+      },
+      {
+        "criterion": "random keys found in standard treatment log: ~0% or ~100%",
+        "value": "0 of 1,186,049 (0.000%); same user+time_ms: 1,150,410",
+        "passed": true,
+        "severity": "blocking"
+      }
+    ]
+  },
+  "hc10_dates": {
+    "scope": "dev5",
+    "bytes_billed": 365953024,
+    "criteria": [
+      {
+        "criterion": "pre: event_date range matches window 2022-04-08..2022-04-21",
+        "value": "2022-04-08..2022-04-21",
+        "passed": true,
+        "severity": "blocking"
+      },
+      {
+        "criterion": "pre: event_date = Shanghai date of time_ms >= 99.9%",
+        "value": "99.270% (UTC 85.28%; hour match 82.28%; hourmin with minutes 0)",
+        "passed": false,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "rnd: event_date range matches window 2022-04-22..2022-05-08",
+        "value": "2022-04-22..2022-05-08",
+        "passed": true,
+        "severity": "blocking"
+      },
+      {
+        "criterion": "rnd: event_date = Shanghai date of time_ms >= 99.9%",
+        "value": "99.240% (UTC 82.92%; hour match 82.87%; hourmin with minutes 0)",
+        "passed": false,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "treat: event_date range matches window 2022-04-22..2022-05-08",
+        "value": "2022-04-22..2022-05-08",
+        "passed": true,
+        "severity": "blocking"
+      },
+      {
+        "criterion": "treat: event_date = Shanghai date of time_ms >= 99.9%",
+        "value": "99.308% (UTC 84.78%; hour match 82.82%; hourmin with minutes 0)",
+        "passed": false,
+        "severity": "non-blocking"
+      }
+    ]
+  },
+  "hc11_coverage": {
+    "scope": "dev5",
+    "bytes_billed": 1267728384,
+    "criteria": [
+      {
+        "criterion": "log users in user_features >= 99.9%",
+        "value": "100.000%",
+        "passed": true,
+        "severity": "blocking"
+      },
+      {
+        "criterion": "log videos in video_features_basic >= 99%",
+        "value": "100.000%",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "treatment videos in category file >= 95%",
+        "value": "100.000%",
+        "passed": true,
+        "severity": "non-blocking"
+      },
+      {
+        "criterion": "first-level category id in tag ids >= 90%",
+        "value": "74.61% of 3,207,709",
+        "passed": false,
+        "severity": "non-blocking"
+      }
+    ]
+  }
+}
