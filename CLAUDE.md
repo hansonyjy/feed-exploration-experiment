@@ -46,8 +46,8 @@ measured exploration slot. Full plan: `docs/design.md`. Locked metrics and param
   `Co-Authored-By: Claude <noreply@anthropic.com>`
 - Commit small and often: one logical change per commit (a model, its tests, a script, a doc update),
   each message saying why. Push after each completed step, not once at the end of a phase.
-- PRs merge with "Create a merge commit" or "Rebase and merge", never "Squash and merge", so every
-  commit stays in the history.
+- PRs merge with "Create a merge commit" only. Never "Squash and merge" (loses commits) or "Rebase and
+  merge" (rewrites commit IDs, which would orphan tags such as `prereg-v1`).
 
 ## Data and license
 KuaiRand (CC BY-SA 4.0): https://kuairand.com/ and https://arxiv.org/abs/2208.08696.
