@@ -2,7 +2,7 @@
 
 Status: **FINAL**, tagged `prereg-v1` on 2026-11-16 before any effect query ran. The Phase 0 health
 checks (`docs/data_quality.md`) looked only at data structure, never at random-vs-recommended outcomes.
-Changes made after the health checks and before any outcome analysis are marked _post-hoc_ (D15-D24).
+Changes made after the health checks and before any outcome analysis are marked _post-hoc_ (D15-D25).
 Parameters marked as proposed in the draft are locked at the values shown. Any later change is logged
 in `docs/decisions.md` and reported as a deviation from this plan.
 
@@ -24,8 +24,9 @@ compared before vs after. A request holds 5.4-5.5 items and never more than one 
 **Duration-adjusted effective view rate**: share of impressions where watch time reaches the
 50th percentile of watch time for videos in the same duration bucket.
 - Duration buckets: deciles of `duration_ms`.
-- Reference distribution: built from **pre-period recommended impressions only**, then frozen, so the
-  threshold cannot depend on treatment-window outcomes of either arm.
+- Reference distribution: built from **tab-1 pre-period recommended impressions only** (2022-04-08 to
+  04-21, `tab = 1`), then frozen, so the threshold cannot depend on treatment-window outcomes of either
+  arm and matches the tab-1 analysis population (_post-hoc_, D25).
 - Duration (_post-hoc_, D19, D23): `duration_ms` from the log; if null or non-positive, filled from
   `video_features_basic.video_duration`. Rows still missing are excluded from every metric in the main
   run. They are not a distinct content type (HC 4c: all NORMAL videos, spread across upload periods,

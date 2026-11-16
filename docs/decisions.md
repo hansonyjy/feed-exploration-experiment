@@ -2,6 +2,15 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-16 · D25 · Effective-view reference distribution from tab-1 pre-period impressions
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: the watch-time percentiles behind the primary metric come from tab-1 pre-period recommended
+  impressions only (2022-04-08 to 04-21, `tab = 1`), then frozen.
+- Reason: the plan said "pre-period recommended impressions" without a tab restriction, while D15 limits
+  the analysis population to tab 1. Mixing tabs would set the effective-view bar from surfaces with
+  different viewing behaviour than the population it is applied to.
+- prereg-v1 moved from 2894e26 to the commit that adds this entry, before any outcome query ran.
+
 ## 2026-11-16 · D24 · AD-marked pool videos: keep in the main run, drop in a sensitivity run
 - Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
 - 1.0% of pool videos are marked AD although the paper says ads were filtered out (HC 2, HC 8). They
