@@ -30,6 +30,7 @@ The design uses KuaiRand-27K: a pre-period to profile users, and a treatment win
 | `log_standard_4_22_to_5_08` | 2022-04-22 to 05-08 | Treatment window: recommended exposures |
 | `log_random_4_22_to_5_08` | 2022-04-22 to 05-08 | Treatment window: random exposures (`is_rand = 1`) |
 | `user_features`, `video_features_basic` | Static | Segments and content attributes |
+| `kuairand_video_categories` (supplementary, [Zenodo 10.5281/zenodo.18159199](https://zenodo.org/records/18159199), CC BY 4.0) | Static | Four-level category per video; joins on `final_video_id`. Category segments and the new-category metric |
 
 - **Randomization:** per the KuaiRand paper, a recommended video was replaced at a fixed probability by one drawn uniformly from a candidate pool of 7,583 videos.
 - **Unit of analysis:** one impression (user × video × time). Inference is clustered by user.

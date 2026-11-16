@@ -2,6 +2,15 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-16 · D10 · Video categories from the KuaiRand supplementary file
+- Source: `kuairand_video_categories.csv`, Zenodo record 18159199 (CC BY 4.0, by the KuaiRand
+  author), loaded as `raw.video_categories`. Four category levels with model probabilities; a missing
+  level is id -124 / name UNKNOWN.
+- Alternatives: the `tag` column in `video_features_basic` (ids only, meanings undocumented).
+- Reason: needed for the category segments and the new-category discovery metric. The file joins on
+  `final_video_id`, which the dataset site calls consistent with KuaiRand but does not map to 27K
+  `video_id` explicitly; the join coverage is checked in Phase 0 before any category result is used.
+
 ## 2026-11-16 · D9 · Cluster raw log tables by user_id, video_id (was user_id, is_rand)
 - Alternatives: user_id, is_rand (the original plan); user_id only.
 - Reason: random and standard exposures live in separate raw tables, so `is_rand` is constant within
