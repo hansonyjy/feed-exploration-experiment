@@ -2,6 +2,39 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-16 · D24 · AD-marked pool videos: keep in the main run, drop in a sensitivity run
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- 1.0% of pool videos are marked AD although the paper says ads were filtered out (HC 2, HC 8). They
+  stay in the main run, since they were part of the random policy as served, and are excluded from the
+  random arm in a sensitivity run.
+
+## 2026-11-16 · D23 · Missing-duration rule settled by profiling (refines D19)
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- HC 4c profiled tab-1 rows still missing a duration after the fill, by arm, video_type and upload
+  period, under a rule fixed before the run (a distinct content type holds >= 80% of missing rows and
+  <= 20% of rows with a duration, in both arms). Result: none. All missing rows are NORMAL videos,
+  spread across upload periods, and every one comes from a video missing in all its exposures.
+- Rule: exclude the missing rows from every metric in the main run; report the gap by arm (7.86%
+  recommended vs 3.05% random, dev sample); run the non-duration metrics with and without those rows.
+
+## 2026-11-16 · D22 · Exclude April 22 from the analysis window
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- April 22 is the first day of the random policy and a partial day (tab-1 random share 43% below the
+  rest of the low regime, HC 1b). The analysis window is 2022-04-23 to 05-08; the low-regime rate becomes
+  0.658% of exposures (HC 1c).
+
+## 2026-11-16 · D21 · HC 1 segment criterion non-blocking; equal weight per user
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Justification: Comparison A is within request and within user, so validity requires that the slot
+  given to the random item is chosen at random, not that every user receives the same share of random
+  items. HC 1c supports a random slot choice: no request holds more than one random item, and daily
+  request-level rates are stable within each regime (max deviation +9.9% low, -4.9% high). The segment
+  differences remain (light pre-period users +73% to +77% at the request level) and are reported.
+- Reclassified: the segment criteria of HC 1, 1b and 1c are non-blocking, whatever HC 1c showed.
+- Weighting rule, locked in analysis_plan.md: equal weight per user (within-user differences first,
+  then averaged across users), so heavily exposed users do not dominate; population-reweighted results
+  (weight = the user's random requests) as a robustness check.
+
 ## 2026-11-16 · D20 · Health-check follow-ups: HC 5 accepted, HC 6 and HC 11 re-specified, HC 8 from the paper
 - Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
 - HC 5: exact duplicates (0.65-0.87% of standard rows) and key conflicts (0.10-0.12%) are accepted and
