@@ -4,6 +4,7 @@ raw/
 *.tar.gz
 *.csv
 !exports/*.csv
+!exports/health/*.csv
 
 # Credentials and local config
 .env
