@@ -2,6 +2,16 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-16 · D14 · Merge the 8 user_active_degree levels into 4 groups by user count
+- Rule (locked in analysis_plan.md before prereg-v1): minimum 1,000 users per group; small levels join
+  their family first (new-user levels, low-activity levels), then the smallest under-size groups merge.
+  Result: full_active 17,959, high_active 6,158, middle_active 2,133, new_or_low 1,029; 6 UNKNOWN
+  users are excluded from this dimension only.
+- Alternatives: keep the 3 documented levels and drop the other 1,029 users; merge new users into
+  tenure instead (tenure is already its own dimension).
+- Reason: the data has 8 levels, not the documented 3 (data_quality.md #12), and five of them are too
+  small to analyze alone. The rule uses counts only, so it cannot be tuned to results.
+
 ## 2026-11-16 · D13 · Staging dedupe rule: collapse exact duplicates only
 - Rule: in `stg_log_standard` and `stg_log_random`, rows identical in every source column collapse to
   one (`select distinct`). Rows that share (source table, user_id, video_id, time_ms) but differ in
