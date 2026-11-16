@@ -1,0 +1,39 @@
+version: 2
+
+# Staging models: types, renames, dedupe. Every model has keys tested unique + not_null at minimum.
+# Warn-level tests (user's Phase 0 rule): impression_id uniqueness until HC 5 reports, is_rand = 0 in
+# the standard log until HC 9 reports, and log -> feature relationships until HC 11 reports.
+
+models:
+  - name: stg_video_categories
+    description: >
+      One row per video in the supplementary category file (D10). Missing levels (-124 / UNKNOWN) become
+      null. final_video_id keeps its source name until its match to 27K video_id is verified.
+    columns:
+      - name: final_video_id
+        description: Video id in the supplementary file; documented as consistent with KuaiRand.
+        data_tests: [unique, not_null]
+      - name: category_l1_id
+        description: Level-1 (first-level) category id; null when the level is missing.
+      - name: category_l1_name
+        description: Level-1 category name (Chinese, as provided).
+      - name: category_l1_prob
+        description: Classifier probability for the level-1 category.
+      - name: category_l2_id
+        description: Level-2 (second-level) category id; null when the level is missing.
+      - name: category_l2_name
+        description: Level-2 category name (Chinese, as provided).
+      - name: category_l2_prob
+        description: Classifier probability for the level-2 category.
+      - name: category_l3_id
+        description: Level-3 (third-level) category id; null when the level is missing.
+      - name: category_l3_name
+        description: Level-3 category name (Chinese, as provided).
+      - name: category_l3_prob
+        description: Classifier probability for the level-3 category.
+      - name: category_l4_id
+        description: Level-4 (fourth-level) category id; null when the level is missing.
+      - name: category_l4_name
+        description: Level-4 category name (Chinese, as provided).
+      - name: category_l4_prob
+        description: Classifier probability for the level-4 category.
