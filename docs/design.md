@@ -30,6 +30,7 @@ The design uses KuaiRand-27K: a pre-period to profile users, and a treatment win
 | `log_standard_4_22_to_5_08` | 2022-04-22 to 05-08 | Treatment window: recommended exposures |
 | `log_random_4_22_to_5_08` | 2022-04-22 to 05-08 | Treatment window: random exposures (`is_rand = 1`) |
 | `user_features`, `video_features_basic` | Static | Segments and content attributes |
+| `kuairand_video_categories` (supplementary, [Zenodo 10.5281/zenodo.18159199](https://zenodo.org/records/18159199), CC BY 4.0) | Static | Four-level category per video; joins on `final_video_id`. Category segments and the new-category metric |
 
 - **Randomization:** per the KuaiRand paper, a recommended video was replaced at a fixed probability by one drawn uniformly from a candidate pool of 7,583 videos.
 - **Unit of analysis:** one impression (user × video × time). Inference is clustered by user.
@@ -37,7 +38,7 @@ The design uses KuaiRand-27K: a pre-period to profile users, and a treatment win
 
 **Three comparisons, three questions**
 
-1. **Comparison A, impression level:** for the same user in the same window, how do random slots differ from recommended slots? This is the average cost of one exploration slot.
+1. **Comparison A, feed request:** within the same feed request (same user and timestamp, tab 1), how does the random slot differ from the recommended slots? This is the average cost of one exploration slot. The within-user comparison is a robustness check (D18).
 2. **Comparison B, same video:** restrict to the 7,583 pool videos and compare each video when recommended versus when shown at random. Content is held fixed, so the gap is the value of targeting.
 3. **Comparison C, decomposition:** total gap = content gap (pool videos vs typical recommended videos) + targeting gap (Comparison B). This tells the product team whether exploration is costly because of weak content or because of poor matching. The fixes differ: improve the exploration pool versus target exploration smarter.
 
@@ -117,7 +118,7 @@ flowchart TB
 ```
 
 - **Tests:** unique, not_null, accepted_values and relationships on keys, plus custom tests for the random-share range and watch-time anomaly flags.
-- **Cost controls:** partition by date, cluster by `user_id` and `is_rand`, a dev target on a 5% hashed user sample, maximum bytes billed on every query, a $5 budget alert.
+- **Cost controls:** partition by date, cluster by `user_id` and `video_id` (D9), a dev target on a 5% hashed user sample, maximum bytes billed on every query, a $5 budget alert.
 - **After the project:** drop the raw tables and keep the small marts inside the free tier.
 
 ## Dashboard Spec

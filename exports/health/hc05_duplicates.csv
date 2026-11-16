@@ -1,0 +1,4 @@
+source,n_rows,n_distinct_rows,n_exact_duplicate_rows,n_conflicting_keys,n_rows_in_conflicting_keys
+pre,6349506,6308032,41474,3117,6234
+rnd,51570,51569,1,0,0
+treat,8825087,8747924,77163,5434,10868

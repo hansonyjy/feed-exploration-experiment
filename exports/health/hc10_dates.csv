@@ -1,0 +1,4 @@
+source,n_rows,min_event_date,max_event_date,n_date_match_shanghai,n_date_match_utc,n_hour_match_shanghai,n_hourmin_with_minutes
+pre,6349506,2022-04-08,2022-04-21,6303137,5414669,5224215,0
+rnd,51570,2022-04-22,2022-05-08,51178,42764,42736,0
+treat,8825087,2022-04-22,2022-05-08,8764036,7481833,7309128,0

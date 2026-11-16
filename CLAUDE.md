@@ -7,7 +7,9 @@ measured exploration slot. Full plan: `docs/design.md`. Locked metrics and param
 
 ## Locked decisions (do not change without a new entry in docs/decisions.md)
 - Primary metric: duration-adjusted effective view rate, defined in `docs/analysis_plan.md`.
-- Three comparisons: A (random vs recommended, within user), B (same pool video, recommended vs random),
+- Population: tab 1 in the treatment window (D15). Never compare insertion-rate regimes before vs after (D17).
+- Three comparisons: A (random vs recommended within the feed request; within user as robustness, D18),
+  B (same pool video, recommended vs random),
   C (total gap = content gap + targeting gap).
 - Segments come from pre-period data only (2022-04-08 to 04-21). The pre-period never measures effects.
 - Inference: user-clustered bootstrap (fixed seed, >= 2,000 resamples) cross-checked with a user
@@ -22,7 +24,7 @@ measured exploration slot. Full plan: `docs/design.md`. Locked metrics and param
 ## Cost rules (BigQuery, on-demand billing)
 - Work on the dbt `dev` target (5% hashed user sample) by default. Run `prod` only when asked.
 - Every query and dbt profile sets `maximum_bytes_billed`. Dry-run (`--dry_run`) anything new on full tables.
-- Never `SELECT *` on raw log tables. Raw logs are partitioned by date and clustered by user_id, is_rand.
+- Never `SELECT *` on raw log tables. Raw logs are partitioned by date and clustered by user_id, video_id (D9).
 - Ask before any operation estimated to scan more than 50 GB.
 
 ## Conventions
@@ -44,8 +46,8 @@ measured exploration slot. Full plan: `docs/design.md`. Locked metrics and param
   `Co-Authored-By: Claude <noreply@anthropic.com>`
 - Commit small and often: one logical change per commit (a model, its tests, a script, a doc update),
   each message saying why. Push after each completed step, not once at the end of a phase.
-- PRs merge with "Create a merge commit" or "Rebase and merge", never "Squash and merge", so every
-  commit stays in the history.
+- PRs merge with "Create a merge commit" only. Never "Squash and merge" (loses commits) or "Rebase and
+  merge" (rewrites commit IDs, which would orphan tags such as `prereg-v1`).
 
 ## Data and license
 KuaiRand (CC BY-SA 4.0): https://kuairand.com/ and https://arxiv.org/abs/2208.08696.

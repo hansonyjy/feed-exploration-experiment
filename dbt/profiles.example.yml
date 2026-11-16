@@ -1,0 +1,27 @@
+# Copy to dbt/profiles.yml (git-ignored). Run dbt through scripts/dbt.sh, which loads .env
+# (GCP_PROJECT) and points dbt at this folder. Auth: gcloud auth application-default login.
+feed_exploration:
+  target: dev
+  outputs:
+    dev:                                   # default: 5% hashed user sample (raw.*_dev5)
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GCP_PROJECT') }}"
+      dataset: dev
+      location: US
+      threads: 4
+      priority: interactive
+      job_execution_timeout_seconds: 600
+      job_retries: 1
+      maximum_bytes_billed: 10737418240    # 10 GiB per query
+    prod:                                  # full data; run only when asked (CLAUDE.md)
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GCP_PROJECT') }}"
+      dataset: staging
+      location: US
+      threads: 4
+      priority: interactive
+      job_execution_timeout_seconds: 1800
+      job_retries: 1
+      maximum_bytes_billed: 64424509440    # 60 GiB per query

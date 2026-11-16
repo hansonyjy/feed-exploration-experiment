@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: kuairand
+    description: >
+      KuaiRand-27K (Gao et al., CIKM 2022; CC BY-SA 4.0) as loaded by scripts/load_kuairand.py.
+      Row counts and hashes: docs/load_manifest.md. Log tables are partitioned by event_date
+      (partition filter required) and clustered by user_id, video_id. *_dev5 tables hold every row
+      of a 5% hashed user sample (D12); models read them on dev via kr_log_source().
+    database: "{{ env_var('GCP_PROJECT') }}"
+    schema: raw
+    tables:
+      - name: log_standard_pre
+        description: Standard-policy exposures, pre-period 2022-04-08 to 04-21. Never measures effects.
+      - name: log_standard_pre_dev5
+        description: 5% user sample of log_standard_pre.
+      - name: log_standard_treat
+        description: Standard-policy exposures, treatment window 2022-04-22 to 05-08.
+      - name: log_standard_treat_dev5
+        description: 5% user sample of log_standard_treat.
+      - name: log_random_treat
+        description: Random-intervention exposures (is_rand = 1), treatment window 2022-04-22 to 05-08.
+      - name: log_random_treat_dev5
+        description: 5% user sample of log_random_treat.
+      - name: user_features
+        description: Static user features, one row per user.
+      - name: video_features_basic
+        description: Static basic video features, one row per video.
+      - name: video_categories
+        description: >
+          Supplementary four-level video categories (Zenodo 10.5281/zenodo.18159199, CC BY 4.0, D10).
+          Joins on final_video_id.

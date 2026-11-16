@@ -4,10 +4,12 @@ raw/
 *.tar.gz
 *.csv
 !exports/*.csv
+!exports/health/*.csv
 
 # Credentials and local config
 .env
 .env.*
+!.env.example
 *.json.key
 *-key.json
 service-account*.json
@@ -29,3 +31,4 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
+dbt/.user.yml

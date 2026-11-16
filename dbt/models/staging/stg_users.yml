@@ -1,0 +1,51 @@
+version: 2
+
+# Staging models: types, renames, dedupe. Every model has keys tested unique + not_null at minimum.
+# Warn-level tests (user's Phase 0 rule): impression_id uniqueness until HC 5 reports, is_rand = 0 in
+# the standard log until HC 9 reports, and log -> feature relationships until HC 11 reports.
+
+models:
+  - name: stg_users
+    description: One row per user. KuaiRand's -124 missing code becomes null; encrypted onehot features are left in raw.
+    columns:
+      - name: user_id
+        description: User id.
+        data_tests: [unique, not_null]
+      - name: user_active_degree
+        description: >
+          Platform activity level; source UNKNOWN becomes null. The site documents high, full and middle
+          active; the data also has new and low-activity levels (data_quality.md #12).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['full_active', 'high_active', 'middle_active', '2_14_day_new', 'low_active',
+                         'single_low_active', '30day_retention', 'day_new']
+      - name: is_lowactive_period
+        description: User is in a low-activity period.
+        data_tests: [binary]
+      - name: is_live_streamer
+        description: User is a live streamer.
+        data_tests: [binary]
+      - name: is_video_author
+        description: User has uploaded videos.
+        data_tests: [binary]
+      - name: follow_user_num
+        description: Number of accounts the user follows.
+        data_tests: [non_negative]
+      - name: follow_user_num_range
+        description: Banded follow count, as provided.
+      - name: fans_user_num
+        description: Number of followers.
+        data_tests: [non_negative]
+      - name: fans_user_num_range
+        description: Banded follower count, as provided.
+      - name: friend_user_num
+        description: Number of friends.
+        data_tests: [non_negative]
+      - name: friend_user_num_range
+        description: Banded friend count, as provided.
+      - name: register_days
+        description: Days since registration. Tenure segment input.
+        data_tests: [non_negative]
+      - name: register_days_range
+        description: Banded tenure, as provided.
