@@ -240,8 +240,70 @@ def judge_hc04b(rows):
     return out
 
 
+def judge_hc01c(rows):
+    """Day stability is blocking (request and exposure level); segments are non-blocking (D21)."""
+    out = []
+    for regime in ("low", "transition", "high"):
+        base = next(r for r in rows if r["regime"] == regime and r["dimension"] == "regime")
+        req_share = base["n_random_requests"] / base["n_requests"]
+        exp_share = base["n_random"] / base["n_exposures"]
+        out.append((f"{regime}: share of requests with a random item (reported)",
+                    f"{req_share:.4%} of {base['n_requests']:,} requests; exposure share {exp_share:.4%}; "
+                    f"{base['n_exposures'] / base['n_requests']:.2f} items/request; "
+                    f"{base['n_requests_multi_random']:,} requests with >1 random item", None, "info"))
+        if regime == "transition":
+            continue
+        for level, num, den, share in (("request", "n_random_requests", "n_requests", req_share),
+                                       ("exposure", "n_random", "n_exposures", exp_share)):
+            for dim in ("day", "activity_tercile", "active_group", "tenure_band"):
+                cells = [r for r in rows if r["regime"] == regime and r["dimension"] == dim]
+                judged = [r for r in cells if r[den] * share >= 1000]
+                if not judged:
+                    continue
+                worst = max(judged, key=lambda r: abs(r[num] / r[den] / share - 1))
+                dev = worst[num] / worst[den] / share - 1
+                sev = "blocking" if dim == "day" else "non-blocking"
+                out.append((f"{regime}/{level}/{dim}: max relative deviation within ±20% "
+                            f"({len(judged)} of {len(cells)} cells judged)",
+                            f"{dev:+.1%} (cell {worst['cell']})", abs(dev) <= 0.20, sev))
+    return out
+
+
+def judge_hc04c(rows):
+    """D23 rule, fixed before the run: a video_type or upload period is a distinct content type if, in
+    both arms, it holds >= 80% of missing-duration rows and <= 20% of rows with a duration."""
+    out = []
+    for arm in ("recommended", "random"):
+        arm_rows = [r for r in rows if r["arm"] == arm]
+        miss = sum(r["n_rows"] for r in arm_rows if r["is_missing"])
+        have = sum(r["n_rows"] for r in arm_rows if not r["is_missing"])
+        always = sum(r["n_rows_video_always_missing"] for r in arm_rows if r["is_missing"])
+        out.append((f"{arm}: missing rows (reported)",
+                    f"{miss:,} of {miss + have:,} ({miss / (miss + have):.3%}); "
+                    f"{always / miss if miss else 0:.1%} from videos missing in every exposure", None, "info"))
+    verdict = []
+    for dim in ("video_type", "upload_period"):
+        values = sorted({r[dim] for r in rows})
+        for v in values:
+            ok_both = True
+            detail = []
+            for arm in ("recommended", "random"):
+                arm_rows = [r for r in rows if r["arm"] == arm]
+                miss = sum(r["n_rows"] for r in arm_rows if r["is_missing"])
+                have = sum(r["n_rows"] for r in arm_rows if not r["is_missing"])
+                m = sum(r["n_rows"] for r in arm_rows if r["is_missing"] and r[dim] == v) / miss if miss else 0
+                h = sum(r["n_rows"] for r in arm_rows if not r["is_missing"] and r[dim] == v) / have if have else 0
+                detail.append(f"{arm} {m:.1%} of missing / {h:.1%} of non-missing")
+                ok_both &= (m >= 0.80 and h <= 0.20)
+            out.append((f"{dim}={v} (reported)", "; ".join(detail), None, "info"))
+            if ok_both:
+                verdict.append(f"{dim}={v}")
+    out.append(("distinct content type among missing rows (D23 rule)", ", ".join(verdict) or "none", None, "info"))
+    return out
+
+
 JUDGES = {
-    "hc01": judge_hc01, "hc01b": judge_hc01b, "hc04b": judge_hc04b, "hc02a": judge_hc02a, "hc02b": judge_hc02b, "hc03": judge_hc03, "hc04": judge_hc04,
+    "hc01": judge_hc01, "hc01b": judge_hc01b, "hc01c": judge_hc01c, "hc04c": judge_hc04c, "hc04b": judge_hc04b, "hc02a": judge_hc02a, "hc02b": judge_hc02b, "hc03": judge_hc03, "hc04": judge_hc04,
     "hc05": judge_hc05, "hc06": judge_hc06, "hc07": judge_hc07, "hc09": judge_hc09, "hc10": judge_hc10,
     "hc11": judge_hc11,
 }

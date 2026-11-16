@@ -55,3 +55,14 @@ Logged as D16 and D20 in `docs/decisions.md`. The first-run results above stay o
 | 6 | Top 0.1% of user-days by exposure count are flagged; they stay in the main analysis and are excluded in a sensitivity run. Reported, no threshold (replaces the 2,000/day rule) | Info | dev sample |
 | 11 | Users ≥ 99.9% and videos ≥ 99% found in the feature tables; ≥ 95% of treatment videos found in the supplementary category file. The tag criterion is dropped; categories come from the supplementary file only | Users blocking; rest non-blocking | dev sample + full video tables |
 
+## Further re-specification (post-hoc, approved 2026-11-16 after the HC 1b re-run, before any outcome query)
+
+Logged as D21-D23. The HC 1 and HC 1b segment criteria are reclassified as non-blocking (D21): Comparison
+A is within request and within user, so validity needs a random slot choice, not equal random shares
+across users. The analysis window starts 2022-04-23 (D22).
+
+| # | Pass criterion | Severity | Data |
+| --- | --- | --- | --- |
+| 1c | Tab 1, 2022-04-23 to 05-08. Request = distinct (user_id, time_ms). Within each regime (low 04-23 to 05-01, high 05-03 to 05-08; 05-02 reported only), each day's share of requests with a random item, and each day's exposure-level random share, within ±20% of the regime's share. The same test by segment (activity tercile, merged active group, tenure band) is reported. Only cells with at least 1,000 expected random requests or exposures are judged | Day: blocking. Segment: non-blocking | full data (counts only) |
+| 4c | Tab-1 rows still missing a duration after the fill, profiled by arm, `video_type` and upload period. A value is a distinct content type if, in both arms, it holds ≥ 80% of missing rows and ≤ 20% of rows with a duration. If one exists, that content type is excluded from both arms; otherwise missing rows are excluded, the gap by arm is reported, and non-duration metrics get a sensitivity run with and without those rows | Decides the D23 rule | dev sample |
+
