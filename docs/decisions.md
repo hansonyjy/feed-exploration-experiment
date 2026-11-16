@@ -2,6 +2,19 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-16 · D13 · Staging dedupe rule: collapse exact duplicates only
+- Rule: in `stg_log_standard` and `stg_log_random`, rows identical in every source column collapse to
+  one (`select distinct`). Rows that share (source table, user_id, video_id, time_ms) but differ in
+  any other column are all kept; `impression_id` (md5 of those four) is then not unique, and its
+  uniqueness test stays warn-level until HC 5 explains those rows.
+- HC 5 counts both kinds on the raw tables, before this rule applies, so the amount removed is on
+  record (`docs/data_quality.md` #5).
+- Alternatives: keep exact duplicates (double-counts exposures); keep one row per key (silently
+  picks between conflicting rows before we know what they mean).
+- Reason: exact copies carry no information, while conflicting rows may be real repeat exposures
+  within the same millisecond batch, so they are not dropped until HC 5 says what they are.
+  First dev build: 8,551 non-unique impression_ids in `stg_log_standard`, 0 in `stg_log_random`.
+
 ## 2026-11-16 · D12 · Dev sample: 5% of users by md5, materialized at load time
 - Rule: `mod(cast(concat('0x', substr(to_hex(md5(cast(user_id as string))), 1, 8)) as int64), 100) < 5`
   in BigQuery; the load script computes the same with Python `hashlib`, and `verify` checks that
