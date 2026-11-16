@@ -1,0 +1,40 @@
+version: 2
+
+# Staging models: types, renames, dedupe. Every model has keys tested unique + not_null at minimum.
+# Warn-level tests (user's Phase 0 rule): impression_id uniqueness until HC 5 reports, is_rand = 0 in
+# the standard log until HC 9 reports, and log -> feature relationships until HC 11 reports.
+
+models:
+  - name: stg_videos
+    description: One row per video, basic features. Whole-number floats in the source become int64.
+    columns:
+      - name: video_id
+        description: Video id.
+        data_tests: [unique, not_null]
+      - name: author_id
+        description: Uploader id. Input to the new-author follow metric.
+      - name: video_type
+        description: NORMAL or AD; source UNKNOWN (1,899 videos) becomes null.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['NORMAL', 'AD']
+      - name: upload_date
+        description: Upload date (null if the source value does not parse).
+      - name: upload_type
+        description: Upload channel, as provided.
+      - name: visible_status
+        description: Visibility status code, as provided.
+      - name: video_duration_ms
+        description: Duration in milliseconds from the feature table (float in the source). Compared with log duration_ms in HC 4.
+        data_tests: [non_negative]
+      - name: server_width
+        description: Video width in pixels.
+      - name: server_height
+        description: Video height in pixels.
+      - name: music_id
+        description: Background music id.
+      - name: music_type
+        description: Music type code, as provided.
+      - name: tag_ids
+        description: Comma-separated tag ids from the source `tag` column (meanings undocumented).
