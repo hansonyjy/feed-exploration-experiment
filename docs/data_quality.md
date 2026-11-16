@@ -43,3 +43,15 @@ by period only.
 | 9 | `is_rand` = 0 for every standard-log row. The overlap of (user, video, `time_ms`) between the random log and the standard treatment log is either about 0% or about 100% of random rows (a clear structure either way) | Blocking if the overlap is partial or unexplained (Comparison A could double count). Once this passes, the `is_rand` = 0 test goes from warn to error | full data (counts only) |
 | 10 | Each table's `event_date` range matches its file window exactly. `event_date` equals the date of `time_ms` in Asia/Shanghai time for ≥ 99.9% of rows | Blocking for a window mismatch; non-blocking for the timestamp check | dev sample |
 | 11 | ≥ 99.9% of logged users found in `user_features`. ≥ 99% of logged videos found in `video_features_basic`. ≥ 95% of treatment-log videos found in the category file by `final_video_id`, and for ≥ 90% of matched videos the first-level category id appears in the 27K `tag` ids (a check that `final_video_id` is the 27K `video_id`) | Blocking for users. Non-blocking for videos and categories: below threshold, category segments and the new-category metric are dropped or redesigned | dev sample + full video tables |
+
+## Re-specified criteria (post-hoc, approved 2026-11-16 after the first run, before any outcome query)
+
+Logged as D16 and D20 in `docs/decisions.md`. The first-run results above stay on record.
+
+| # | Pass criterion | Severity | Data |
+| --- | --- | --- | --- |
+| 1b | Within tab 1 only. Regimes (D17): low = 2022-04-22 to 05-01, transition = 05-02 (reported, not judged), high = 05-03 to 05-08. Within each judged regime, each day's and each segment's (activity tercile, merged `user_active_degree` group, tenure band) tab-1 random share within ±20% (relative) of that regime's tab-1 share. Only cells with at least 1,000 expected random exposures are judged | Blocking | full data (counts only) |
+| 4b | Missing duration before and after filling `duration_ms` from `video_features_basic.video_duration`, by `is_rand`, in tab 1 of the treatment window; rows still missing are excluded (D19). Reported, no threshold | Info | dev sample |
+| 6 | Top 0.1% of user-days by exposure count are flagged; they stay in the main analysis and are excluded in a sensitivity run. Reported, no threshold (replaces the 2,000/day rule) | Info | dev sample |
+| 11 | Users ≥ 99.9% and videos ≥ 99% found in the feature tables; ≥ 95% of treatment videos found in the supplementary category file. The tag criterion is dropped; categories come from the supplementary file only | Users blocking; rest non-blocking | dev sample + full video tables |
+

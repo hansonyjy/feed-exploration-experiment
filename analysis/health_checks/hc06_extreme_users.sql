@@ -1,5 +1,6 @@
 -- scope: dev5
--- HC 6: exposures per user-day across all logs; users flagged as possible bots or test accounts.
+-- HC 6 (re-specified, D20): flag the top 0.1% of user-days by exposure count across all logs. Flagged
+-- user-days stay in the main analysis and are excluded in a sensitivity run. Exposure counts only.
 with exposures as (
     select user_id, event_date from {pre} where event_date between '2022-04-08' and '2022-04-21'
     union all
@@ -21,12 +22,6 @@ thresholds as (
         approx_quantiles(n, 1000)[offset(999)] as p999,
         max(n) as max_n
     from user_days
-),
-
-users as (
-    select user_id, max(n) as max_daily, sum(n) as total
-    from user_days
-    group by user_id
 )
 
 select
@@ -34,10 +29,12 @@ select
     t.p99 as user_day_p99,
     t.p999 as user_day_p999,
     t.max_n as user_day_max,
-    count(*) as n_users,
-    countif(u.max_daily > 2000 or u.max_daily > t.p999) as n_flagged_users,
-    sum(u.total) as n_exposures,
-    sum(if(u.max_daily > 2000 or u.max_daily > t.p999, u.total, 0)) as n_flagged_exposures
-from users as u
+    count(*) as n_user_days,
+    countif(d.n > t.p999) as n_flagged_user_days,
+    count(distinct d.user_id) as n_users,
+    count(distinct if(d.n > t.p999, d.user_id, null)) as n_users_with_flagged_day,
+    sum(d.n) as n_exposures,
+    sum(if(d.n > t.p999, d.n, 0)) as n_flagged_exposures
+from user_days as d
 cross join thresholds as t
 group by t.p50, t.p99, t.p999, t.max_n

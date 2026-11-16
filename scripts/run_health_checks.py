@@ -150,13 +150,12 @@ def judge_hc05(rows):
 
 def judge_hc06(rows):
     r = rows[0]
-    u = r["n_flagged_users"] / r["n_users"]
-    e = r["n_flagged_exposures"] / r["n_exposures"]
     return [
         ("user-day exposures p50 / p99 / p99.9 / max (reported)",
          f"{r['user_day_p50']} / {r['user_day_p99']} / {r['user_day_p999']} / {r['user_day_max']}", None, "info"),
-        ("flagged users <= 0.5%", f"{r['n_flagged_users']:,} ({u:.2%})", u <= 0.005, "non-blocking"),
-        ("flagged users' exposures <= 2%", f"{e:.2%}", e <= 0.02, "non-blocking"),
+        ("top 0.1% user-days flagged for the sensitivity run (reported)",
+         f"{r['n_flagged_user_days']:,} of {r['n_user_days']:,} user-days; {r['n_users_with_flagged_day']:,} of "
+         f"{r['n_users']:,} users; {r['n_flagged_exposures'] / r['n_exposures']:.2%} of exposures", None, "info"),
     ]
 
 
@@ -202,17 +201,47 @@ def judge_hc11(rows):
     u = r["n_log_users_with_features"] / r["n_log_users"]
     v = r["n_log_videos_with_features"] / r["n_log_videos"]
     c = r["n_treat_videos_with_category"] / r["n_treat_videos"]
-    t = r["n_l1_in_tag"] / r["n_tag_comparable"] if r["n_tag_comparable"] else 0.0
+    l1 = r["n_treat_videos_with_l1_category"] / r["n_treat_videos"]
     return [
         ("log users in user_features >= 99.9%", f"{u:.3%}", u >= 0.999, "blocking"),
         ("log videos in video_features_basic >= 99%", f"{v:.3%}", v >= 0.99, "non-blocking"),
         ("treatment videos in category file >= 95%", f"{c:.3%}", c >= 0.95, "non-blocking"),
-        ("first-level category id in tag ids >= 90%", f"{t:.2%} of {r['n_tag_comparable']:,}", t >= 0.90, "non-blocking"),
+        ("treatment videos with a first-level category (reported)", f"{l1:.3%}", None, "info"),
     ]
 
 
+def judge_hc01b(rows):
+    out = []
+    for regime in ("low", "transition", "high"):
+        base = next(r for r in rows if r["regime"] == regime and r["dimension"] == "regime")
+        share = base["n_random"] / base["n_exposures"]
+        out.append((f"{regime}: tab-1 random share (reported)", f"{share:.4%} of {base['n_exposures']:,}", None, "info"))
+        if regime == "transition":
+            continue  # the switch happens within 2022-05-02; reported, not judged (D16)
+        for dim in ("day", "activity_tercile", "active_group", "tenure_band"):
+            cells = [r for r in rows if r["regime"] == regime and r["dimension"] == dim]
+            judged = [r for r in cells if r["n_exposures"] * share >= 1000]
+            if not judged:
+                out.append((f"{regime}/{dim}: no cell has >= 1,000 expected random", "-", None, "info"))
+                continue
+            worst = max(judged, key=lambda r: abs(r["n_random"] / r["n_exposures"] / share - 1))
+            dev = worst["n_random"] / worst["n_exposures"] / share - 1
+            out.append((f"{regime}/{dim}: max relative deviation within ±20% ({len(judged)} of {len(cells)} cells judged)",
+                        f"{dev:+.1%} (cell {worst['cell']})", abs(dev) <= 0.20, "blocking"))
+    return out
+
+
+def judge_hc04b(rows):
+    out = []
+    for r in rows:
+        out.append((f"is_rand={r['is_rand']}: missing duration before / after fill (reported)",
+                    f"{r['n_log_missing'] / r['n_rows']:.3%} / {r['n_still_missing'] / r['n_rows']:.4%} of {r['n_rows']:,}",
+                    None, "info"))
+    return out
+
+
 JUDGES = {
-    "hc01": judge_hc01, "hc02a": judge_hc02a, "hc02b": judge_hc02b, "hc03": judge_hc03, "hc04": judge_hc04,
+    "hc01": judge_hc01, "hc01b": judge_hc01b, "hc04b": judge_hc04b, "hc02a": judge_hc02a, "hc02b": judge_hc02b, "hc03": judge_hc03, "hc04": judge_hc04,
     "hc05": judge_hc05, "hc06": judge_hc06, "hc07": judge_hc07, "hc09": judge_hc09, "hc10": judge_hc10,
     "hc11": judge_hc11,
 }
@@ -257,7 +286,8 @@ def main() -> None:
 
     # 2. Run, save results, judge.
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    summary = {}
+    summary_file = OUT_DIR / "summary.json"
+    summary = json.loads(summary_file.read_text()) if summary_file.exists() else {}  # merge with earlier runs
     for f, scope, sql, est in plan:
         cap = max(int(est * 1.25), 2**30)
         job = client.query(sql, job_config=bigquery.QueryJobConfig(maximum_bytes_billed=cap))
@@ -278,8 +308,10 @@ def main() -> None:
         for c, v, p, s in verdicts:
             mark = "INFO" if p is None else ("PASS" if p else f"FAIL[{s}]")
             print(f"  {mark:22s} {c}: {v}")
-    (OUT_DIR / "summary.json").write_text(json.dumps(summary, indent=2, default=str))
-    fails = [(k, c["criterion"], c["severity"]) for k, s in summary.items() for c in s["criteria"] if c["passed"] is False]
+    summary_file.write_text(json.dumps(summary, indent=2, default=str, sort_keys=True))
+    ran = {f.stem for f, *_ in plan}
+    fails = [(k, c["criterion"], c["severity"]) for k, s in summary.items() if k in ran
+             for c in s["criteria"] if c["passed"] is False]
     print(f"\n{len(fails)} failed criteria; blocking: {sum(1 for f in fails if f[2] == 'blocking')}")
 
 
