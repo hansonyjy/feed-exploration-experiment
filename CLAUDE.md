@@ -35,8 +35,17 @@ measured exploration slot. Full plan: `docs/design.md`. Locked metrics and param
 
 ## Workflow
 - One phase per branch and PR. Propose a plan first, implement after approval.
-- Small commits; the message says why, not just what.
 - Never commit data, credentials, or `profiles.yml`.
+
+## Git authorship (owner's rule)
+- Hanson Yang is the author and committer of every commit. Use the repo's git config as is; never
+  set Claude, a bot, or any other name or email as author or committer.
+- Claude is credited only as a co-author, with this trailer at the end of the message:
+  `Co-Authored-By: Claude <noreply@anthropic.com>`
+- Commit small and often: one logical change per commit (a model, its tests, a script, a doc update),
+  each message saying why. Push after each completed step, not once at the end of a phase.
+- PRs merge with "Create a merge commit" or "Rebase and merge", never "Squash and merge", so every
+  commit stays in the history.
 
 ## Data and license
 KuaiRand (CC BY-SA 4.0): https://kuairand.com/ and https://arxiv.org/abs/2208.08696.
