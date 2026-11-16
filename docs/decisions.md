@@ -2,6 +2,13 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-16 · D9 · Cluster raw log tables by user_id, video_id (was user_id, is_rand)
+- Alternatives: user_id, is_rand (the original plan); user_id only.
+- Reason: random and standard exposures live in separate raw tables, so `is_rand` is constant within
+  each table and clustering on it prunes nothing. `video_id` as the second key speeds up the joins
+  and filters that matter here: the 7,583 pool videos in Comparison B and the video feature and
+  category joins. Partitioning by `event_date` is unchanged. CLAUDE.md and design.md updated.
+
 ## 2026-11-15 · D7 · Static web dashboard first, Tableau Public as a supplement
 - Alternatives: Tableau Public only; Looker Studio.
 - Reason: a custom page reads static exports, costs nothing to host, and supports the budget simulator.

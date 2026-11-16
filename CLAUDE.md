@@ -22,7 +22,7 @@ measured exploration slot. Full plan: `docs/design.md`. Locked metrics and param
 ## Cost rules (BigQuery, on-demand billing)
 - Work on the dbt `dev` target (5% hashed user sample) by default. Run `prod` only when asked.
 - Every query and dbt profile sets `maximum_bytes_billed`. Dry-run (`--dry_run`) anything new on full tables.
-- Never `SELECT *` on raw log tables. Raw logs are partitioned by date and clustered by user_id, is_rand.
+- Never `SELECT *` on raw log tables. Raw logs are partitioned by date and clustered by user_id, video_id (D9).
 - Ask before any operation estimated to scan more than 50 GB.
 
 ## Conventions

@@ -117,7 +117,7 @@ flowchart TB
 ```
 
 - **Tests:** unique, not_null, accepted_values and relationships on keys, plus custom tests for the random-share range and watch-time anomaly flags.
-- **Cost controls:** partition by date, cluster by `user_id` and `is_rand`, a dev target on a 5% hashed user sample, maximum bytes billed on every query, a $5 budget alert.
+- **Cost controls:** partition by date, cluster by `user_id` and `video_id` (D9), a dev target on a 5% hashed user sample, maximum bytes billed on every query, a $5 budget alert.
 - **After the project:** drop the raw tables and keep the small marts inside the free tier.
 
 ## Dashboard Spec
