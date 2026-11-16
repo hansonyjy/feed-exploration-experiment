@@ -1,0 +1,29 @@
+name: feed_exploration
+version: "0.1.0"
+config-version: 2
+profile: feed_exploration
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # Locked windows (docs/analysis_plan.md). The pre-period never measures effects.
+  pre_start: "2022-04-08"
+  pre_end: "2022-04-21"
+  treat_start: "2022-04-22"
+  treat_end: "2022-05-08"
+
+models:
+  feed_exploration:
+    +labels:
+      project: feed-exploration
+    staging:
+      +schema: staging        # prod dataset `staging`; on dev everything goes to `dev`
+      +materialized: table
+    intermediate:
+      +schema: staging
+    marts:
+      +schema: marts
