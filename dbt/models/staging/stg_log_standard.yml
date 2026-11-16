@@ -122,12 +122,10 @@ models:
       - name: is_play_over_duration
         description: play_time_ms > duration_ms (loops or replays). Structural flag for HC 4.
       - name: is_rand
-        description: Random-intervention flag; expected 0 in the standard log (warn until HC 9).
+        description: Random-intervention flag; 0 on every standard-log row (HC 9 passed, error level).
         data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [0]
                 quote: false
-              config:
-                severity: warn
