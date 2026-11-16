@@ -7,7 +7,9 @@ measured exploration slot. Full plan: `docs/design.md`. Locked metrics and param
 
 ## Locked decisions (do not change without a new entry in docs/decisions.md)
 - Primary metric: duration-adjusted effective view rate, defined in `docs/analysis_plan.md`.
-- Three comparisons: A (random vs recommended, within user), B (same pool video, recommended vs random),
+- Population: tab 1 in the treatment window (D15). Never compare insertion-rate regimes before vs after (D17).
+- Three comparisons: A (random vs recommended within the feed request; within user as robustness, D18),
+  B (same pool video, recommended vs random),
   C (total gap = content gap + targeting gap).
 - Segments come from pre-period data only (2022-04-08 to 04-21). The pre-period never measures effects.
 - Inference: user-clustered bootstrap (fixed seed, >= 2,000 resamples) cross-checked with a user

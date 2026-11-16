@@ -2,6 +2,58 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-16 · D20 · Health-check follow-ups: HC 5 accepted, HC 6 and HC 11 re-specified, HC 8 from the paper
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- HC 5: exact duplicates (0.65-0.87% of standard rows) and key conflicts (0.10-0.12%) are accepted and
+  documented; D13 stands and impression_id uniqueness stays warn-level.
+- HC 6: the 2,000-exposures-per-day bar sat below the user-day p99 (2,521) and flagged 13.7% of users.
+  Replaced by flagging the top 0.1% of user-days, which stay in the main analysis and are excluded in
+  a sensitivity run.
+- HC 11: categories come from the supplementary file only; the tag-agreement criterion (74.6% vs a
+  90% bar) is dropped because the two taxonomies need not match.
+- HC 8: pool selection documented from the paper (Sec. 3.2), with the data's contradictions noted.
+
+## 2026-11-16 · D19 · Duration rule for the primary metric
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: use `duration_ms` from the log; where it is null or non-positive, fill it from
+  `video_features_basic.video_duration`; exclude rows still missing. Report the missing rate by
+  `is_rand` with every primary result (a property of the exposure, not an outcome).
+- HC 4b (dev): 7.84% of recommended and 3.06% of random tab-1 rows lack a duration, and the fill
+  recovers almost none, so the exclusion is unequal across arms and must be reported.
+- Alternatives: impute from the video's median watch time (uses outcomes); drop the duration adjustment.
+
+## 2026-11-16 · D18 · Primary Comparison A unit: the feed request
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Primary: each random item vs the recommended items in the same feed request, i.e. sharing its
+  `user_id` and `time_ms` in tab 1. The within-user comparison (D6) becomes a robustness check.
+- Reason: HC 9 showed random items are logged separately from the rest of the same request (97.0%
+  of random rows share user and time_ms with standard rows), so the request holds user, moment and
+  context fixed. Random rows with no matching request (3.0%) are left out of the primary estimate and
+  kept in the within-user check.
+
+## 2026-11-16 · D17 · Insertion-rate regimes and the May Day holiday
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- The tab-1 random share is 0.630% from 2022-04-22 to 05-01, 1.018% on 05-02 and 1.388% from
+  05-03 to 05-08 (HC 1b). The switch coincides with China's May Day holiday (about Apr 30 to May 4).
+- Rule: never compare regimes before vs after. Compare random and recommended within day (and within
+  request); include regime as a control (absorbed when day fixed effects are in the model). The
+  budget interpolates only between the two observed rates, 0.630% and 1.388%.
+- Alternatives: analyze the low regime only (loses 45.7M tab-1 exposures); treat the rate as constant.
+
+## 2026-11-16 · D16 · Re-specify HC 1 within tab 1 and within each date regime
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- HC 1 failed on all tabs because insertion ran almost only on tab 1 and the rate changed mid-window.
+  HC 1b judges day and segment stability within tab 1 and within each regime (05-02 reported only).
+- Result: still FAILS. High-regime days pass; segments do not (light pre-period users +79% to +87%).
+  Diagnostic d01: random exposures are roughly constant per user (median 21-23 per activity tercile)
+  rather than proportional to exposures. Open; prereg-v1 is not tagged.
+
+## 2026-11-16 · D15 · Analysis population: tab 1 in the treatment window
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: all random-vs-recommended comparisons use tab-1 exposures from 2022-04-22 to 05-08.
+- Reason: 99.3% of random exposures are on tab 1 (HC 7); other tabs have no comparable random arm.
+  The pre-period still uses all tabs for profiles and history.
+
 ## 2026-11-16 · D14 · Merge the 8 user_active_degree levels into 4 groups by user count
 - Rule (locked in analysis_plan.md before prereg-v1): minimum 1,000 users per group; small levels join
   their family first (new-user levels, low-activity levels), then the smallest under-size groups merge.

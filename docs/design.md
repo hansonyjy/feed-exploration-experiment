@@ -38,7 +38,7 @@ The design uses KuaiRand-27K: a pre-period to profile users, and a treatment win
 
 **Three comparisons, three questions**
 
-1. **Comparison A, impression level:** for the same user in the same window, how do random slots differ from recommended slots? This is the average cost of one exploration slot.
+1. **Comparison A, feed request:** within the same feed request (same user and timestamp, tab 1), how does the random slot differ from the recommended slots? This is the average cost of one exploration slot. The within-user comparison is a robustness check (D18).
 2. **Comparison B, same video:** restrict to the 7,583 pool videos and compare each video when recommended versus when shown at random. Content is held fixed, so the gap is the value of targeting.
 3. **Comparison C, decomposition:** total gap = content gap (pool videos vs typical recommended videos) + targeting gap (Comparison B). This tells the product team whether exploration is costly because of weak content or because of poor matching. The fixes differ: improve the exploration pool versus target exploration smarter.
 
