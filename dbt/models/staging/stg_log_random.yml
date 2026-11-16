@@ -1,0 +1,129 @@
+version: 2
+
+# Staging models: types, renames, dedupe. Every model has keys tested unique + not_null at minimum.
+# Warn-level tests (user's Phase 0 rule): impression_id uniqueness until HC 5 reports, is_rand = 0 in
+# the standard log until HC 9 reports, and log -> feature relationships until HC 11 reports.
+
+models:
+  - name: stg_log_random
+    description: >
+      Random-intervention exposures, treatment window only, one row per distinct raw row (D13).
+      Partitioned by event_date, clustered by user_id, video_id. Reads the 5% sample on dev.
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: >
+              period = 'treatment' and event_date between '{{ var("treat_start") }}' and '{{ var("treat_end") }}'
+    columns:
+      - name: impression_id
+        description: >
+          Surrogate key: md5 of source table, user_id, video_id, time_ms. Uniqueness is warn-level until
+          HC 5 reports whether non-identical rows share this key.
+        data_tests:
+          - not_null
+          - unique:
+              config:
+                severity: warn
+      - name: source_table
+        description: Raw table the row came from.
+        data_tests: [not_null]
+      - name: period
+        description: "'pre' (2022-04-08 to 04-21, segments and history only) or 'treatment' (2022-04-22 to 05-08)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['pre', 'treatment']
+      - name: user_id
+        description: User id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+              config:
+                severity: warn
+      - name: video_id
+        description: Video id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_videos')
+                field: video_id
+              config:
+                severity: warn
+      - name: event_date
+        description: Exposure date, parsed from the source YYYYMMDD `date` column. Partition column.
+        data_tests: [not_null]
+      - name: hour_min
+        description: Source `hourmin`, an HHMM integer (e.g. 1800).
+      - name: event_hour
+        description: Hour of day, 0 to 23, from hour_min.
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 23
+      - name: time_ms
+        description: Exposure timestamp, epoch milliseconds.
+        data_tests: [not_null]
+      - name: event_ts
+        description: time_ms as a UTC timestamp. Its relation to event_date (timezone) is checked in HC 10.
+      - name: is_click
+        description: Click (two-column UI) or valid play (single-column UI).
+        data_tests: [binary]
+      - name: is_like
+        description: User liked the video.
+        data_tests: [binary]
+      - name: is_follow
+        description: User followed the author from this exposure.
+        data_tests: [binary]
+      - name: is_comment
+        description: User commented.
+        data_tests: [binary]
+      - name: is_forward
+        description: User forwarded the video.
+        data_tests: [binary]
+      - name: is_hate
+        description: User marked the video as disliked. Guardrail metric input.
+        data_tests: [binary]
+      - name: is_long_view
+        description: Source `long_view`; 1 if the user watched the whole video (<= 18 s) or at least 18 s.
+        data_tests: [binary]
+      - name: is_profile_enter
+        description: User opened the author's profile.
+        data_tests: [binary]
+      - name: play_time_ms
+        description: Watch time in milliseconds.
+        data_tests: [non_negative]
+      - name: duration_ms
+        description: Video duration in milliseconds, as logged with the exposure.
+        data_tests: [non_negative]
+      - name: profile_stay_time
+        description: Time on the author's profile. The unit is not documented by KuaiRand.
+        data_tests: [non_negative]
+      - name: comment_stay_time
+        description: Time in the comment section. The unit is not documented by KuaiRand.
+        data_tests: [non_negative]
+      - name: tab
+        description: Scenario (app surface) of the exposure, 0 to 14.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 14
+      - name: is_zero_duration
+        description: duration_ms is null, zero or negative. Structural flag for HC 4.
+      - name: is_play_over_duration
+        description: play_time_ms > duration_ms (loops or replays). Structural flag for HC 4.
+      - name: is_rand
+        description: Random-intervention flag; always 1 in this log.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1]
+                quote: false
