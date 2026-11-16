@@ -8,6 +8,7 @@ raw/
 # Credentials and local config
 .env
 .env.*
+!.env.example
 *.json.key
 *-key.json
 service-account*.json
