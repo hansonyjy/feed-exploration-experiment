@@ -369,7 +369,9 @@ def write_manifest(state: dict, c) -> None:
     ds = state["dev_sample"]
     out += ["", "## Dev sample", "",
             f"{ds['n_users_sampled']:,} of {ds['n_users_total']:,} users "
-            f"({ds['pct']}% target). Rule in BigQuery SQL:", "", "```sql", DEV_SAMPLE_SQL_BQ, "```",
+            f"({ds['n_users_sampled'] / ds['n_users_total']:.2%} realized, {ds['pct']}% target; the "
+            "hash buckets are uniform, so the gap is chance). Rule in BigQuery SQL:", "", "```sql",
+            DEV_SAMPLE_SQL_BQ, "```",
             "", f"SHA-256 of the sorted, comma-joined sampled user_ids: `{ds['user_ids_sha256']}`", "",
             "## Verification", "",
             "All checks passed." if not state["verify_problems"]
