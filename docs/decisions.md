@@ -2,6 +2,124 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+<!-- D26-D48 were logged together after a sweep of analysis_plan.md for parameters without a stated
+     source population, date range or tab. prereg-v1 moved once, to the commit that adds them. -->
+
+## 2026-11-16 · D48 · Guardrail baseline and exploration share by guardrail type
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Baseline = user-weighted rate of tab-1 recommended exposures, within day, in the treatment window. Item-level guardrails (hate, fast skip): s = exposure share, change = s x (rand - rec) / rec <= 2%, s interpolated between 0.658% and 1.388%. Session exit (per request, D37): s = share of tab-1 requests with a random item, same formula on request-level rates, s interpolated between 3.59% and 7.55%. The budget table reports both shares.
+- Reason: The 2% limit had no stated baseline, and session exit is measured per request, so it needs a request-level share.
+
+## 2026-11-16 · D47 · Category and duration segments
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Segments use the random item's first-level category and D26 bucket; categories with fewer than 1,000 random exposures in the window (a count) merge into other.
+- Reason: Keeps small categories from producing unstable segment estimates.
+
+## 2026-11-16 · D46 · Tenure and follow-count bands merged by the D14 rule
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Provided bands, merged so each has at least 1,000 users, merging adjacent bands.
+- Reason: Some bands are tiny (for example 8-14 days of tenure).
+
+## 2026-11-16 · D45 · Pre-period activity terciles
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Count of pre-period exposures across all tabs, ntile(3) over users with any; users with none form no_pre_period.
+- Reason: Matches the definition used in the health checks, now stated in the plan.
+
+## 2026-11-16 · D44 · Comparison C: additive decomposition with user weighting
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: All terms on tab 1 in the window with A's user weighting: total = rec(all) - rand; content = rec(all) - rec(pool); targeting = rec(pool) - rand. B's video-weighted estimate is reported beside it.
+- Reason: "Typical recommended" was undefined, and mixed weightings would not add up.
+
+## 2026-11-16 · D43 · Comparison B: population, weighting, clustering
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Tab 1, treatment window; pool videos with at least one exposure in each arm; per video, random minus recommended; equal weight per video; bootstrap clustered by video, with user-clustered as robustness.
+- Reason: B was defined only as "recommended vs random" for pool videos.
+
+## 2026-11-16 · D42 · Population for the top 0.1% user-day flag
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Full data, both logs, all tabs, 2022-04-08 to 05-08.
+- Reason: HC 6 used the dev sample; the analysis flag needs a stated population.
+
+## 2026-11-16 · D41 · Hour and duration-bucket controls
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Hour from hourmin as provided (HC 10); duration buckets use the D26 edges.
+- Reason: The sources of the regression controls were not stated.
+
+## 2026-11-16 · D40 · MDE merge order
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Merge with the adjacent segment in the dimension's natural order (for categories, the smallest segment), repeated until every segment passes.
+- Reason: The merge order was not stated.
+
+## 2026-11-16 · D39 · MDE and power inputs
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Baseline rate, variance and within-user correlation from tab-1 pre-period recommended impressions; random requests per segment from treatment-window counts; two-sided alpha 0.05; 80% power; 1 point = 1 percentage point absolute; user-clustered design.
+- Reason: The inputs were not stated; pre-period data keeps them free of treatment outcomes.
+
+## 2026-11-16 · D38 · Session exit: exclude right-censored exposures
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Exposures in the last 30 minutes of 2022-05-08 (Asia/Shanghai) are excluded from the session-exit metric.
+- Reason: Their sessions may be cut off by the end of the data.
+
+## 2026-11-16 · D37 · Session exit compared at the request level
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: For session exit only, requests with a random item are compared with requests without one, within user and day, with the D21 weighting.
+- Reason: Every item in a request shares the session outcome, so a within-request difference is zero by construction.
+
+## 2026-11-16 · D36 · Session exit counted in requests
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: N = 3 means the session ends within this request or the next 2 requests.
+- Reason: Items in a request share a timestamp, so their order within the request is unknown.
+
+## 2026-11-16 · D35 · Session construction
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Sessions use both logs, all tabs and 2022-04-08 to 05-08 (30-minute gap rule on time_ms); only tab-1 exposures from 04-23 to 05-08 are scored.
+- Reason: Building from all exposures avoids cutting sessions at the tab or window boundary.
+
+## 2026-11-16 · D34 · New category: first level, pre-period effective views on any tab
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Category = first level from the supplementary file. New = no effective view (D25/D26/D29 rule) in that category in the pre-period, any tab. Videos without a first-level category cannot count as new and stay in the denominator.
+- Reason: The level, tabs and effective-view rule were not stated.
+
+## 2026-11-16 · D33 · New-author follow rate: numerator and denominator
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Numerator: impressions with is_follow = 1 on a new author; denominator: all impressions in the arm. History is the pre-period only.
+- Reason: Fixes the rate's definition and keeps newness from depending on treatment-window exposures.
+
+## 2026-11-16 · D32 · New author: no pre-period exposure on any tab
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: An author is new to a user if the user had no exposure to any video by that author_id (video_features_basic) in the pre-period, on any tab.
+- Reason: "No interaction" was ambiguous; exposure is the strictest test of "seen before".
+
+## 2026-11-16 · D31 · Naive completion rate defined
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: play_time_ms >= duration_ms (after the fill), on the same rows as the primary metric.
+- Reason: The metric was named but not defined.
+
+## 2026-11-16 · D30 · Reference rows use the analysis duration rule and are deduplicated
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: The D19/D23 fill-and-exclude rule applies to the reference rows, which come from deduplicated staging.
+- Reason: Keeps the threshold and the rows it is applied to on the same footing.
+
+## 2026-11-16 · D29 · Effective view: play_time_ms at or above the bucket median
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Effective view = play_time_ms >= the median play_time_ms of reference impressions in the same duration bucket; ties count as effective.
+- Reason: "Reaches the 50th percentile" left the column and tie handling open.
+
+## 2026-11-16 · D28 · user_features treated as pre-treatment
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Tenure, follow counts and activity level come from a static snapshot of unknown date; they are treated as pre-treatment and the memo states this as a limitation.
+- Reason: The snapshot date is not documented, so the assumption is made explicit rather than implied.
+
+## 2026-11-16 · D27 · Locked quantities come from full data
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Every locked threshold, edge, baseline and flag is computed on full data from deduplicated staging; dev-sample numbers in the plan are illustrations, recomputed on full data for the memo.
+- Reason: The plan did not say which data the parameters come from; the 5% sample is for development only.
+
+## 2026-11-16 · D26 · Duration-bucket decile edges from tab-1 pre-period impressions
+- Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
+- Rule: Edges are deciles of duration over tab-1 pre-period recommended impressions with a valid duration after the fill rule; bottom and top buckets are open-ended.
+- Reason: The plan said "deciles of duration_ms" without a source population; this matches the D25 reference distribution.
+
 ## 2026-11-16 · D25 · Effective-view reference distribution from tab-1 pre-period impressions
 - Post-hoc: decided 2026-11-16 after the Phase 0 health checks, before any outcome analysis.
 - Rule: the watch-time percentiles behind the primary metric come from tab-1 pre-period recommended
