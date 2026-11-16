@@ -1,2 +1,2 @@
-user_day_p50,user_day_p99,user_day_p999,user_day_max,n_users,n_flagged_users,n_exposures,n_flagged_exposures
-269,2521,5495,11158,1248,171,15226163,5563539
+user_day_p50,user_day_p99,user_day_p999,user_day_max,n_user_days,n_flagged_user_days,n_users,n_users_with_flagged_day,n_exposures,n_flagged_exposures
+269,2521,5495,11158,35133,35,1248,14,15226163,224597

@@ -1,2 +1,2 @@
-n_log_users,n_log_users_with_features,n_log_videos,n_log_videos_with_features,n_treat_videos,n_treat_videos_with_category,n_tag_comparable,n_l1_in_tag
-1248,1248,5301058,5301058,3324811,3324811,3207709,2393333
+n_log_users,n_log_users_with_features,n_log_videos,n_log_videos_with_features,n_treat_videos,n_treat_videos_with_category,n_treat_videos_with_l1_category
+1248,1248,5301058,5301058,3324811,3324811,3264631
