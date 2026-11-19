@@ -6,6 +6,7 @@ raw/
 !exports/*.csv
 !exports/health/*.csv
 !dbt/seeds/*.csv
+!exports/diagnostics/*.csv
 
 # Credentials and local config
 .env
