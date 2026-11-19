@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: int_sessions
+    description: >
+      One row per feed request (distinct user_id, time_ms) over both logs, all tabs, 2022-04-08 to 05-08
+      (D35). Sessions break at gaps of 30 minutes or more. Session exit (D36) = the session ends within
+      this request or the next 2. Requests in the last 30 minutes of 2022-05-08 (Asia/Shanghai) are
+      flagged as censored and excluded from the session-exit metric (D38).
+    columns:
+      - name: request_key
+        description: Hash of (user_id, time_ms); joins to int_exposures.request_key.
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: time_ms
+        description: Request timestamp.
+        data_tests: [not_null]
+      - name: event_date
+        description: Date of the request.
+      - name: session_number
+        description: Session index within the user, from 1.
+        data_tests: [not_null]
+      - name: request_seq
+        description: Position of the request within its session, from 1.
+        data_tests: [not_null]
+      - name: n_requests_in_session
+        description: Requests in the session.
+      - name: n_requests_after
+        description: Requests remaining in the session after this one.
+        data_tests: [non_negative]
+      - name: is_session_exit_within_3
+        description: The session ends within this request or the next 2 (D36).
+        data_tests: [not_null]
+      - name: is_censored
+        description: Request in the last 30 minutes of the data (D38).
+        data_tests: [not_null]
