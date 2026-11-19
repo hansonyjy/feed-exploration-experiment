@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: int_pool_videos
+    description: >
+      Candidate pool of the random policy: every video in the full random log (expected 7,583). AD-marked
+      pool videos (1.0%, contradicting the paper) are flagged for the D24 sensitivity run.
+    columns:
+      - name: video_id
+        description: Pool video id.
+        data_tests: [unique, not_null]
+      - name: video_type
+        description: NORMAL, AD or null.
+      - name: is_ad
+        description: video_type = 'AD'.
+        data_tests: [not_null]
