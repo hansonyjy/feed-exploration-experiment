@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: int_user_day_flags
+    description: >
+      Exposures per user-day over both logs, all tabs, 2022-04-08 to 05-08 (D42). User-days above the
+      exact p99.9 are flagged; they stay in the main run and are excluded in a sensitivity run (D20).
+      Provisional on dev (threshold from the 5% sample).
+    columns:
+      - name: user_day_key
+        description: Hash of (user_id, event_date).
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: event_date
+        description: Date.
+        data_tests: [not_null]
+      - name: n_exposures
+        description: Exposures that day, all logs and tabs.
+      - name: p999_threshold
+        description: Exact p99.9 of exposures per user-day.
+      - name: is_top_user_day
+        description: n_exposures above the p99.9 threshold.
+        data_tests: [not_null]
