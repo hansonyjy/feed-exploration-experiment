@@ -2,6 +2,30 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-18 · D50 · Phase 1 implementation choices (approved before any outcome was seen)
+- Decided 2026-11-18 when planning Phase 1, before any outcome query ran. These fill in details the
+  plan leaves open; they do not change it.
+- Exact quantiles: decile edges (D26) and bucket medians (D29) are the smallest value whose cumulative
+  share is at least k/10 (or 50%), computed exactly from value counts, not BigQuery's approximate
+  quantiles. A duration equal to an edge falls in the lower bucket.
+- Freezing: on dev, edges and medians come from the dev sample and are provisional. At the prod build the
+  full-data edges and medians are written to committed dbt seeds, which every target then reads (D25, D27).
+- Regression weighting: weighted OLS in which each user's observations sum to 1, matching the
+  equal-user point estimate (D21); the unweighted regression is the population-reweighted robustness check.
+- Session requests: sessions and the "next 2 requests" rule (D36) count requests across all tabs (D35).
+
+## 2026-11-18 · D49 · Deviation: primary item-level regression without the duration-bucket control
+- Deviation from prereg-v1, decided 2026-11-18 before any outcome was seen. prereg-v1 is not moved.
+- Was (analysis_plan.md, Inference): OLS with request fixed effects and controls for hour, duration
+  bucket, day and regime.
+- Now: the primary regression for item-level metrics uses request fixed effects without the
+  duration-bucket control (hour, day and regime are constant within a request and absorbed). The
+  bucket-controlled regression is reported beside it as a diagnostic.
+- Reason: random items are longer than recommended items (HC 2: median 81 s vs 34 s), so controlling for
+  duration bucket changes the estimand from the total cost of an exploration slot to the cost at equal
+  length. The point estimate measures the total slot cost, and the primary metric is already
+  duration-adjusted, so the regression without the control is the like-for-like cross-check.
+
 <!-- D26-D48 were logged together after a sweep of analysis_plan.md for parameters without a stated
      source population, date range or tab. prereg-v1 moved once, to the commit that adds them. -->
 
