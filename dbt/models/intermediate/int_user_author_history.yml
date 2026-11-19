@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: int_user_author_history
+    description: >
+      (user, author) pairs with at least one pre-period exposure on any tab (D32). Authors not listed
+      for a user count as new in the treatment window (D33).
+    columns:
+      - name: user_author_key
+        description: Hash of (user_id, author_id).
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: author_id
+        description: Author id from video_features_basic.
+        data_tests: [not_null]
