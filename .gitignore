@@ -33,3 +33,6 @@ __pycache__/
 .vscode/
 .idea/
 dbt/.user.yml
+
+# Dev-sample results are interim and never reach the memo or dashboard
+analysis/output_dev/
