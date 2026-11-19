@@ -2,6 +2,20 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-18 · D51 · Metric-layer details the plan leaves open (before any outcome was seen)
+- Decided 2026-11-18 while building the metric layer, before any outcome query ran. Implementation
+  details; they do not change the plan.
+- Request contrasts (D18) in the main run need a random item with a valid duration and at least one
+  recommended item in the same request with a valid duration (D23). With the missing-duration rows
+  included (the D23 sensitivity run), non-duration metrics use every item.
+- Session exit (D37) in the main run: requests whose random item lacks a valid duration are excluded;
+  requests without a random item are all kept, since they have no random item to exclude. The D23
+  sensitivity run keeps every request. Censored requests (D38) are always excluded.
+- New-author follow (D33): an impression whose video has no author_id cannot be a new-author follow.
+- Duration-based metrics (effective view, naive completion, new-category effective view) are null for
+  rows without a valid duration; non-duration metrics (watch time, like, comment, forward, profile
+  enter, new-author follow, hate, fast skip) are defined on every row.
+
 ## 2026-11-18 · D50 · Phase 1 implementation choices (approved before any outcome was seen)
 - Decided 2026-11-18 when planning Phase 1, before any outcome query ran. These fill in details the
   plan leaves open; they do not change it.
