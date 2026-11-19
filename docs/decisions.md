@@ -2,6 +2,34 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-19 · D55 · Prod build scope: tests and byte limits (no change to the analysis)
+- Decided 2026-11-19 by the owner when approving the prod build. Operational; it changes no estimate.
+- Tests on prod: key tests (unique, not_null) on every model, plus every test on the marts.
+  Relationship and accepted_values tests on staging and int_ models are not rerun on prod: they passed
+  on dev (5% hashed user sample) on the same SQL.
+- Byte limits: the build runs over two days to stay under the 200 GiB/day project cap. int_exposures
+  may exceed the 50 GB per-operation limit once; no other operation may. If the month's billed total
+  would pass 800 GB, the build stops for the owner's decision. Bytes are tracked with
+  `scripts/bytes_billed.sh`.
+- Frozen references: after the full-data build, the D26 decile edges and D29 bucket medians are
+  exported once to committed seeds, and every target reads them from then on (D25, D27, D50).
+
+## 2026-11-19 · D54 · Exploration budget uses the item-level guardrails only
+- Post-results deviation from prereg-v1 (D48, analysis_plan.md "Exploration budget"): decided
+  2026-11-19 by the owner after the dev Comparison A results and the D52 diagnostics were seen.
+- What was seen: on dev the session-exit contrast was -5.0 pp; the D52 diagnostics on full data showed
+  that insertion depends on session position and that final requests are truncated, so session exit is
+  not identifiable from these logs (D53).
+- Change: the budget is set by the item-level guardrails only. Fast skip constrains it as planned.
+  Hate is inconclusive, so it is reported with its interval alongside the budget rather than read as a
+  point estimate. The session-exit guardrail is dropped from the budget, and the budget states that
+  session-level impact is not identifiable from these logs.
+- Everything else is computed exactly as in D48: baseline, the 2% relative limit, s as the share of
+  tab-1 exposures, interpolation only between 0.658% and 1.388%. If no guardrail binds in the observed
+  range, the budget says so plainly instead of extrapolating.
+- Why: a guardrail that cannot be identified cannot constrain the budget, and claiming a direction for
+  it would be unsupported.
+
 ## 2026-11-18 · D53 · Session exit is not identifiable from these logs
 - Post-results: follows the D52 diagnostics (full data), decided under rules fixed before they ran.
 - Rule 1 fired: the first request of a session carries a random item 23.4% more often than middle

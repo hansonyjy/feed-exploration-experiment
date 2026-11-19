@@ -24,6 +24,7 @@ full-data diagnostics from `analysis/diagnostics/`. Pre-registered plan: `docs/a
   fewer new-category effective views than recommended slots in the same request.
 - **H4 (heterogeneity):** not yet tested (segments come after the prod run).
 
-## Open questions for the owner
-- The D48 session-exit guardrail cannot constrain the exploration budget. Whether the budget proceeds
-  with the item-level guardrails only must be decided and logged before the budget is computed.
+## Exploration budget (D54)
+- Decided 2026-11-19: the budget uses the item-level guardrails only. Fast skip constrains it as
+  planned; hate is reported with its interval because it is inconclusive. Session-level impact is not
+  identifiable from these logs, and the budget says so. Otherwise computed exactly as in D48.
