@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_user_category_history
+    description: >
+      (user, first-level category) pairs with a pre-period effective view on any tab (D34), using the
+      D25/D26/D29 effective-view rule and the supplementary category file (D20). Categories not listed
+      for a user count as new in the treatment window.
+    columns:
+      - name: user_category_key
+        description: Hash of (user_id, category_l1_id).
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: category_l1_id
+        description: First-level category id.
+        data_tests: [not_null]
