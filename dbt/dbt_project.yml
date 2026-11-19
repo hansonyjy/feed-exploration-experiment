@@ -15,6 +15,10 @@ vars:
   pre_end: "2022-04-21"
   treat_start: "2022-04-22"
   treat_end: "2022-05-08"
+  # Analysis window (D22): April 22, a partial first day, is excluded from every comparison.
+  analysis_start: "2022-04-23"
+  # Regimes (D17): low 04-23 to 05-01, transition 05-02, high 05-03 to 05-08.
+  transition_date: "2022-05-02"
 
 models:
   feed_exploration:
@@ -25,5 +29,7 @@ models:
       +materialized: table
     intermediate:
       +schema: staging
+      +materialized: table
     marts:
       +schema: marts
+      +materialized: table
