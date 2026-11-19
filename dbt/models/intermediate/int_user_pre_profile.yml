@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: int_user_pre_profile
+    description: >
+      One row per exposed user with segments built from pre-period data and static features only:
+      activity tercile (D45), merged activity group (D14), merged tenure and follow bands (D46).
+      Terciles on dev are over the 5% sample's users.
+    columns:
+      - name: user_id
+        description: User id.
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+      - name: n_pre_exposures
+        description: Exposures in the pre-period, all tabs.
+        data_tests: [non_negative]
+      - name: activity_tercile
+        description: "'1' (lightest) to '3', or 'no_pre_period'."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['1', '2', '3', 'no_pre_period']
+      - name: active_group
+        description: D14 merged user_active_degree group; 'unknown' is excluded from that dimension's tests.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['full_active', 'high_active', 'middle_active', 'new_or_low', 'unknown']
+      - name: tenure_band
+        description: D46 merged register_days_range band.
+        data_tests: [not_null]
+      - name: follow_band
+        description: D46 merged follow_user_num_range band.
+        data_tests: [not_null]
