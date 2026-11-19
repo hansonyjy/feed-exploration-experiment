@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: int_duration_buckets
+    description: >
+      D26 duration buckets: exact deciles (D50) of filled duration over tab-1 pre-period recommended
+      impressions with a valid duration. Lower edge exclusive, upper edge inclusive; buckets 1 and 10
+      are open-ended. Provisional on dev (5% sample); frozen from full data at the prod build.
+    columns:
+      - name: duration_bucket
+        description: Bucket 1 (shortest) to 10 (longest).
+        data_tests:
+          - unique
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 10
+      - name: lower_exclusive_ms
+        description: Exclusive lower edge in ms; null for bucket 1.
+      - name: upper_inclusive_ms
+        description: Inclusive upper edge in ms; null for bucket 10.
+      - name: n_reference_rows
+        description: Reference impressions the edges were computed from.
