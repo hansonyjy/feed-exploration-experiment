@@ -3,9 +3,10 @@ version: 2
 models:
   - name: int_reference_thresholds
     description: >
-      Frozen effective-view thresholds (D25, D29, D30): per D26 bucket, the exact median (D50)
-      play_time_ms of tab-1 pre-period recommended impressions with a valid duration. An impression is
-      an effective view when play_time_ms >= median_play_time_ms of its bucket. Provisional on dev.
+      Frozen effective-view thresholds (D25, D29, D30, D55), read from the frozen_reference_thresholds
+      seed: per D26 bucket, the exact median (D50) play_time_ms of tab-1 pre-period recommended
+      impressions with a valid duration, from the full-data prod build. An impression is an effective
+      view when play_time_ms >= median_play_time_ms of its bucket.
     columns:
       - name: duration_bucket
         description: D26 bucket.

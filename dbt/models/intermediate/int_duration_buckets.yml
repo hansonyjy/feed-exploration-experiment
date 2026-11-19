@@ -3,9 +3,10 @@ version: 2
 models:
   - name: int_duration_buckets
     description: >
-      D26 duration buckets: exact deciles (D50) of filled duration over tab-1 pre-period recommended
-      impressions with a valid duration. Lower edge exclusive, upper edge inclusive; buckets 1 and 10
-      are open-ended. Provisional on dev (5% sample); frozen from full data at the prod build.
+      Frozen D26 duration buckets (D25, D27, D55), read from the frozen_duration_buckets seed. Exact
+      deciles (D50) of filled duration over tab-1 pre-period recommended impressions with a valid
+      duration, from the full-data prod build. Lower edge exclusive, upper edge inclusive; buckets 1
+      and 10 are open-ended.
     columns:
       - name: duration_bucket
         description: Bucket 1 (shortest) to 10 (longest).
