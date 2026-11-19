@@ -16,6 +16,9 @@ measured exploration slot. Full plan: `docs/design.md`. Locked metrics and param
   fixed-effects regression, SEs clustered by user. Segment results use Benjamini-Hochberg.
 - No effect query (random vs recommended outcomes) runs before the health checks in
   `docs/design.md` pass and `docs/analysis_plan.md` is tagged `prereg-v1`.
+- Deviations from `prereg-v1` are logged in `docs/decisions.md` and never move the tag. Any analysis
+  change made after the dev results are seen is logged as a post-results deviation, with what was
+  seen and why the change is made.
 
 ## Non-goals
 - Do not train or tune any recommendation model. Every analysis must map to the exploration decision.
