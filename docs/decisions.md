@@ -2,6 +2,20 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-18 · D53 · Session exit is not identifiable from these logs
+- Post-results: follows the D52 diagnostics (full data), decided under rules fixed before they ran.
+- Rule 1 fired: the first request of a session carries a random item 23.4% more often than middle
+  requests (6.25% vs 5.07%), so insertion depends on session position.
+- Rule 2 fired: a session's final request logs 3.07 tab-1 items vs 5.64 for other requests (-45.6%),
+  and among non-final requests the insertion rate rises with items shown (5.91% at the modal 6 items vs
+  3.26% in smaller requests, +81.0%). The shortfall sits in the final request only (3.87%; the second-
+  and third-last requests are 6.75% and 6.87%), as expected if users leave mid-batch before a
+  late-placed random item is logged.
+- Consequence: the session-exit contrast is reported as not identifiable, with no direction claimed.
+  H2 cannot be tested through session exit with these logs. The primary analysis and the other metrics
+  are unchanged. The D48 session-exit guardrail cannot constrain the budget; how the budget handles
+  that is an open question for the owner, not decided here.
+
 ## 2026-11-18 · D52 · Post-results exploratory diagnostics on session exit (primary analysis unchanged)
 - Post-results: decided 2026-11-18 after the dev Comparison A results were seen. Exploratory; it does
   not change the primary analysis or any pre-registered estimate.
