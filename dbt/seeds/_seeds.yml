@@ -39,8 +39,8 @@ seeds:
     config:
       column_types:
         duration_bucket: int64
-        lower_exclusive_ms: int64
-        upper_inclusive_ms: int64
+        lower_exclusive_ms: float64
+        upper_inclusive_ms: float64
         n_reference_rows: int64
     columns:
       - name: duration_bucket
