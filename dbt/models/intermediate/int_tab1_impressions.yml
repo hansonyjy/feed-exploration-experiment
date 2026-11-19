@@ -1,0 +1,80 @@
+version: 2
+
+models:
+  - name: int_tab1_impressions
+    description: >
+      The analysis population: tab-1 exposures from 2022-04-23 to 05-08 (D15, D22), both arms, with
+      request grouping (D18), regime (D17), D26 duration bucket, first-level category (D20) and pool
+      flags (D24). Partitioned by event_date, clustered by request_key, user_id.
+    columns:
+      - name: exposure_key
+        description: Row key from int_exposures.
+        data_tests: [unique, not_null]
+      - name: request_key
+        description: Feed request (user_id, time_ms).
+        data_tests: [not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: video_id
+        description: Video id.
+        data_tests: [not_null]
+      - name: author_id
+        description: Author id.
+      - name: event_date
+        description: Exposure date, 2022-04-23 to 05-08.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: "'2022-04-23'"
+                max_value: "'2022-05-08'"
+      - name: regime
+        description: low (04-23 to 05-01), transition (05-02) or high (05-03 to 05-08).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['low', 'transition', 'high']
+      - name: event_hour
+        description: Hour from hourmin (D41).
+      - name: time_ms
+        description: Request timestamp.
+      - name: is_rand
+        description: 1 = random item, 0 = recommended item.
+        data_tests: [not_null, binary]
+      - name: request_n_items
+        description: Tab-1 items in the request.
+      - name: request_has_random
+        description: The request contains a random item.
+        data_tests: [not_null]
+      - name: is_click
+        description: Click or valid play.
+      - name: is_like
+        description: Liked.
+      - name: is_follow
+        description: Followed the author.
+      - name: is_comment
+        description: Commented.
+      - name: is_forward
+        description: Forwarded.
+      - name: is_hate
+        description: Disliked.
+      - name: is_profile_enter
+        description: Opened the author's profile.
+      - name: play_time_ms
+        description: Watch time in ms.
+      - name: duration_filled_ms
+        description: Duration after the D19 fill.
+      - name: has_valid_duration
+        description: In the main run (D23).
+        data_tests: [not_null]
+      - name: duration_bucket
+        description: D26 bucket; null without a valid duration.
+      - name: category_l1_id
+        description: First-level category from the supplementary file; null when missing.
+      - name: is_pool_video
+        description: Video is in the random policy's pool.
+        data_tests: [not_null]
+      - name: is_ad_pool_video
+        description: Pool video marked AD (D24).
+        data_tests: [not_null]
