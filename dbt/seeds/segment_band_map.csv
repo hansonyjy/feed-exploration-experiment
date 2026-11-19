@@ -1,0 +1,17 @@
+dimension,band,band_order,n_users,merged_band
+register_days_range,8-14,1,1,8-14 to 91-180
+register_days_range,15-30,2,145,8-14 to 91-180
+register_days_range,31-60,3,381,8-14 to 91-180
+register_days_range,61-90,4,394,8-14 to 91-180
+register_days_range,91-180,5,1048,8-14 to 91-180
+register_days_range,181-365,6,1778,181-365
+register_days_range,366-730,7,3475,366-730
+register_days_range,730+,8,20063,730+
+follow_user_num_range,0,1,188,"0 to (0,10]"
+follow_user_num_range,"(0,10]",2,1739,"0 to (0,10]"
+follow_user_num_range,"(10,50]",3,4904,"(10,50]"
+follow_user_num_range,"(50,100]",4,4004,"(50,100]"
+follow_user_num_range,"(100,150]",5,2633,"(100,150]"
+follow_user_num_range,"(150,250]",6,3490,"(150,250]"
+follow_user_num_range,"(250,500]",7,4377,"(250,500]"
+follow_user_num_range,500+,8,5950,500+

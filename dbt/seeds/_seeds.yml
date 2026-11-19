@@ -1,0 +1,33 @@
+version: 2
+
+seeds:
+  - name: segment_band_map
+    description: >
+      D46 merge of tenure (register_days_range) and follow-count (follow_user_num_range) bands, written
+      by scripts/make_segment_bands.py from user counts in raw.user_features: groups under 1,000 users
+      merge with their smaller adjacent neighbour until every group has at least 1,000.
+    config:
+      column_types:
+        dimension: string
+        band: string
+        band_order: int64
+        n_users: int64
+        merged_band: string
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['dimension', 'band']
+    columns:
+      - name: dimension
+        description: register_days_range or follow_user_num_range.
+        data_tests: [not_null]
+      - name: band
+        description: Band as provided in user_features.
+        data_tests: [not_null]
+      - name: band_order
+        description: Order of the band by its lower bound.
+      - name: n_users
+        description: Users in the band.
+      - name: merged_band
+        description: Segment label after the D46 merge.
+        data_tests: [not_null]
