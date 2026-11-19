@@ -2,6 +2,28 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-18 · D52 · Post-results exploratory diagnostics on session exit (primary analysis unchanged)
+- Post-results: decided 2026-11-18 after the dev Comparison A results were seen. Exploratory; it does
+  not change the primary analysis or any pre-registered estimate.
+- What was seen: on dev, requests with a random item were 5.0 pp (17%) less likely to be within the last
+  three requests of their session, the opposite of H2.
+- Why: the contrast may reflect how the logs were recorded rather than an effect of the random item.
+- Diagnostics (counts only, full raw data, tab-1 requests 2022-04-23 to 05-08 excluding censored ones,
+  sessions cut across all tabs as in D35):
+  1. Insertion rate by session position: first request, middle requests, and each of the last three.
+     Positions from the end are the session-exit outcome restated, so only the first-request rate tests
+     position-dependent insertion; the item cannot change whether its request opens a session.
+  2. Display truncation: tab-1 items per request for requests with and without a random item, for a
+     session's final request vs other requests, and the insertion rate by items per request.
+- Decision rules, fixed before running (relative differences; full-data samples make noise negligible):
+  - Position explains the gap if the first-request insertion rate differs from the middle-request rate
+    by more than 5%.
+  - Truncation explains the gap if both hold: final requests show at least 5% fewer tab-1 items than
+    other requests, and among non-final requests the insertion rate in requests with the modal item
+    count is at least 5% higher than in smaller requests.
+  - If either rule fires, session exit is reported as not identifiable from these logs, with no
+    direction claimed, and H2 cannot be tested with this data.
+
 ## 2026-11-18 · D51 · Metric-layer details the plan leaves open (before any outcome was seen)
 - Decided 2026-11-18 while building the metric layer, before any outcome query ran. Implementation
   details; they do not change the plan.
