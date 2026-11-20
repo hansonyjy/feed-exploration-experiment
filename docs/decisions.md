@@ -2,6 +2,30 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-20 · D58 · How the minimum-detectable-effect merge (D39, D40) is computed
+- Decided 2026-11-20 while building Phase 2, before any segment outcome was read. Implementation of the
+  pre-registered rule; it changes no locked input.
+- Variance and within-user correlation come from tab-1 pre-period recommended impressions only, through
+  a placebo within-request difference that mirrors Comparison A: in each pre-period request with at
+  least two recommended items with a valid duration, one item is picked by a fixed hash
+  (`farm_fingerprint` of user, time and video) and d = its effective view minus the mean of the others
+  (`int_segment_power_inputs`). sigma^2 = variance of d; rho = one-way ANOVA intraclass correlation of d
+  by user (unequal group sizes).
+- Design: the segment's equal-user Comparison A estimate. Var = sum over users of
+  sigma^2 x (rho + (1 - rho) / m_u), divided by N^2, where m_u is the user's main-run random requests in
+  the segment (treatment-window counts only) and N the segment's users.
+  MDE = (1.96 + 0.84) x sqrt(Var) (two-sided alpha = 0.05, 80% power). A segment merges if MDE > 1 pp.
+- sigma^2 and rho are computed within each user segment (activity, tenure, active group, follow band).
+  For item segments (duration bucket, category of the random item) the pre-period cannot be split by
+  the random item, so the overall sigma^2 and rho are used, with segment-specific m_u.
+- Merge order (D40): with the smaller adjacent segment in the dimension's natural order (activity:
+  no_pre_period, 1, 2, 3; active group: new_or_low, middle, full, high; tenure and follow: band order;
+  duration: bucket 1-10); categories merge with the smallest segment. Repeat and recompute until every
+  segment passes. `unknown` users are excluded from that dimension's tests (D14) and stay in overall
+  results.
+- The resulting map is computed on full data (D27) and committed as `dbt/seeds/segment_merge_map.csv` on
+  its own before any segment outcome is read (D57). A dev run of the script checks the code only.
+
 ## 2026-11-20 · D57 · Phase 2 choices: budget guardrails, segment tests, Comparison C weighting, budget inputs
 - Decided 2026-11-20 by the owner when approving the Phase 2 plan: after the Comparison A results (dev
   and prod) were seen, and before any Comparison B, Comparison C, segment or budget outcome was read.
