@@ -2,6 +2,19 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-20 · D56 · Hate classified by the pre-registered headline rule on prod
+- Decided 2026-11-20 by the owner after the prod Comparison A results were seen. Not a deviation: it
+  applies the pre-registered rule ("a headline result requires both methods to agree in sign and
+  significance", analysis_plan.md, Inference) in place of the owner's earlier dev-only instruction.
+- What was seen: on dev (5% sample) the bootstrap and regression disagreed for hate in 3 of 6 variants,
+  so it was labelled inconclusive; that label was provisional. On prod they agree in sign and
+  significance in all 6 variants (main: +0.058 pp, 95% CI +0.044 to +0.073 pp; +110% relative to a
+  recommended rate of 0.053%; regression p < 1e-9 in every variant).
+- Consequence: hate is a finding (random slots raise the hate rate), reported with both the absolute
+  and the relative change, and with the note that hate is rare, so the absolute effect is small.
+- Open: D54 kept hate out of the budget's binding constraints because it was inconclusive. That premise
+  no longer holds; whether hate constrains the budget as in D48 is put to the owner with the Phase 2 plan.
+
 ## 2026-11-19 · D55 · Prod build scope: tests and byte limits (no change to the analysis)
 - Decided 2026-11-19 by the owner when approving the prod build. Operational; it changes no estimate.
 - Tests on prod: key tests (unique, not_null) on every model, plus every test on the marts.
