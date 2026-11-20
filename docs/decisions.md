@@ -2,6 +2,37 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-20 · D57 · Phase 2 choices: budget guardrails, segment tests, Comparison C weighting, budget inputs
+- Decided 2026-11-20 by the owner when approving the Phase 2 plan: after the Comparison A results (dev
+  and prod) were seen, and before any Comparison B, Comparison C, segment or budget outcome was read.
+  Item 1 reverses part of D54 and is a post-results deviation from that decision; items 2-4 fill in
+  details analysis_plan.md leaves open.
+1. **Hate constrains the budget as in D48.** D54 kept hate out of the binding constraints because it was
+   inconclusive on dev. On prod it is a finding (D56), so that premise is gone. What was seen: prod A,
+   hate +0.058 pp (+110%). The budget's binding guardrails are hate and fast skip; session exit stays out
+   (D53, D54).
+2. **What Benjamini-Hochberg corrects.** Every segment's effect against zero is expected to be
+   significant, so that test cannot speak to H4. The tested contrast is each segment's Comparison A
+   effect minus the effect in the rest of its dimension, with "rest" defined on the merged segments
+   (after the D14/D46/D47 and minimum-detectable-effect merges). BH at q = 0.10 runs across all segments
+   of all dimensions, separately for each metric. Effects against zero are reported too. Contrasts within
+   a dimension are negatively correlated (each segment is part of the others' "rest"), which BH does not
+   assume away cleanly, so a Benjamini-Yekutieli run (valid under any dependence) is reported as
+   robustness, and the report says so.
+3. **Comparison C within day.** Random items cluster in the high regime, so each user's days are weighted
+   by that user's random items that day. All three terms (rec(all), rec(pool), rand) use the same
+   user-days, which keeps the decomposition exactly additive; user-days with no recommended pool item
+   drop for all three terms, and the share of random items kept is reported. Users are then equally
+   weighted, as in A. C's total gap is reported next to A's estimate; they differ by construction (A
+   compares items in the same request; C compares arm rates over a user's day), and the report explains
+   the difference as a weighting difference, not a contradiction.
+4. **Budget inputs.** rand - rec is the segment's Comparison A estimate (main run), divided by the
+   segment's own recommended-rate baseline (the D48 baseline computed within the segment). The feed-level
+   change s x (rand - rec) / rec uses the bootstrap interval as well as the point estimate, and segments
+   whose interval crosses the 2% limit inside the observed range (0.658% to 1.388%) are flagged.
+- Also fixed now: the segment merge map (`dbt/seeds/segment_merge_map.csv`) is committed on its own
+  before any segment outcome is read.
+
 ## 2026-11-20 · D56 · Hate classified by the pre-registered headline rule on prod
 - Decided 2026-11-20 by the owner after the prod Comparison A results were seen. Not a deviation: it
   applies the pre-registered rule ("a headline result requires both methods to agree in sign and
