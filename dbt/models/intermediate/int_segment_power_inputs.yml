@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: int_segment_power_inputs
+    description: >
+      Minimum-detectable-effect inputs (D39, D58) from tab-1 pre-period recommended impressions only:
+      per user, the effective-view rate and the sums of a placebo within-request difference (one
+      hash-picked item minus the mean of the other items in the same request), which give the variance
+      of the difference and its within-user correlation.
+    columns:
+      - name: user_id
+        description: User id.
+        data_tests: [unique, not_null]
+      - name: n_reference_items
+        description: Tab-1 pre-period recommended items with a valid duration.
+        data_tests: [not_null]
+      - name: n_effective_views
+        description: Of which effective views (frozen D25/D29 thresholds).
+        data_tests: [not_null, non_negative]
+      - name: n_placebo_requests
+        description: Pre-period requests with at least two such items.
+        data_tests: [not_null, non_negative]
+      - name: sum_d
+        description: Sum of the placebo within-request differences.
+      - name: sum_d2
+        description: Sum of their squares.
