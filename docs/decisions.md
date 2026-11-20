@@ -2,6 +2,32 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-20 · D59 · Segment test and budget details left open by D57
+- Decided 2026-11-20 while writing the Phase 2 scripts, before any segment or budget outcome was read.
+- Segment metrics: the five the budget uses, effective view (cost), new-author follow and new-category
+  effective view (benefit), hate and fast skip (guardrails). Main run only, equal user weight.
+- Segment contrast (D57): segment minus the rest of its dimension on merged segments. Bootstrap: users
+  resampled jointly for both sides (2,000 draws, seed 20261115), with a two-sided bootstrap p-value of
+  2 x min(share of draws <= 0, share >= 0), floored at 1/2,000. Regression: request fixed effects with
+  is_rand and is_rand x in_segment, weights giving each user a total of 1 on each side, SEs clustered by
+  user; the interaction is the contrast.
+- Multiple testing: BH (q = 0.10) and BY run per metric across all contrasts of all dimensions, on the
+  regression p-values and on the bootstrap p-values separately. A contrast is a finding only if it passes
+  in both and the two signs agree; otherwise it is a lead (BH) and noted as such. BY is the robustness
+  check for the negative correlation of contrasts within a dimension (D57).
+- Budget baseline (D57 item 4): for user segments (activity, tenure, active group, follow band), the D48
+  baseline computed within the segment (per user-day recommended rate, then the user's mean over days,
+  then the mean over users; rows with a valid duration, as in A's main run). For item segments (the
+  random item's duration bucket or category), the feed is not split by the random item's type, so the
+  overall D48 baseline is used; the numerator (the segment's A estimate) stays segment-specific.
+- Budget intervals: the feed-level change at share s is s x A / baseline, with A's bootstrap interval
+  (the baseline is treated as fixed). A segment is flagged if 2% lies inside [0.658% x lo, 1.388% x hi]
+  for the relative effect interval [lo, hi], i.e. its interval crosses the limit in the observed range.
+  The recommended share is the largest s in [0.658%, 1.388%] that keeps every binding guardrail (hate,
+  fast skip; D57) at or below 2% at the point estimate; if a guardrail binds below 0.658%, the share is
+  reported as "below the observed range", never extrapolated; if none binds, "at least 1.388% (top of the
+  observed range)".
+
 ## 2026-11-20 · D58 · How the minimum-detectable-effect merge (D39, D40) is computed
 - Decided 2026-11-20 while building Phase 2, before any segment outcome was read. Implementation of the
   pre-registered rule; it changes no locked input.
