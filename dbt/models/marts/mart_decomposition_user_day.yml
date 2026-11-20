@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: mart_decomposition_user_day
+    description: >
+      Comparison C (D44, D57) input: tab-1 sums and counts per user, day and item group (rand, rec_pool,
+      rec_nonpool), split by the flags the main and sensitivity runs filter on. 2022-04-23 to 05-08.
+    columns:
+      - name: cell_key
+        description: Row key.
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: event_date
+        description: Date.
+        data_tests: [not_null]
+      - name: regime
+        description: low, transition or high.
+      - name: item_group
+        description: rand (random item), rec_pool (recommended pool video), rec_nonpool (other recommended).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['rand', 'rec_pool', 'rec_nonpool']
+      - name: has_valid_duration
+        description: In the main run (D23).
+      - name: is_ad_pool_video
+        description: AD-marked pool video (D24).
+      - name: is_top_user_day
+        description: Top 0.1% user-day (D20).
+      - name: n_items
+        description: Items in the cell.
+        data_tests: [not_null]
+      - name: sum_effective_view
+        description: Sum of effective_view over rows where it is defined.
+      - name: n_effective_view
+        description: Rows where effective_view is defined.
+      - name: sum_naive_completion
+        description: Sum of naive_completion over rows where it is defined.
+      - name: n_naive_completion
+        description: Rows where naive_completion is defined.
+      - name: sum_watch_time_ms
+        description: Sum of watch_time_ms over rows where it is defined.
+      - name: n_watch_time_ms
+        description: Rows where watch_time_ms is defined.
+      - name: sum_like_
+        description: Sum of like_ over rows where it is defined.
+      - name: n_like_
+        description: Rows where like_ is defined.
+      - name: sum_comment_
+        description: Sum of comment_ over rows where it is defined.
+      - name: n_comment_
+        description: Rows where comment_ is defined.
+      - name: sum_forward_
+        description: Sum of forward_ over rows where it is defined.
+      - name: n_forward_
+        description: Rows where forward_ is defined.
+      - name: sum_profile_enter
+        description: Sum of profile_enter over rows where it is defined.
+      - name: n_profile_enter
+        description: Rows where profile_enter is defined.
+      - name: sum_new_author_follow
+        description: Sum of new_author_follow over rows where it is defined.
+      - name: n_new_author_follow
+        description: Rows where new_author_follow is defined.
+      - name: sum_new_category_effective_view
+        description: Sum of new_category_effective_view over rows where it is defined.
+      - name: n_new_category_effective_view
+        description: Rows where new_category_effective_view is defined.
+      - name: sum_hate
+        description: Sum of hate over rows where it is defined.
+      - name: n_hate
+        description: Rows where hate is defined.
+      - name: sum_fast_skip
+        description: Sum of fast_skip over rows where it is defined.
+      - name: n_fast_skip
+        description: Rows where fast_skip is defined.
