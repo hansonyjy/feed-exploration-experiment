@@ -1,0 +1,86 @@
+version: 2
+
+models:
+  - name: fct_tab1_impression_metrics
+    description: >
+      One row per tab-1 impression, 2022-04-23 to 05-08, both arms, with every pre-registered metric as a
+      0/1 or numeric column and the flags used by the robustness and sensitivity runs. Duration-based
+      metrics are null without a valid duration (D23, D51). session_exit_request is a request-level value
+      repeated on each item and null for censored requests (D38); it is compared between requests, not
+      within one (D37).
+    columns:
+      - name: exposure_key
+        description: Row key.
+        data_tests: [unique, not_null]
+      - name: request_key
+        description: Feed request.
+        data_tests: [not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: video_id
+        description: Video id.
+      - name: event_date
+        description: Date.
+        data_tests: [not_null]
+      - name: regime
+        description: low, transition or high (D17).
+      - name: event_hour
+        description: Hour from hourmin (D41).
+      - name: is_rand
+        description: 1 = random item.
+        data_tests: [not_null, binary]
+      - name: request_n_items
+        description: Tab-1 items in the request.
+      - name: request_has_random
+        description: The request contains a random item.
+      - name: has_valid_duration
+        description: In the main run (D23).
+        data_tests: [not_null]
+      - name: duration_bucket
+        description: D26 bucket.
+      - name: is_pool_video
+        description: Pool video.
+      - name: is_ad_pool_video
+        description: AD-marked pool video (D24 sensitivity run).
+      - name: is_top_user_day
+        description: User-day in the top 0.1% (D20 sensitivity run).
+        data_tests: [not_null]
+      - name: is_censored
+        description: Request in the last 30 minutes of the data (D38).
+      - name: effective_view
+        description: Primary metric. play_time_ms >= the bucket's reference median; null without a valid duration.
+        data_tests: [binary]
+      - name: naive_completion
+        description: play_time_ms >= filled duration (D31).
+        data_tests: [binary]
+      - name: watch_time_ms
+        description: Naive watch time.
+        data_tests: [non_negative]
+      - name: like_
+        description: Like.
+        data_tests: [binary]
+      - name: comment_
+        description: Comment.
+        data_tests: [binary]
+      - name: forward_
+        description: Forward.
+        data_tests: [binary]
+      - name: profile_enter
+        description: Profile enter.
+        data_tests: [binary]
+      - name: new_author_follow
+        description: Follow of an author with no pre-period exposure (D32, D33).
+        data_tests: [not_null, binary]
+      - name: new_category_effective_view
+        description: Effective view in a first-level category with no pre-period effective view (D34).
+        data_tests: [binary]
+      - name: hate
+        description: Dislike.
+        data_tests: [binary]
+      - name: fast_skip
+        description: play_time_ms < 3,000.
+        data_tests: [not_null, binary]
+      - name: session_exit_request
+        description: The request's session ends within it or the next 2 requests (D36); null if censored.
+        data_tests: [binary]

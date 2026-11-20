@@ -2,6 +2,121 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-20 · D56 · Hate classified by the pre-registered headline rule on prod
+- Decided 2026-11-20 by the owner after the prod Comparison A results were seen. Not a deviation: it
+  applies the pre-registered rule ("a headline result requires both methods to agree in sign and
+  significance", analysis_plan.md, Inference) in place of the owner's earlier dev-only instruction.
+- What was seen: on dev (5% sample) the bootstrap and regression disagreed for hate in 3 of 6 variants,
+  so it was labelled inconclusive; that label was provisional. On prod they agree in sign and
+  significance in all 6 variants (main: +0.058 pp, 95% CI +0.044 to +0.073 pp; +110% relative to a
+  recommended rate of 0.053%; regression p < 1e-9 in every variant).
+- Consequence: hate is a finding (random slots raise the hate rate), reported with both the absolute
+  and the relative change, and with the note that hate is rare, so the absolute effect is small.
+- Open: D54 kept hate out of the budget's binding constraints because it was inconclusive. That premise
+  no longer holds; whether hate constrains the budget as in D48 is put to the owner with the Phase 2 plan.
+
+## 2026-11-19 · D55 · Prod build scope: tests and byte limits (no change to the analysis)
+- Decided 2026-11-19 by the owner when approving the prod build. Operational; it changes no estimate.
+- Tests on prod: key tests (unique, not_null) on every model, plus every test on the marts.
+  Relationship and accepted_values tests on staging and int_ models are not rerun on prod: they passed
+  on dev (5% hashed user sample) on the same SQL.
+- Byte limits: the build runs over two days to stay under the 200 GiB/day project cap. int_exposures
+  may exceed the 50 GB per-operation limit once; no other operation may. If the month's billed total
+  would pass 800 GB, the build stops for the owner's decision. Bytes are tracked with
+  `scripts/bytes_billed.sh`.
+- Frozen references: after the full-data build, the D26 decile edges and D29 bucket medians are
+  exported once to committed seeds, and every target reads them from then on (D25, D27, D50).
+
+## 2026-11-19 · D54 · Exploration budget uses the item-level guardrails only
+- Post-results deviation from prereg-v1 (D48, analysis_plan.md "Exploration budget"): decided
+  2026-11-19 by the owner after the dev Comparison A results and the D52 diagnostics were seen.
+- What was seen: on dev the session-exit contrast was -5.0 pp; the D52 diagnostics on full data showed
+  that insertion depends on session position and that final requests are truncated, so session exit is
+  not identifiable from these logs (D53).
+- Change: the budget is set by the item-level guardrails only. Fast skip constrains it as planned.
+  Hate is inconclusive, so it is reported with its interval alongside the budget rather than read as a
+  point estimate. The session-exit guardrail is dropped from the budget, and the budget states that
+  session-level impact is not identifiable from these logs.
+- Everything else is computed exactly as in D48: baseline, the 2% relative limit, s as the share of
+  tab-1 exposures, interpolation only between 0.658% and 1.388%. If no guardrail binds in the observed
+  range, the budget says so plainly instead of extrapolating.
+- Why: a guardrail that cannot be identified cannot constrain the budget, and claiming a direction for
+  it would be unsupported.
+
+## 2026-11-18 · D53 · Session exit is not identifiable from these logs
+- Post-results: follows the D52 diagnostics (full data), decided under rules fixed before they ran.
+- Rule 1 fired: the first request of a session carries a random item 23.4% more often than middle
+  requests (6.25% vs 5.07%), so insertion depends on session position.
+- Rule 2 fired: a session's final request logs 3.07 tab-1 items vs 5.64 for other requests (-45.6%),
+  and among non-final requests the insertion rate rises with items shown (5.91% at the modal 6 items vs
+  3.26% in smaller requests, +81.0%). The shortfall sits in the final request only (3.87%; the second-
+  and third-last requests are 6.75% and 6.87%), as expected if users leave mid-batch before a
+  late-placed random item is logged.
+- Consequence: the session-exit contrast is reported as not identifiable, with no direction claimed.
+  H2 cannot be tested through session exit with these logs. The primary analysis and the other metrics
+  are unchanged. The D48 session-exit guardrail cannot constrain the budget; how the budget handles
+  that is an open question for the owner, not decided here.
+
+## 2026-11-18 · D52 · Post-results exploratory diagnostics on session exit (primary analysis unchanged)
+- Post-results: decided 2026-11-18 after the dev Comparison A results were seen. Exploratory; it does
+  not change the primary analysis or any pre-registered estimate.
+- What was seen: on dev, requests with a random item were 5.0 pp (17%) less likely to be within the last
+  three requests of their session, the opposite of H2.
+- Why: the contrast may reflect how the logs were recorded rather than an effect of the random item.
+- Diagnostics (counts only, full raw data, tab-1 requests 2022-04-23 to 05-08 excluding censored ones,
+  sessions cut across all tabs as in D35):
+  1. Insertion rate by session position: first request, middle requests, and each of the last three.
+     Positions from the end are the session-exit outcome restated, so only the first-request rate tests
+     position-dependent insertion; the item cannot change whether its request opens a session.
+  2. Display truncation: tab-1 items per request for requests with and without a random item, for a
+     session's final request vs other requests, and the insertion rate by items per request.
+- Decision rules, fixed before running (relative differences; full-data samples make noise negligible):
+  - Position explains the gap if the first-request insertion rate differs from the middle-request rate
+    by more than 5%.
+  - Truncation explains the gap if both hold: final requests show at least 5% fewer tab-1 items than
+    other requests, and among non-final requests the insertion rate in requests with the modal item
+    count is at least 5% higher than in smaller requests.
+  - If either rule fires, session exit is reported as not identifiable from these logs, with no
+    direction claimed, and H2 cannot be tested with this data.
+
+## 2026-11-18 · D51 · Metric-layer details the plan leaves open (before any outcome was seen)
+- Decided 2026-11-18 while building the metric layer, before any outcome query ran. Implementation
+  details; they do not change the plan.
+- Request contrasts (D18) in the main run need a random item with a valid duration and at least one
+  recommended item in the same request with a valid duration (D23). With the missing-duration rows
+  included (the D23 sensitivity run), non-duration metrics use every item.
+- Session exit (D37) in the main run: requests whose random item lacks a valid duration are excluded;
+  requests without a random item are all kept, since they have no random item to exclude. The D23
+  sensitivity run keeps every request. Censored requests (D38) are always excluded.
+- New-author follow (D33): an impression whose video has no author_id cannot be a new-author follow.
+- Duration-based metrics (effective view, naive completion, new-category effective view) are null for
+  rows without a valid duration; non-duration metrics (watch time, like, comment, forward, profile
+  enter, new-author follow, hate, fast skip) are defined on every row.
+
+## 2026-11-18 · D50 · Phase 1 implementation choices (approved before any outcome was seen)
+- Decided 2026-11-18 when planning Phase 1, before any outcome query ran. These fill in details the
+  plan leaves open; they do not change it.
+- Exact quantiles: decile edges (D26) and bucket medians (D29) are the smallest value whose cumulative
+  share is at least k/10 (or 50%), computed exactly from value counts, not BigQuery's approximate
+  quantiles. A duration equal to an edge falls in the lower bucket.
+- Freezing: on dev, edges and medians come from the dev sample and are provisional. At the prod build the
+  full-data edges and medians are written to committed dbt seeds, which every target then reads (D25, D27).
+- Regression weighting: weighted OLS in which each user's observations sum to 1, matching the
+  equal-user point estimate (D21); the unweighted regression is the population-reweighted robustness check.
+- Session requests: sessions and the "next 2 requests" rule (D36) count requests across all tabs (D35).
+
+## 2026-11-18 · D49 · Deviation: primary item-level regression without the duration-bucket control
+- Deviation from prereg-v1, decided 2026-11-18 before any outcome was seen. prereg-v1 is not moved.
+- Was (analysis_plan.md, Inference): OLS with request fixed effects and controls for hour, duration
+  bucket, day and regime.
+- Now: the primary regression for item-level metrics uses request fixed effects without the
+  duration-bucket control (hour, day and regime are constant within a request and absorbed). The
+  bucket-controlled regression is reported beside it as a diagnostic.
+- Reason: random items are longer than recommended items (HC 2: median 81 s vs 34 s), so controlling for
+  duration bucket changes the estimand from the total cost of an exploration slot to the cost at equal
+  length. The point estimate measures the total slot cost, and the primary metric is already
+  duration-adjusted, so the regression without the control is the like-for-like cross-check.
+
 <!-- D26-D48 were logged together after a sweep of analysis_plan.md for parameters without a stated
      source population, date range or tab. prereg-v1 moved once, to the commit that adds them. -->
 

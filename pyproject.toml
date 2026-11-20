@@ -11,6 +11,12 @@ dependencies = [
     "duckdb==2.0.0",                  # local CSV -> Parquet conversion before loading
     "google-cloud-bigquery==3.47.0",
     "google-cloud-storage==3.17.1",
+    # Phase 1 analysis (Comparison A): data frames, bootstrap, fixed-effects regression
+    "db-dtypes==1.9.0",
+    "numpy==2.5.5",
+    "pandas==3.1.1",
+    "pyarrow==26.0.1",
+    "pyfixest==0.70.0",
 ]
 
 [tool.uv]

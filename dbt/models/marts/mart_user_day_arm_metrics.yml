@@ -1,0 +1,75 @@
+version: 2
+
+models:
+  - name: mart_user_day_arm_metrics
+    description: >
+      Metric sums and counts per user-day, arm and filter flags (valid duration, AD pool video, top
+      user-day), for the within-user robustness check (D18) and the sensitivity runs (D20, D23, D24).
+    columns:
+      - name: cell_key
+        description: Hash of the grouping columns.
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: event_date
+        description: Date.
+        data_tests: [not_null]
+      - name: regime
+        description: low, transition or high.
+      - name: is_rand
+        description: Arm.
+        data_tests: [not_null, binary]
+      - name: has_valid_duration
+        description: Valid duration.
+      - name: is_ad_pool_video
+        description: AD-marked pool video.
+      - name: is_top_user_day
+        description: Top 0.1% user-day.
+      - name: n_items
+        description: Items in the cell.
+        data_tests: [not_null]
+      - name: sum_effective_view
+        description: Sum of effective_view.
+      - name: n_effective_view
+        description: Rows where effective_view is defined.
+      - name: sum_naive_completion
+        description: Sum of naive_completion.
+      - name: n_naive_completion
+        description: Rows where naive_completion is defined.
+      - name: sum_watch_time_ms
+        description: Sum of watch_time_ms.
+      - name: n_watch_time_ms
+        description: Rows where watch_time_ms is defined.
+      - name: sum_like_
+        description: Sum of like_.
+      - name: n_like_
+        description: Rows where like_ is defined.
+      - name: sum_comment_
+        description: Sum of comment_.
+      - name: n_comment_
+        description: Rows where comment_ is defined.
+      - name: sum_forward_
+        description: Sum of forward_.
+      - name: n_forward_
+        description: Rows where forward_ is defined.
+      - name: sum_profile_enter
+        description: Sum of profile_enter.
+      - name: n_profile_enter
+        description: Rows where profile_enter is defined.
+      - name: sum_new_author_follow
+        description: Sum of new_author_follow.
+      - name: n_new_author_follow
+        description: Rows where new_author_follow is defined.
+      - name: sum_new_category_effective_view
+        description: Sum of new_category_effective_view.
+      - name: n_new_category_effective_view
+        description: Rows where new_category_effective_view is defined.
+      - name: sum_hate
+        description: Sum of hate.
+      - name: n_hate
+        description: Rows where hate is defined.
+      - name: sum_fast_skip
+        description: Sum of fast_skip.
+      - name: n_fast_skip
+        description: Rows where fast_skip is defined.

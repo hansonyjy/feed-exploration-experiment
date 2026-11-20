@@ -1,0 +1,72 @@
+version: 2
+
+models:
+  - name: int_exposures
+    description: >
+      Every exposure from both logs, all tabs, 2022-04-08 to 05-08, one row per distinct staging row.
+      Adds request_key (user_id, time_ms), the video's author, and the filled duration (D19, D23):
+      log duration_ms if positive, else video_features_basic duration if positive, else null.
+      Partitioned by event_date, clustered by user_id, video_id.
+    columns:
+      - name: exposure_key
+        description: Hash of every source column plus the source table; unique per exposure row.
+        data_tests: [unique, not_null]
+      - name: request_key
+        description: Hash of (user_id, time_ms), the feed request (D18, D36). Shared by all items of a request.
+        data_tests: [not_null]
+      - name: source_table
+        description: log_standard_pre, log_standard_treat or log_random_treat.
+        data_tests: [not_null]
+      - name: period
+        description: "'pre' or 'treatment'."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['pre', 'treatment']
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: video_id
+        description: Video id.
+        data_tests: [not_null]
+      - name: author_id
+        description: Uploader of the video (video_features_basic).
+      - name: event_date
+        description: Exposure date. Partition column.
+        data_tests: [not_null]
+      - name: event_hour
+        description: Hour from hourmin as provided (D41).
+      - name: time_ms
+        description: Exposure timestamp, epoch milliseconds.
+        data_tests: [not_null]
+      - name: tab
+        description: App surface, 0 to 14.
+      - name: is_rand
+        description: 1 for random-intervention exposures.
+        data_tests: [binary]
+      - name: is_click
+        description: Click or valid play.
+      - name: is_like
+        description: Liked.
+      - name: is_follow
+        description: Followed the author.
+      - name: is_comment
+        description: Commented.
+      - name: is_forward
+        description: Forwarded.
+      - name: is_hate
+        description: Marked as disliked.
+      - name: is_long_view
+        description: Source long_view.
+      - name: is_profile_enter
+        description: Opened the author's profile.
+      - name: play_time_ms
+        description: Watch time in milliseconds.
+      - name: duration_ms
+        description: Duration as logged.
+      - name: duration_filled_ms
+        description: Duration after the D19 fill; null when neither source is positive.
+        data_tests: [non_negative]
+      - name: has_valid_duration
+        description: duration_filled_ms is not null. Rows without it are excluded from every metric in the main run (D23).
+        data_tests: [not_null]

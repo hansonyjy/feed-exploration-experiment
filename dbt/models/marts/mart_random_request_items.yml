@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: mart_random_request_items
+    description: >
+      Items of every tab-1 request (2022-04-23 to 05-08) that contains a random item. Input to the primary
+      within-request Comparison A (D18), the equal-user aggregation (D21) and the request fixed-effects
+      regressions (D49). Metric columns as in fct_tab1_impression_metrics.
+    columns:
+      - name: exposure_key
+        description: Row key.
+        data_tests: [unique, not_null]
+      - name: request_key
+        description: Feed request.
+        data_tests: [not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: event_date
+        description: Date.
+      - name: regime
+        description: low, transition or high.
+      - name: is_rand
+        description: 1 = random item.
+        data_tests: [not_null, binary]
+      - name: has_valid_duration
+        description: In the main run (D23).
+      - name: duration_bucket
+        description: D26 bucket (diagnostic regression control only, D49).
+      - name: is_ad_pool_video
+        description: AD-marked pool video (D24).
+      - name: is_top_user_day
+        description: Top 0.1% user-day (D20).
+      - name: effective_view
+        description: See fct_tab1_impression_metrics.
+      - name: naive_completion
+        description: See fct_tab1_impression_metrics.
+      - name: watch_time_ms
+        description: See fct_tab1_impression_metrics.
+      - name: like_
+        description: See fct_tab1_impression_metrics.
+      - name: comment_
+        description: See fct_tab1_impression_metrics.
+      - name: forward_
+        description: See fct_tab1_impression_metrics.
+      - name: profile_enter
+        description: See fct_tab1_impression_metrics.
+      - name: new_author_follow
+        description: See fct_tab1_impression_metrics.
+      - name: new_category_effective_view
+        description: See fct_tab1_impression_metrics.
+      - name: hate
+        description: See fct_tab1_impression_metrics.
+      - name: fast_skip
+        description: See fct_tab1_impression_metrics.

@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: mart_session_exit_user_day
+    description: >
+      Session exit for Comparison A (D37): counts of uncensored tab-1 requests and session exits per
+      user-day, by whether the request has a random item, and by the flags used by the main run and the
+      sensitivity runs (D51).
+    columns:
+      - name: cell_key
+        description: Hash of the grouping columns.
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: event_date
+        description: Date.
+        data_tests: [not_null]
+      - name: regime
+        description: low, transition or high.
+      - name: has_random
+        description: The request contains a random item.
+        data_tests: [not_null]
+      - name: random_item_valid
+        description: The request's random item has a valid duration (false when there is none).
+      - name: random_item_ad
+        description: The request's random item is an AD-marked pool video.
+      - name: is_top_user_day
+        description: Top 0.1% user-day.
+      - name: n_requests
+        description: Uncensored requests.
+        data_tests: [not_null]
+      - name: n_session_exit
+        description: Requests whose session ends within 3 requests (D36).
