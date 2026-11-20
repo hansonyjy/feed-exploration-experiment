@@ -27,6 +27,14 @@ Each entry: date, decision, alternatives considered, reason. Newest first.
   fast skip; D57) at or below 2% at the point estimate; if a guardrail binds below 0.658%, the share is
   reported as "below the observed range", never extrapolated; if none binds, "at least 1.388% (top of the
   observed range)".
+- Addendum (owner, 2026-11-20, before any prod Comparison C outcome was read; the dev C run was a code
+  check whose estimates were not inspected): because the same-day rule keeps only part of the random
+  items (43% on dev), C also reports Comparison A restricted to C's sample (the kept user-days; main
+  run, equal user weight, bootstrap and request fixed-effects regression as in A), and compares the
+  sample's users with all users who received a random item: activity-tercile shares and random items
+  per user (mean and median). The C vs A note then separates a sample difference (A on all requests vs
+  A on C's sample) from the weighting difference (A on C's sample vs C's total gap). The owner also
+  confirmed the overall D48 baseline for item segments.
 
 ## 2026-11-20 · D58 · How the minimum-detectable-effect merge (D39, D40) is computed
 - Decided 2026-11-20 while building Phase 2, before any segment outcome was read. Implementation of the
