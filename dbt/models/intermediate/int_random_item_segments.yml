@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: int_random_item_segments
+    description: >
+      One row per tab-1 request with a random item (2022-04-23 to 05-08): the random item's D26 duration
+      bucket and first-level category segment (D47). Categories under 1,000 random exposures in the
+      window, and videos without a category, form `other`. Before the minimum-detectable-effect merge.
+    columns:
+      - name: request_key
+        description: Feed request (holds exactly one random item).
+        data_tests: [unique, not_null]
+      - name: user_id
+        description: User id.
+        data_tests: [not_null]
+      - name: video_id
+        description: The random item.
+        data_tests: [not_null]
+      - name: duration_bucket
+        description: D26 bucket of the random item; null without a valid duration.
+      - name: category_l1_id
+        description: First-level category id; null if the video has none.
+      - name: category_l1_name
+        description: First-level category name.
+      - name: n_category_random_exposures
+        description: Random tab-1 exposures in the window in this category.
+      - name: category_segment
+        description: category_l1_id as text, or `other`.
+        data_tests: [not_null]
