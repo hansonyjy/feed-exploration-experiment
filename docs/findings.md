@@ -89,7 +89,7 @@ the three terms use the same user-days and add up exactly. 22,335 users, 72,287 
 - **Targeting, not content, drives the cost of a random slot.** For the primary metric 94% of the gap is
   targeting; the pool's content is only 2.1 pp below typical recommended content. Pool videos earn
   more watch time than typical recommended videos when recommended (content gap −4.7 s), while their
-  completion is lower, consistent with pool videos being longer. The content share is largest for
+  completion is lower, which would fit pool videos being longer on average (not checked here). The content share is largest for
   new-author follows (39%).
 - Every total and targeting term agrees across both methods in every variant. Content gaps for comment,
   forward and hate are not significant, so they are not findings.
@@ -108,9 +108,11 @@ the three terms use the same user-days and add up exactly. 22,335 users, 72,287 
   −34.8 pp (sample difference −0.14 pp); C's total gap −35.7 pp (weighting difference −0.91 pp). For
   the primary metric, both differences are small; most of the gap between A and C comes from weighting
   (same-request vs same-day comparison), not from who is in C's sample.
-- For other metrics the sample difference is the larger part (for example naive completion +0.85 pp,
-  new-category effective view −0.21 pp, new-author follow +0.045 pp), so C's decomposition describes the
-  more active users with recommended pool items on the same day, not all users.
+- For most secondary and discovery metrics the sample difference is as large as or larger than the
+  weighting difference (for example naive completion +0.85 vs −0.74 pp, new-category effective view
+  −0.21 vs −0.001 pp, new-author follow +0.045 vs +0.004 pp; for fast skip the weighting difference is
+  larger, +0.74 vs +0.55 pp), so C's decomposition describes the more active users with recommended
+  pool items on the same day, not all users.
 
 ## Hypotheses
 - **H1 (cost): supported.** Random slots cost on every identifiable engagement metric, and raise both
