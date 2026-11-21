@@ -126,8 +126,9 @@ then B's equal-video estimator on C's sample (pool exposures on C's kept user-da
 - For hate, the sample part dominates: on C's sample, B's own estimator finds a significant increase
   (+0.063 pp; both methods agree), in line with A and C. This supports reading B's full-sample hate
   result as underpowered rather than as no effect.
-- For like, comment and forward each part is under a fifth of B's gap, and for new-author follow both
-  are near zero. New-category effective view moves with weighting like the watch-based metrics (−0.08
+- For like and comment each part is under a fifth of B's gap, and for new-author follow both are near
+  zero. Forward, a rare outcome, moves with both (+0.012 pp sample, −0.033 pp weighting, on a −0.054 pp
+  B gap). New-category effective view moves with weighting like the watch-based metrics (−0.08
   pp sample, −0.18 pp weighting, on a −0.42 pp B gap).
 
 ### C's sample and the C vs A difference (D59 addendum)
