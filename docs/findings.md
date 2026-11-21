@@ -1,8 +1,8 @@
 # Findings (working record)
 
-Status: **prod (full data). Comparisons A, B and C complete;** segments and the exploration budget are
-next. A comes from `exports/comparison_a_prod.csv` (2026-11-20), B from `exports/comparison_b_prod.csv`
-and C from `exports/comparison_c*_prod.csv` (2026-11-21), each written by its script in `analysis/` with
+Status: **prod (full data). Comparisons A, B and C, segments and the exploration budget complete.** A comes from `exports/comparison_a_prod.csv` (2026-11-20), B from `exports/comparison_b_prod.csv`
+C from `exports/comparison_c*_prod.csv` and `exports/bridge_b_c_prod.csv`, segments from
+`exports/segments_prod.csv` and the budget from `exports/exploration_budget_prod.csv` (2026-11-21), each written by its script in `analysis/` with
 `--target prod` and the frozen full-data bucket edges and thresholds (D55). Pre-registered plan: `docs/analysis_plan.md` (`prereg-v1`); deviations and
 post-results decisions: `docs/decisions.md`.
 
@@ -146,6 +146,69 @@ then B's equal-video estimator on C's sample (pool exposures on C's kept user-da
   larger, +0.74 vs +0.55 pp), so C's decomposition describes the more active users with recommended
   pool items on the same day, not all users.
 
+## Segments on prod (2026-11-21)
+Comparison A (main run, equal user weight) by merged segment (map 9929e2c; D39, D40, D58), five metrics.
+Each segment's contrast is its effect minus the effect in the rest of its dimension; BH (q = 0.10) and
+BY run per metric across all 44 contrasts, on regression and bootstrap p-values separately (D57, D59).
+Contrasts within a dimension are negatively correlated (each segment is part of the others' rest), so
+BY, valid under any dependence, is reported alongside. Merged category groups are power-based groupings
+(D40) with no topical meaning and are not interpreted below; category names are translations of the
+supplementary file's labels.
+
+- **Every segment pays a large effective-view cost:** from −27.9 pp to −42.2 pp (vs −34.6 pp overall),
+  with both methods agreeing in every segment. With over a million random requests, most contrasts are
+  significant (BH findings out of 44: effective view 38, fast skip 31, new-category effective view 34,
+  new-author follow 16, hate 11; BY confirms most, but only 6 of the 11 for hate), so size matters more
+  than significance.
+- **Content type varies most.** Effective-view cost by the random item's category: gaming −42.2 pp
+  (−77%), anime −39.7 pp, music −38.3 pp, dance −36.5 pp, versus comedy −28.3 pp (−51%), film/TV/variety
+  −30.8 pp, short drama −33.4 pp, food −33.0 pp. By duration: buckets 3-6 (about 10-58 s) cost −27.9 to
+  −31.8 pp, buckets 7-10 (over about 58 s) −36.5 to −38.0 pp. Fast skip follows the same pattern
+  (gaming +41.6 pp, film/TV/variety +21.9 pp).
+- **User segments differ less, and the direction depends on the scale.** In absolute terms the most
+  active pre-period tercile pays the least (−30.9 pp vs −37.0 pp for tercile 1 with no-pre-period users),
+  but its recommended baseline is also much lower (44.6% vs 63.3%), so in relative terms it pays the most
+  (−69% vs −58%). Tenure, follow-count and activity-group contrasts are within ±3 pp absolute.
+- **New-category engagement (H3):** for pre-period terciles 2 and 3 and full-active users, random slots
+  produce as many or slightly more new-category effective views than recommended slots (tercile 2:
+  +0.044 pp, significant in both methods; tercile 3 and full-active: +0.013 and +0.005 pp, not
+  significant), while for low-activity, new and low-follow users they produce far fewer (for example
+  −4.1 pp for new-or-low/middle-active users, −2.7 pp for users following 0-10 accounts). Part of this
+  is mechanical: users with little pre-period history have few categories with an effective view, so
+  more of their recommended items count as new.
+- **New-author follows:** lower for random slots in every segment (−73% to −96%); the absolute loss is
+  largest for users with 500+ follows (−0.43 pp) and new or short-tenure users (−0.41 pp for 8-180 days).
+- **Hate:** the increase is concentrated in a few segments. Dance random items raise hate by +0.25 pp
+  (+382%; BH and BY finding); food, sports and comedy show no detectable increase (contrasts −0.04 to
+  −0.06 pp, findings). Among user segments, full-active users and users with 730+ days of tenure show a
+  smaller hate increase than the rest (contrasts −0.059 and −0.061 pp; BH and BY findings); the larger
+  increases for newer, less active and low-follow users are BH-only findings or leads (for example
+  users with 181-365 days of tenure, +0.149 pp, a lead), so they are not robust under BY.
+
+## Exploration budget on prod (2026-11-21)
+Binding guardrails: hate and fast skip, each limited to a 2% relative worsening of the feed; session
+exit is not identifiable and is left out (D53, D54, D57). Share s interpolated only between 0.658% and
+1.388% of tab-1 exposures; the baseline is the D48 recommended rate (user segments: within segment;
+item segments: overall; D59).
+
+- **Overall: no guardrail binds in the observed range.** At the top of the range (1.388%), hate rises
+  1.60% and fast skip 1.32% at the feed level, both under 2%. The supported share is therefore at least
+  1.388%; the data cannot say how much higher it could go (no extrapolation). At 1.388%, the expected
+  cost is 4.8 fewer effective views, 0.023 fewer new-author follows and 0.077 fewer new-category effective
+  views per 1,000 tab-1 impressions.
+- **Fast skip never binds** in any segment (largest: gaming random items, 1.80% at 1.388%).
+- **Hate binds in seven segments:**
+  - Dance random items: below the observed range (hate rises about 2.3% to 4.3% already at 0.658%); the
+    interval stays above 2%, so this one is robust.
+  - Within the range: users with 181-365 days of tenure (0.80%), short-drama items (1.09%), music
+    (1.12%), anime (1.19%), art (1.31%) and pre-period activity tercile 2 (1.36%). Each of these has a
+    hate interval that crosses 2% in the range, so the binding point is uncertain.
+- **32 of 45 rows are flagged** because a guardrail's interval crosses 2% somewhere in the range; in all
+  of them the guardrail is hate, whose intervals are wide because hate is rare. Fast skip is never
+  flagged.
+- Item-segment rows (category, duration) answer which content to explore with, not which users; the
+  budget does not add exploration beyond the observed range for any segment.
+
 ## Hypotheses
 - **H1 (cost): supported.** Random slots cost on every identifiable engagement metric, and raise both
   identifiable guardrails (hate, fast skip).
@@ -153,7 +216,10 @@ then B's equal-video estimator on C's sample (pool exposures on C's kept user-da
 - **H3 (discovery benefit): not supported.** Per impression, random slots produce fewer new-author
   follows (−85%) and fewer new-category effective views (−31%) than recommended slots in the same
   request.
-- **H4 (heterogeneity):** not yet tested (segments run next, with the committed merge map 9929e2c).
+- **H4 (heterogeneity): supported, mainly by content.** The cost of a random slot varies most with the
+  random item's category and length; user segments differ by a few points, and which users "tolerate"
+  exploration best depends on absolute vs relative terms. New-category engagement from random slots
+  matches recommended slots for active users and falls short for low-activity users (partly mechanical).
 
 ## Exploration budget (D54, D56)
 - The budget uses the item-level guardrails only; session-level impact is not identifiable from these
