@@ -1,0 +1,3 @@
+group,n_users,random_items_per_user_mean,random_items_per_user_median,share_activity_1,share_activity_2,share_activity_3,share_activity_no_pre_period,kept_random_items_per_user_mean,kept_random_items_per_user_median
+all_users_with_random,26998,42.72431291206756,21.0,0.3273946218238388,0.3287650937106452,0.32998740647455366,0.013852877990962293,,
+c_sample_users,22335,46.57036042086411,23.0,0.28668009850011195,0.3383926572643833,0.360555182449071,0.014372061786433849,21.791717036042087,10.0
