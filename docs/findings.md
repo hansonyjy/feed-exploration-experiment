@@ -126,7 +126,9 @@ then B's equal-video estimator on C's sample (pool exposures on C's kept user-da
 - For hate, the sample part dominates: on C's sample, B's own estimator finds a significant increase
   (+0.063 pp; both methods agree), in line with A and C. This supports reading B's full-sample hate
   result as underpowered rather than as no effect.
-- For like, comment, forward and the discovery metrics both parts are small relative to the gaps.
+- For like, comment and forward each part is under a fifth of B's gap, and for new-author follow both
+  are near zero. New-category effective view moves with weighting like the watch-based metrics (−0.08
+  pp sample, −0.18 pp weighting, on a −0.42 pp B gap).
 
 ### C's sample and the C vs A difference (D59 addendum)
 - The same-day rule keeps 43.5% of random items (user-days with at least one recommended pool item).
