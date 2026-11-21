@@ -66,8 +66,11 @@ bootstrap as robustness; video fixed-effects regression, SEs by video.
 - The same video does much worse when shown at random than when recommended: holding content fixed,
   targeting is worth most of the gap. Every metric except hate agrees across both methods, both
   bootstraps and all sensitivity runs.
-- **Hate in B: inconclusive.** Neither method finds a significant difference in any variant
-  (regression p = 0.15 to 0.17); the point estimate is positive but the intervals include zero.
+- **Hate in B: underpowered, not contradictory (D60).** Neither method finds a significant difference
+  in any variant (regression p = 0.15 to 0.17). The 95% interval (−0.012 to +0.060 pp) includes both
+  zero and A's +0.058 pp effect, and B's minimum detectable effect at 80% power is about 0.05 pp, close
+  to A's effect: B has too few recommended pool exposures (203,562) to detect a hate effect of that
+  size. It does not contradict A or C.
 
 ## Comparison C on prod: content vs targeting (2026-11-21)
 Recommended minus random, within day (days weighted by each user's random items), equal user weight;
@@ -89,7 +92,10 @@ the three terms use the same user-days and add up exactly. 22,335 users, 72,287 
 - **Targeting, not content, drives the cost of a random slot.** For the primary metric 94% of the gap is
   targeting; the pool's content is only 2.1 pp below typical recommended content. Pool videos earn
   more watch time than typical recommended videos when recommended (content gap −4.7 s), while their
-  completion is lower, which would fit pool videos being longer on average (not checked here). The content share is largest for
+  completion is lower, because pool videos are longer: HC 2 found a median duration of 81 s for pool
+  videos vs 34 s for standard-exposed videos (distinct videos, standard side from the dev sample;
+  `docs/data_quality.md`, `exports/health/hc02b_pool_attributes.csv`). Longer videos accumulate more
+  watch time per view but are completed less often (D60). The content share is largest for
   new-author follows (39%).
 - Every total and targeting term agrees across both methods in every variant. Content gaps for comment,
   forward and hate are not significant, so they are not findings.
@@ -97,7 +103,8 @@ the three terms use the same user-days and add up exactly. 22,335 users, 72,287 
   exposures (−25.0 pp for effective view); C's targeting gap weights users and their days and
   compares a user's recommended pool items with that user's random items (33.6 pp). For hate the two
   disagree: C's targeting gap is significant (random higher by 0.053 pp) while B finds no significant
-  difference, so hate's targeting component is not settled.
+  difference; B is underpowered for hate (see above), so this is not a contradiction, but hate's
+  targeting component rests on C alone.
 
 ### C's sample and the C vs A difference (D59 addendum)
 - The same-day rule keeps 43.5% of random items (user-days with at least one recommended pool item).
