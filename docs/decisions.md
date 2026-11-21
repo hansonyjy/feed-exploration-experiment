@@ -59,11 +59,17 @@ Each entry: date, decision, alternatives considered, reason. Newest first.
   results.
 - The resulting map is computed on full data (D27) and committed as `dbt/seeds/segment_merge_map.csv` on
   its own before any segment outcome is read (D57). A dev run of the script checks the code only.
-- Addendum (2026-11-21, before any segment outcome was read): the first prod run left `no_pre_period`
-  (374 users) without an MDE, because those users have no pre-period requests to estimate sigma^2 and
-  rho from, so it was never tested for merging. Such segments now use the overall sigma^2 and rho, as
-  item segments do, and the script stops if any MDE cannot be computed. rho estimates below zero are
-  set to 0 (most segments; the placebo differences are nearly uncorrelated within user).
+- Addendum (2026-11-21, before any segment outcome was read): a first map was generated on prod, found
+  to skip `no_pre_period` (374 users had no MDE, because they have no pre-period requests to estimate
+  sigma^2 and rho from, so the segment was never tested for merging), and discarded uncommitted before
+  any segment outcome was read. Such segments now use the overall sigma^2 and rho, as item segments do,
+  and the script stops if any MDE cannot be computed (commit 83a0560). The rerun merged `no_pre_period`
+  into tercile 1 and changed nothing else. rho estimates below zero are set to 0 (most segments; the
+  placebo differences are nearly uncorrelated within user).
+- The map was confirmed by the owner and committed on its own as 9929e2c (44 final segments, every MDE
+  at or below 0.97 pp). Category merges stay as D40 makes them; the segment report interprets only
+  unmerged categories and labels merged category groups as power-based groupings with no topical
+  meaning.
 
 ## 2026-11-20 · D57 · Phase 2 choices: budget guardrails, segment tests, Comparison C weighting, budget inputs
 - Decided 2026-11-20 by the owner when approving the Phase 2 plan: after the Comparison A results (dev
