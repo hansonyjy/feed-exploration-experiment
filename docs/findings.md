@@ -106,6 +106,28 @@ the three terms use the same user-days and add up exactly. 22,335 users, 72,287 
   difference; B is underpowered for hate (see above), so this is not a contradiction, but hate's
   targeting component rests on C alone.
 
+### B vs C's targeting gap (D60 bridge)
+In random-minus-recommended terms, main run (`exports/bridge_b_c_prod.csv`): B on all pool exposures,
+then B's equal-video estimator on C's sample (pool exposures on C's kept user-days; 5,131 videos,
+481,081 items), then C's targeting gap.
+
+| Metric | B, all pool exposures | B on C's sample [95% CI] | C targeting | Sample part | Weighting part |
+| --- | --- | --- | --- | ---: | ---: |
+| Effective view | −25.0 pp | −25.8 pp [−26.6, −25.0] | −33.6 pp | −0.85 pp | −7.8 pp |
+| Naive completion | −8.2 pp | −8.6 pp | −14.0 pp | −0.34 pp | −5.4 pp |
+| Watch time | −14.7 s | −15.0 s | −20.6 s | −0.3 s | −5.5 s |
+| Fast skip | +23.4 pp | +24.7 pp | +30.8 pp | +1.2 pp | +6.1 pp |
+| Hate | +0.027 pp | +0.063 pp [+0.011, +0.100] | +0.053 pp | +0.036 pp | −0.010 pp |
+| New-author follow | −0.079 pp | −0.072 pp | −0.071 pp | +0.007 pp | +0.001 pp |
+
+- For the primary metric and the other watch-based metrics, the B vs C difference is almost all
+  weighting: B weights each pool video equally, C weights users and their days. Who is in C's sample
+  changes B by under 1 pp.
+- For hate, the sample part dominates: on C's sample, B's own estimator finds a significant increase
+  (+0.063 pp; both methods agree), in line with A and C. This supports reading B's full-sample hate
+  result as underpowered rather than as no effect.
+- For like, comment, forward and the discovery metrics both parts are small relative to the gaps.
+
 ### C's sample and the C vs A difference (D59 addendum)
 - The same-day rule keeps 43.5% of random items (user-days with at least one recommended pool item).
   C's sample is 22,335 of 26,998 users with a random item. It leans toward more active users
