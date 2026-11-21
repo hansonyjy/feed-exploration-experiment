@@ -2,6 +2,22 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-21 · D60 · B-C bridge and the reading of B's hate result (reporting only)
+- Post-results: decided 2026-11-21 by the owner after the prod B and C results were seen. Adds a
+  decomposition to the report; no estimate changes.
+- What was seen: B's effective-view gap (equal weight per video, all pool exposures) is -25.0 pp; C's
+  targeting gap (users and their days, C's sample) is 33.6 pp in recommended-minus-random terms.
+- Bridge, mirroring the A-C bridge (D59 addendum), in random-minus-recommended terms for every metric
+  (main run): B on all pool exposures -> B on C's sample (the same equal-video estimator restricted to
+  pool exposures on C's kept user-days) = sample part -> minus C's targeting gap = weighting part
+  (equal video weight vs users weighted by their days). The two parts add up to the full difference.
+- B's hate result is labelled underpowered, not contradictory: its 95% interval (-0.012 to +0.060 pp)
+  includes both zero and A's +0.058 pp, and its minimum detectable effect at 80% power is about
+  0.05 pp (2.8 x the video-bootstrap standard error), close to A's effect.
+- The negative watch-time content gap is explained by pool length, citing HC 2 (data_quality.md;
+  exports/health/hc02b_pool_attributes.csv): median duration 81 s for pool videos vs 34 s for
+  standard-exposed videos (distinct videos; the standard side from the dev sample).
+
 ## 2026-11-20 · D59 · Segment test and budget details left open by D57
 - Decided 2026-11-20 while writing the Phase 2 scripts, before any segment or budget outcome was read.
 - Segment metrics: the five the budget uses, effective view (cost), new-author follow and new-category
