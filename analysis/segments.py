@@ -181,7 +181,11 @@ def analyse(items: pd.DataFrame, req: pd.DataFrame) -> pd.DataFrame:
         for dim in USER_DIMS + ITEM_DIMS:
             rows += segment_rows(diffs, sample, req, metric, dim)
         print(f"  done {metric}")
-    return add_fdr(pd.DataFrame(rows))
+    out = add_fdr(pd.DataFrame(rows))
+    merged_category = (out["dimension"] == "category_segment") & out["segment"].astype(str).str.contains(r"\+")
+    out["interpretable"] = ~merged_category
+    out["segment_note"] = np.where(merged_category, "power-based grouping (D40); no topical meaning", "")
+    return out
 
 
 # ---------------------------------------------------------------------------------------------
