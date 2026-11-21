@@ -106,9 +106,11 @@ def merge_dimension(dim: str, unit: pd.DataFrame, power: pd.DataFrame, order: li
     def stats(members: list[str]) -> dict:
         rows = unit[unit[dim].isin(members)]
         m_u = rows.groupby("user_id").size().to_numpy(float)
-        if dim in USER_DIMS:
-            sigma2, rho = variance_inputs(power[power["user_id"].isin(rows["user_id"].unique())])
+        sub = power[power["user_id"].isin(rows["user_id"].unique()) & (power["n_placebo_requests"] > 0)]
+        if dim in USER_DIMS and sub["user_id"].nunique() > 1:
+            sigma2, rho = variance_inputs(sub)
         else:
+            # Item segments, and user segments without pre-period requests (no_pre_period): overall inputs.
             sigma2, rho = overall
         return dict(n_users=len(m_u), n_random_requests=int(m_u.sum()), sigma2=sigma2, rho=rho,
                     mde=mde(m_u, sigma2, rho))
@@ -116,6 +118,8 @@ def merge_dimension(dim: str, unit: pd.DataFrame, power: pd.DataFrame, order: li
     while True:
         current = {name: stats(members) for name, members in groups.items()}
         failing = [n for n, st in current.items() if st["mde"] > MDE_LIMIT]
+        if any(np.isnan(st["mde"]) for st in current.values()):
+            sys.exit(f"{dim}: an MDE could not be computed")
         if not failing or len(groups) == 1:
             break
         worst = max(failing, key=lambda n: current[n]["mde"])
