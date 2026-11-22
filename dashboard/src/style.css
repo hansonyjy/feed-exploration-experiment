@@ -167,11 +167,12 @@ td.c-ci > *, th.c-ci > * { vertical-align: middle; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .ci-text { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); opacity: 0.8; margin-left: 10px; }
 
-/* Pages still in progress (restyled once page 1's style is approved) */
-.preview .finding { font-size: 16px; max-width: 80ch; margin: 16px 0; }
-.card { border-top: 1px solid var(--rule-strong); padding: 10px 0; max-width: 420px; }
-.card-value { font-family: var(--mono); font-size: 24px; margin: 0; }
-.card-label { margin: 2px 0 0; color: var(--ink-2); font-size: 14px; }
+/* Pages still being built: one finding and one key number */
+.preview { padding: 8px 0 8px; }
+.preview .finding { font-size: 16px; color: var(--ink); max-width: 80ch; margin: 8px 0 20px; }
+.readout { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding: 12px 0; border-top: 1px solid var(--rule-strong); border-bottom: 1px solid var(--rule); max-width: 760px; }
+.readout-value { font-family: var(--mono); font-size: 28px; font-weight: 500; color: var(--ink); }
+.readout-label { color: var(--ink-2); }
 .due { color: var(--ink-3); font-size: 13px; margin-top: 12px; }
 
 /* About drawer */

@@ -1,33 +1,13 @@
 import { num } from "../data";
 import { pp } from "../format";
 import { preview } from "../ui";
+import { decomposition } from "./decomposition";
 import { headline } from "./headline";
 import type { Page } from "./page";
 
 export const PAGES: Page[] = [
   headline,
-  {
-    path: "/content-vs-targeting",
-    nav: "Content vs targeting",
-    title: "Most of the cost of a random slot is targeting, not content",
-    question: "Is a random slot costly because the videos are worse, or because they reach the wrong person?",
-    data: ["decomposition"],
-    notes: [
-      "The gap between a user's recommended videos and that user's random videos splits into two parts. Content: how good the random pool's videos are. Targeting: whether they reach people who want them.",
-    ],
-    render(root, data) {
-      const c = data.tables.comparison_c.filter((r) => r.variant === "main" && r.metric === "effective_view");
-      const term = (t: string) => num(c.find((r) => r.term === t)!, "estimate");
-      const share = Math.round((term("targeting") / term("total")) * 100);
-      root.append(
-        preview(
-          `When the random pool's videos are recommended, they do almost as well as other recommended videos. Of the ${pp(term("total")).replace("+", "")} effective-view gap, ${pp(term("targeting")).replace("+", "")} comes from targeting and only ${pp(term("content")).replace("+", "")} from the videos themselves.`,
-          { value: `${share}%`, label: "of the effective-view gap is targeting" },
-          "by Dec 2",
-        ),
-      );
-    },
-  },
+  decomposition,
   {
     path: "/segments",
     nav: "Segments",

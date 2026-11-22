@@ -63,17 +63,13 @@ export interface KeyNumber {
   label: string;
 }
 
-export function card(k: KeyNumber, extra = ""): HTMLElement {
-  return el("div", { class: `card ${extra}`.trim() }, el("p", { class: "card-value" }, k.value), el("p", { class: "card-label" }, k.label));
-}
-
 // Pages still being built: one finding, one key number, the due date in small text.
 export function preview(finding: string, key: KeyNumber, due: string): HTMLElement {
   return el(
     "section",
     { class: "preview" },
     el("p", { class: "finding" }, finding),
-    card(key),
+    el("div", { class: "readout" }, el("span", { class: "readout-value" }, key.value), el("span", { class: "readout-label" }, key.label)),
     el("p", { class: "due" }, `The full interactive view lands ${due}.`),
   );
 }
