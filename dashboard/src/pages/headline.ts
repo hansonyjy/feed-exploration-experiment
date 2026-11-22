@@ -4,11 +4,14 @@ import { pct, pp, share, sig } from "../format";
 import { el } from "../ui";
 import type { Data, Page } from "./page";
 
+// Every number on this page comes from exports/dashboard/headline.json (scorecard, waterfall,
+// headline_facts are derived in scripts/build_dashboard_data.py); the browser only formats.
+
 interface Metric {
   key: string;
   label: string;
   primary?: boolean;
-  seconds?: boolean; // watch time is in milliseconds in the export, not a rate
+  seconds?: boolean; // watch time is in milliseconds, not a rate
   guardrail?: boolean;
 }
 
@@ -43,12 +46,17 @@ const GROUPS: { name: string; note?: string; metrics: Metric[] }[] = [
 ];
 
 const SVG = "http://www.w3.org/2000/svg";
+// One relative axis for every row, so effect sizes and interval widths compare at a glance.
+const AXIS = { min: -1, max: 1.5, ticks: [-1, -0.5, 0, 0.5, 1, 1.5], width: 290, pad: 18 };
+const ax = (v: number) => AXIS.pad + ((v - AXIS.min) / (AXIS.max - AXIS.min)) * (AXIS.width - 2 * AXIS.pad);
 
-function mainRows(data: Data): Map<string, Row> {
-  const rows = data.tables.comparison_a.filter(
-    (r) => r.analysis === "A_request" && r.variant === "main" && r.weighting === "equal_user",
-  );
-  return new Map(rows.map((r) => [String(r.metric), r]));
+export const TITLES = {
+  answer: "At least 1.388% of the feed can go to exploration with no guardrail crossed",
+  insight: "Exploration is cheap. Untargeted exploration is not.",
+};
+
+function one(data: Data, table: string): Row {
+  return data.tables[table][0];
 }
 
 // Rates with the precision the findings tables use: 54.8%, 2.44%, 0.354%.
@@ -60,39 +68,49 @@ function rate(x: number): string {
 
 function seconds(ms: number, signed = false): string {
   const s = Math.abs(ms / 1000).toFixed(1);
-  if (!signed) return `${s} s`;
-  return `${ms < 0 ? "−" : "+"}${s} s`;
+  return signed ? `${ms < 0 ? "−" : "+"}${s} s` : `${s} s`;
 }
 
 function bare(x: number, digits: number): string {
   return `${x < 0 ? "−" : ""}${Math.abs(x).toFixed(digits)}`;
 }
 
-// Interval on the row's own symmetric scale (zero in the middle), so small metrics stay readable.
-function ciBar(est: number, lo: number, hi: number, bad: boolean): SVGSVGElement {
-  const w = 160;
-  const h = 18;
-  const m = Math.max(Math.abs(lo), Math.abs(hi)) * 1.15 || 1;
-  const x = (v: number) => w / 2 + (v / m) * (w / 2 - 3);
-  const svg = document.createElementNS(SVG, "svg");
-  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-  svg.setAttribute("width", String(w));
-  svg.setAttribute("height", String(h));
-  svg.setAttribute("aria-hidden", "true");
-  svg.classList.add("ci", bad ? "ci-bad" : "ci-neutral");
-  const add = (tag: string, attrs: Record<string, string | number>) => {
-    const n = document.createElementNS(SVG, tag);
-    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v));
-    svg.append(n);
-  };
-  add("line", { x1: 0, x2: w, y1: h / 2, y2: h / 2, class: "ci-axis" });
-  add("line", { x1: w / 2, x2: w / 2, y1: 2, y2: h - 2, class: "ci-zero" });
-  add("rect", { x: x(lo), y: h / 2 - 4, width: Math.max(2, x(hi) - x(lo)), height: 8, class: "ci-range" });
-  add("line", { x1: x(est), x2: x(est), y1: 2, y2: h - 2, class: "ci-est" });
-  return svg;
+function svg(w: number, h: number, cls: string[]): SVGSVGElement {
+  const s = document.createElementNS(SVG, "svg");
+  s.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  s.setAttribute("width", String(w));
+  s.setAttribute("height", String(h));
+  s.setAttribute("aria-hidden", "true");
+  s.classList.add(...cls);
+  return s;
 }
 
-function scorecard(rows: Map<string, Row>): HTMLElement {
+function add(parent: SVGElement, tag: string, attrs: Record<string, string | number>, text?: string): void {
+  const n = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v));
+  if (text) n.textContent = text;
+  parent.append(n);
+}
+
+function axisHeader(): SVGSVGElement {
+  const s = svg(AXIS.width, 18, ["ci-head"]);
+  for (const t of AXIS.ticks) {
+    add(s, "text", { x: ax(t), y: 12, "text-anchor": "middle" }, t === 0 ? "0" : pct(t));
+  }
+  return s;
+}
+
+function ciBar(rel: number, lo: number, hi: number, bad: boolean): SVGSVGElement {
+  const h = 18;
+  const s = svg(AXIS.width, h, ["ci", bad ? "ci-bad" : "ci-neutral"]);
+  for (const t of AXIS.ticks) add(s, "line", { x1: ax(t), x2: ax(t), y1: 0, y2: h, class: t === 0 ? "ci-zero" : "ci-grid" });
+  add(s, "line", { x1: ax(lo), x2: ax(hi), y1: h / 2, y2: h / 2, class: "ci-range" });
+  add(s, "circle", { cx: ax(rel), cy: h / 2, r: 3.5, class: "ci-est" });
+  return s;
+}
+
+function scorecard(data: Data): HTMLElement {
+  const rows = new Map(data.tables.scorecard.map((r) => [String(r.metric), r]));
   const head = el(
     "thead",
     {},
@@ -100,11 +118,11 @@ function scorecard(rows: Map<string, Row>): HTMLElement {
       "tr",
       {},
       el("th", { scope: "col", class: "c-metric" }, "Metric"),
-      el("th", { scope: "col", class: "num" }, "Δ"),
-      el("th", { scope: "col", class: "num" }, "Δ %"),
-      el("th", { scope: "col", class: "c-ci" }, "95% interval of Δ"),
       el("th", { scope: "col", class: "num" }, "Recommended"),
       el("th", { scope: "col", class: "num" }, "Random"),
+      el("th", { scope: "col", class: "num" }, "Δ"),
+      el("th", { scope: "col", class: "num" }, "Δ %"),
+      el("th", { scope: "col", class: "c-ci" }, el("span", { class: "sr-only" }, "95% interval of Δ %"), axisHeader()),
     ),
   );
   const body = el("tbody");
@@ -114,13 +132,10 @@ function scorecard(rows: Map<string, Row>): HTMLElement {
     );
     for (const m of g.metrics) {
       const r = rows.get(m.key)!;
-      const [base, est, lo, hi, rel] = ["baseline_rec", "estimate", "ci_low", "ci_high", "relative"].map((c) => num(r, c));
+      const [rec, rnd, est, lo, hi, rel] = ["recommended_rate", "random_rate", "estimate", "ci_low", "ci_high", "relative"].map((c) => num(r, c));
       const bad = !!m.guardrail && est > 0;
       const d = m.seconds ? 1 : sig(est * 100);
-      const delta = m.seconds ? seconds(est, true) : pp(est, d);
-      const range = m.seconds
-        ? `${bare(lo / 1000, 1)} to ${bare(hi / 1000, 1)}`
-        : `${bare(lo * 100, d)} to ${bare(hi * 100, d)}`;
+      const range = m.seconds ? `${bare(lo / 1000, 1)} to ${bare(hi / 1000, 1)} s` : `${bare(lo * 100, d)} to ${bare(hi * 100, d)} pp`;
       const name = el("th", { scope: "row", class: "c-metric" }, m.label);
       if (m.primary) name.append(el("span", { class: "tag" }, "primary"));
       body.append(
@@ -128,11 +143,11 @@ function scorecard(rows: Map<string, Row>): HTMLElement {
           "tr",
           { class: [m.primary ? "primary" : "", bad ? "bad" : ""].join(" ").trim() },
           name,
-          el("td", { class: "num delta" }, delta),
+          el("td", { class: "num" }, m.seconds ? seconds(rec) : rate(rec)),
+          el("td", { class: "num" }, m.seconds ? seconds(rnd) : rate(rnd)),
+          el("td", { class: "num delta" }, m.seconds ? seconds(est, true) : pp(est, d)),
           el("td", { class: "num delta" }, pct(rel)),
-          el("td", { class: "c-ci" }, ciBar(est, lo, hi, bad), el("span", { class: "ci-text" }, range)),
-          el("td", { class: "num" }, m.seconds ? seconds(base) : rate(base)),
-          el("td", { class: "num" }, m.seconds ? seconds(base + est) : rate(base + est)),
+          el("td", { class: "c-ci" }, ciBar(rel, num(r, "relative_ci_low"), num(r, "relative_ci_high"), bad), el("span", { class: "ci-text" }, range)),
         ),
       );
     }
@@ -144,7 +159,7 @@ function scorecard(rows: Map<string, Row>): HTMLElement {
     el(
       "p",
       { class: "section-note" },
-      "Same feed request, each user weighted equally. Δ is random minus recommended; pp means percentage points (50% to 45% is −5 pp, or −10%). Each interval bar has its own scale with zero in the middle. Red marks a guardrail getting worse.",
+      "Same feed request, each user weighted equally. Δ is random minus recommended; pp means percentage points (50% to 45% is −5 pp, or −10%). The bars share one axis in Δ %: a dot and its 95% interval. Red marks a guardrail getting worse.",
     ),
     el("div", { class: "table-wrap" }, el("table", {}, head, body)),
   );
@@ -158,13 +173,8 @@ interface Step {
   value: string;
 }
 
-function waterfall(data: Data, width: number): Element {
-  const c = data.tables.comparison_c.filter((r) => r.variant === "main" && r.metric === "effective_view");
-  const term = (t: string) => c.find((r) => r.term === t)!;
-  const rec = num(term("total"), "baseline_rec_all");
-  const content = num(term("content"), "estimate");
-  const targeting = num(term("targeting"), "estimate");
-  const random = rec - content - targeting;
+function waterfall(w: Row, width: number): Element {
+  const [rec, content, targeting, random] = ["recommended_rate", "content_gap", "targeting_gap", "random_rate"].map((c) => num(w, c));
   const steps: Step[] = [
     { label: "Recommended", y1: 0, y2: rec, kind: "level", value: rate(rec) },
     { label: "Content gap", y1: rec - content, y2: rec, kind: "content", value: pp(-content) },
@@ -172,7 +182,8 @@ function waterfall(data: Data, width: number): Element {
     { label: "Random", y1: 0, y2: random, kind: "level", value: rate(random) },
   ];
   const narrow = width < 560;
-  const gapShare = Math.round((targeting / (content + targeting)) * 100);
+  const gapShare = `${Math.round(num(w, "targeting_share") * 100)}%`;
+  const mid = (random + rec - content) / 2;
   const fill = (s: Step) => (s.kind === "targeting" ? "var(--accent)" : s.kind === "content" ? "var(--ink-3)" : "var(--ink-2)");
   return Plot.plot({
     width,
@@ -186,7 +197,6 @@ function waterfall(data: Data, width: number): Element {
     y: { domain: [0, 0.6], label: "Effective view rate", tickFormat: (d: number) => `${Math.round(d * 100)}%`, ticks: 6, grid: true },
     marks: [
       Plot.ruleY([0], { stroke: "var(--rule-strong)" }),
-      // Dashed connectors carry each level to the next bar.
       Plot.link(
         [
           { x1: "Recommended", x2: "Content gap", y: rec },
@@ -199,10 +209,10 @@ function waterfall(data: Data, width: number): Element {
       Plot.text(steps, { x: "label", y: "y2", text: "value", dy: -9, fill: "var(--ink)", fontWeight: 500 }),
       ...(narrow
         ? [
-            Plot.text([{ x: "Targeting gap", y: (random + rec - content) / 2 }], {
+            Plot.text([{ x: "Targeting gap", y: mid }], {
               x: "x",
               y: "y",
-              text: () => `${gapShare}%\nof the\ngap`,
+              text: () => `${gapShare}\nof the\ngap`,
               fill: "var(--surface)",
               fontFamily: "var(--sans)",
               fontWeight: 600,
@@ -210,13 +220,13 @@ function waterfall(data: Data, width: number): Element {
             }),
           ]
         : [
-            Plot.text([{ x: "Targeting gap", y: (random + rec - content) / 2 }], {
+            Plot.text([{ x: "Targeting gap", y: mid }], {
               x: "x",
               y: "y",
               dx: 46,
               textAnchor: "start",
               lineWidth: 12,
-              text: () => `${gapShare}% of the gap. The same videos do well when recommended to the right people.`,
+              text: () => `${gapShare} of the gap. The same videos do well when recommended to the right people.`,
               fill: "var(--accent-ink)",
               fontFamily: "var(--sans)",
               fontSize: 12.5,
@@ -239,54 +249,27 @@ function waterfall(data: Data, width: number): Element {
 export const headline: Page = {
   path: "/",
   nav: "Headline result",
-  title: "At least 1.388% of the feed can go to exploration with no guardrail crossed",
+  title: TITLES.answer,
   question: "What does a random slot cost compared with a recommended one, and what should the feed do about it?",
-  data: ["headline", "decomposition", "budget"],
+  data: ["headline"],
   notes: [
     "Effective view: watch time at least as long as the median view of videos of similar length. It is the primary metric because plain completion favors short videos.",
     "Guardrail: a metric that may get worse by at most 2% relative, at the level of the whole feed. The two guardrails are hate (the user presses the dislike button) and fast skip (watched for less than 3 seconds).",
-    "Intervals come from resampling users (2,000 times) and are cross-checked with a regression.",
+    "Intervals come from resampling users (2,000 times) and are cross-checked with a regression. A relative interval is the absolute interval divided by the recommended rate.",
   ],
   agreement(data) {
-    const rows = [...mainRows(data).values()];
-    const all = rows.every((r) => r.bootstrap_and_regression_agree === true);
-    return all ? `Bootstrap and regression agree on all ${rows.length} metrics` : null;
+    const f = one(data, "headline_facts");
+    return f.all_methods_agree === true ? `Bootstrap and regression agree on all ${f.n_metrics} metrics` : null;
   },
   render(root, data) {
-    const rows = mainRows(data);
-    const c = data.tables.comparison_c.find((r) => r.variant === "main" && r.metric === "effective_view" && r.term === "total")!;
-    // Dance has no share (it binds below the observed range), so nulls are skipped.
-    const topShare = Math.max(...data.tables.budget.map((r) => r.recommended_share).filter((v): v is number => typeof v === "number"));
-    const aGap = -num(rows.get("effective_view")!, "estimate");
+    const w = one(data, "waterfall");
+    const topShare = share(num(one(data, "headline_facts"), "top_share"));
+    const decision1 =
+      this.title === TITLES.answer
+        ? [el("strong", {}, `At least ${topShare} is supported with no guardrail crossed.`), " It is the highest share in the data, not an optimum. Higher shares need a new test."]
+        : [el("strong", {}, `At least ${topShare} of the feed can go to exploration with no guardrail crossed.`), " It is the highest share in the data, not an optimum. Higher shares need a new test."];
 
     const chart = el("figure", { class: "hero-chart" });
-    const hero = el(
-      "section",
-      { class: "hero" },
-      el(
-        "div",
-        { class: "hero-main" },
-        el("h2", {}, "Effective views: where the random slot loses them"),
-        chart,
-        el(
-          "p",
-          { class: "figure-note" },
-          `Measured on the ${num(c, "n_users").toLocaleString("en-US")} users who saw a recommended pool video on the same day as a random one. On all users, comparing within the same feed request, the gap is ${pp(aGap).replace("+", "")}, as in the scorecard; the difference comes from how days are weighted.`,
-        ),
-      ),
-      el(
-        "aside",
-        { class: "decision", "aria-labelledby": "decision-title" },
-        el("h2", { id: "decision-title" }, "Decision"),
-        el(
-          "ol",
-          {},
-          el("li", {}, el("strong", {}, `At least ${share(topShare)} is supported with no guardrail crossed.`), " It is the highest share in the data, not an optimum. Higher shares need a new test."),
-          el("li", {}, el("strong", {}, "Keep dance videos out of the random pool."), " They are the only content where hate clearly passes its limit."),
-          el("li", {}, el("strong", {}, "Next, test 2-3% targeted exploration."), " Most of the cost is who sees a random video, not the video."),
-        ),
-      ),
-    );
     root.append(
       el(
         "div",
@@ -297,16 +280,39 @@ export const headline: Page = {
           "KuaiRand is a public dataset of viewing logs from Kuaishou, a large short-video app. For a small share of feed requests, the app swapped one recommended video for a random one, so each random slot is a measured exploration slot.",
         ),
       ),
-      hero,
-      scorecard(rows),
+      el(
+        "section",
+        { class: "hero" },
+        el(
+          "div",
+          { class: "hero-main" },
+          el("h2", {}, "Effective views: where the random slot loses them"),
+          el("p", { class: "subtitle" }, `Same-day sample, ${num(w, "n_users").toLocaleString("en-US")} users`),
+          chart,
+          el("p", { class: "figure-note" }, `The scorecard compares within the same feed request, so its gap is ${pp(num(w, "a_gap")).replace("+", "")}.`),
+        ),
+        el(
+          "aside",
+          { class: "decision", "aria-labelledby": "decision-title" },
+          el("h2", { id: "decision-title" }, "Decision"),
+          el(
+            "ol",
+            {},
+            el("li", {}, ...decision1),
+            el("li", {}, el("strong", {}, "Keep dance videos out of the random pool."), " They are the only content where hate clearly passes its limit."),
+            el("li", {}, el("strong", {}, "Next, test 2-3% targeted exploration."), " Most of the cost is who sees a random video, not the video."),
+          ),
+        ),
+      ),
+      scorecard(data),
     );
     // Redraw when the column width changes (first layout, rotation, window resize).
     let drawn = 0;
     new ResizeObserver(() => {
-      const w = Math.min(chart.clientWidth, 760);
-      if (w > 0 && w !== drawn) {
-        drawn = w;
-        chart.replaceChildren(waterfall(data, w));
+      const width = Math.min(chart.clientWidth, 760);
+      if (width > 0 && width !== drawn) {
+        drawn = width;
+        chart.replaceChildren(waterfall(w, width));
       }
     }).observe(chart);
   },

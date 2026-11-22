@@ -34,11 +34,9 @@ function compact(n: number): string {
   return n >= 1e6 ? `${(n / 1e6).toFixed(2)}M` : n.toLocaleString("en-US");
 }
 
-// Experiment header strip on every page: who and what was measured, from Comparison A's main row.
+// Experiment header strip on every page: who and what was measured (headline_facts, from Comparison A).
 function strip(data: Data, agreement: string | null): HTMLElement {
-  const main = data.tables.comparison_a.find(
-    (r) => r.analysis === "A_request" && r.variant === "main" && r.weighting === "equal_user" && r.metric === "effective_view",
-  )!;
+  const main = data.tables.headline_facts[0];
   const item = (k: string, v: string | Node) => el("div", { class: "strip-item" }, el("span", { class: "strip-k" }, k), el("span", { class: "strip-v" }, v));
   const badge = link(PREREG, "Pre-registered");
   badge.className = "badge";
@@ -47,7 +45,7 @@ function strip(data: Data, agreement: string | null): HTMLElement {
     "div",
     { class: "strip", role: "group", "aria-label": "Experiment summary" },
     item("Users", compact(num(main, "n_users"))),
-    item("Random requests", compact(num(main, "n_units"))),
+    item("Random requests", compact(num(main, "n_random_requests"))),
     item("Window", "Apr 23 to May 8, 2022"),
     item("Surface", "Tab 1 feed"),
     el("div", { class: "strip-flags" }, badge, ...(agreement ? [el("span", { class: "agree" }, agreement)] : [])),

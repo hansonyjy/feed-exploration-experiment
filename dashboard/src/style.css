@@ -113,6 +113,7 @@ main { padding-top: 20px; padding-bottom: 48px; outline: none; }
 h1 { font-size: 24px; line-height: 1.25; font-weight: 600; letter-spacing: -0.015em; margin: 20px 0 6px; max-width: 46ch; }
 h2 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
 .lede p { color: var(--ink-2); margin: 0 0 20px; max-width: 92ch; }
+.subtitle { color: var(--ink-3); font-size: 13px; margin: -4px 0 4px; font-family: var(--mono); }
 .section-note, .figure-note { color: var(--ink-3); font-size: 13px; margin: 4px 0 12px; max-width: 92ch; }
 
 /* Hero: waterfall with the decision beside it */
@@ -153,15 +154,18 @@ tr.primary .c-metric, tr.primary .delta { font-weight: 600; }
   vertical-align: 1px;
 }
 tr.bad .delta { color: var(--bad); }
-td.c-ci > * { vertical-align: middle; }
+td.c-ci > *, th.c-ci > * { vertical-align: middle; }
 .ci { flex: none; }
-.ci-axis { stroke: var(--rule); }
+.ci-head text { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-3); }
+.ci-grid { stroke: var(--rule); }
 .ci-zero { stroke: var(--ink-3); }
-.ci-neutral .ci-range { fill: var(--ink-3); opacity: 0.55; }
-.ci-neutral .ci-est { stroke: var(--ink); stroke-width: 2; }
-.ci-bad .ci-range { fill: var(--bad); opacity: 0.45; }
-.ci-bad .ci-est { stroke: var(--bad); stroke-width: 2; }
-.ci-text { font-family: var(--mono); font-size: 12px; color: var(--ink-3); margin-left: 10px; }
+.ci-range { stroke-width: 2; }
+.ci-neutral .ci-range { stroke: var(--ink-2); }
+.ci-neutral .ci-est { fill: var(--ink); }
+.ci-bad .ci-range { stroke: var(--bad); }
+.ci-bad .ci-est { fill: var(--bad); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ci-text { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); opacity: 0.8; margin-left: 10px; }
 
 /* Pages still in progress (restyled once page 1's style is approved) */
 .preview .finding { font-size: 16px; max-width: 80ch; margin: 16px 0; }
