@@ -234,11 +234,26 @@ def derive_segments(src: dict) -> dict:
         ["segments", "category_labels"])}
 
 
+COST_METRICS = ["effective_view", "new_author_follow", "new_category_effective_view"]
+
+
 def derive_budget(src: dict) -> dict:
     segs = [r for r in recs(src["budget"]) if r["dimension"] != "overall"]
     clear = [r for r in segs if r["binding_guardrail"] == "none in range"]
-    return {"budget_facts": (as_table(["n_segments", "n_no_guardrail_crossed"], [[len(segs), len(clear)]]),
-                             ["budget"])}
+    # Per-impression A estimates behind the budget's costs (exploration_budget.py: cost per 1,000 =
+    # share x estimate x 1,000), so the simulator can show costs at any share in the range.
+    seg_est = {(r["dimension"], r["segment"], r["metric"]): r["estimate"] for r in recs(src["segments"])}
+    a = a_main(src)
+    costs = []
+    for r in recs(src["budget"]):
+        key = (r["dimension"], r["segment"])
+        est = [a[m]["estimate"] if key == ("overall", "all") else seg_est[(*key, m)] for m in COST_METRICS]
+        costs.append([*key, *est])
+    return {
+        "budget_facts": (as_table(["n_segments", "n_no_guardrail_crossed"], [[len(segs), len(clear)]]), ["budget"]),
+        "budget_estimates": (as_table(["dimension", "segment", *[f"{m}_estimate" for m in COST_METRICS]], costs),
+                             ["budget", "segments", "comparison_a"]),
+    }
 
 
 DERIVED = {"headline": derive_headline, "decomposition": derive_decomposition,
@@ -342,6 +357,15 @@ def content_checks(texts: dict[str, str]) -> list[str]:
     b = records(texts["budget"], "budget")
     if len(b) != 45 or not any(r["dimension"] == "overall" for r in b):
         errors.append(f"budget: expected 45 rows including overall, found {len(b)}")
+    est = {(r["dimension"], r["segment"]): r for r in records(texts["budget"], "budget_estimates")}
+    for r in b:
+        if r["recommended_share"] is None:
+            continue
+        for m in COST_METRICS:
+            want = r[f"{m}_change_per_1000_impressions"]
+            got = r["recommended_share"] * est[(r["dimension"], r["segment"])][f"{m}_estimate"] * 1000
+            if abs(got - want) > 1e-9:
+                errors.append(f"budget: {m} estimate for {r['dimension']}/{r['segment']} does not reproduce the cost")
     seg_rows = {(r["dimension"], r["segment"]) for r in b if r["dimension"] != "overall"}
     if seg_rows != finals:
         errors.append("budget: segment rows differ from the merge map's final segments")

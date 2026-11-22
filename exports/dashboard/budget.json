@@ -1,7 +1,7 @@
 {
  "page": "budget",
  "sources": {"budget": {"path": "exports/exploration_budget_prod.csv", "sha256": "29a100cb0a00a549d5fbdd116fb2d46f68bfe965e40f8fc6e8801e2600499b92", "rows_kept": 45}, "category_labels": {"path": "dbt/seeds/category_labels.csv", "sha256": "b095aad3fa7cfe3dfc5cb489d0c46aa920749eafed32a010b2d5adfb8cd0f9c5", "rows_kept": 39}},
- "derived": {"budget_facts": {"script": "scripts/build_dashboard_data.py", "from": ["exports/exploration_budget_prod.csv"]}},
+ "derived": {"budget_facts": {"script": "scripts/build_dashboard_data.py", "from": ["exports/exploration_budget_prod.csv"]}, "budget_estimates": {"script": "scripts/build_dashboard_data.py", "from": ["exports/exploration_budget_prod.csv", "exports/segments_prod.csv", "exports/comparison_a_prod.csv"]}},
  "tables": {
   "budget": {"columns": ["dimension", "segment", "hate_baseline", "hate_rel_effect", "hate_rel_low", "hate_rel_high", "hate_feed_change_at_low", "hate_feed_change_at_high", "hate_feed_change_at_high_ci_low", "hate_feed_change_at_high_ci_high", "hate_interval_crosses_limit", "fast_skip_baseline", "fast_skip_rel_effect", "fast_skip_rel_low", "fast_skip_rel_high", "fast_skip_feed_change_at_low", "fast_skip_feed_change_at_high", "fast_skip_feed_change_at_high_ci_low", "fast_skip_feed_change_at_high_ci_high", "fast_skip_interval_crosses_limit", "recommended_share", "recommended_share_label", "binding_guardrail", "any_interval_crosses_limit", "effective_view_change_per_1000_impressions", "new_author_follow_change_per_1000_impressions", "new_category_effective_view_change_per_1000_impressions"], "types": ["str", "str", "float", "float", "float", "float", "float", "float", "float", "float", "bool", "float", "float", "float", "float", "float", "float", "float", "float", "bool", "float", "str", "str", "bool", "float", "float", "float"], "rows": [
    ["active_group", "full_active", 0.0003356484249145291, 1.1337820305380866, 0.7644961745209401, 1.5612535410428543, 0.00746028576094061, 0.015736894583868642, 0.010611206902350649, 0.02167019914967482, true, 0.3347996880102884, 0.9007622981894231, 0.8939429920205322, 0.9075353680187427, 0.005927015922086404, 0.012502580698869193, 0.012407928729244986, 0.012596590908100148, false, 0.01388, "at least 1.388% (top of the observed range)", "none in range", true, -4.667799206938959, -0.01555856609620149, 0.0007377731391002186],
@@ -93,6 +93,53 @@
   ]},
   "budget_facts": {"columns": ["n_segments", "n_no_guardrail_crossed"], "types": ["int", "int"], "rows": [
    [44, 37]
+  ]},
+  "budget_estimates": {"columns": ["dimension", "segment", "effective_view_estimate", "new_author_follow_estimate", "new_category_effective_view_estimate"], "types": ["str", "str", "float", "float", "float"], "rows": [
+   ["active_group", "full_active", -0.336296772834219, -0.001120934156786851, 5.31536843732146e-05],
+   ["active_group", "high_active", -0.36480539534565026, -0.002512763038029619, -0.0035019369976471543],
+   ["active_group", "new_or_low+middle_active", -0.3668476325300821, -0.003073188436041401, -0.04138893052011851],
+   ["activity_tercile", "2", -0.35915361680063196, -0.0009723584850070501, 0.00043815491435845365],
+   ["activity_tercile", "3", -0.30905543253917944, -0.0005250893226833566, 0.00013434945729092764],
+   ["activity_tercile", "no_pre_period+1", -0.3697815694101775, -0.003422809446815816, -0.016769336343138184],
+   ["category_segment", "1", -0.36468666045900844, -0.0015293566138840822, -0.0074604446793753755],
+   ["category_segment", "10+21+27", -0.37180382820150804, -0.0017310151718911077, 0.002123860462898821],
+   ["category_segment", "11+22+23+other+34+29", -0.349774978881828, -0.0014064760718500908, -0.00490355278147441],
+   ["category_segment", "12", -0.3296746693272394, -0.0015238438781338595, -0.008056999846179648],
+   ["category_segment", "13+33+14+35+6", -0.3293815466858422, -0.0017337874047213145, -0.0009290543328375425],
+   ["category_segment", "15", -0.3362959596664483, -0.0013860964240990676, -0.004685475020598796],
+   ["category_segment", "16+31+26+18", -0.36111114966299634, -0.0012032173965140559, -0.00010330342918436884],
+   ["category_segment", "17+4", -0.3378429153250572, -0.0014938047332952193, 0.0017162579399029364],
+   ["category_segment", "19+8", -0.329251633968057, -0.001582111045745829, -0.002444538738489136],
+   ["category_segment", "2", -0.3829019921436767, -0.0015658821708862956, -0.010431142275054458],
+   ["category_segment", "20", -0.3968875424700605, -0.0016776291400633517, -0.006440210560779195],
+   ["category_segment", "24+37+25+5", -0.3476841155502521, -0.001863113980040623, -0.000501994182638721],
+   ["category_segment", "28+36+38", -0.31891386194075905, -0.0016270260512427845, -0.005546781523728941],
+   ["category_segment", "3", -0.42241855840608844, -0.001432671043702691, -0.004803611396348506],
+   ["category_segment", "32", -0.33379882632194974, -0.0016273300648815584, -0.009954152326106467],
+   ["category_segment", "39", -0.30811763136123727, -0.0016131885816902225, -0.010135273942802664],
+   ["category_segment", "7", -0.35322661435464653, -0.0014733010991443197, -0.006515352390137576],
+   ["category_segment", "9", -0.283417672002918, -0.001888057739033804, -0.0099267520554773],
+   ["duration_bucket", "1+2", -0.3033882200264633, -0.0018153212259076161, -0.0008051438254336147],
+   ["duration_bucket", "10", -0.3734058764256442, -0.0015943584606125333, -0.007061653320725807],
+   ["duration_bucket", "3", -0.279444157855435, -0.0014953256199936212, -0.0016508678944021362],
+   ["duration_bucket", "4", -0.2916118746240533, -0.0015604190351001695, -0.0037458237928170704],
+   ["duration_bucket", "5", -0.3072364648145523, -0.0016365340939854792, -0.003487886808500978],
+   ["duration_bucket", "6", -0.3179164704016156, -0.0017357612712060337, -0.002946525277590671],
+   ["duration_bucket", "7", -0.3649041065263404, -0.0016381519564701876, -0.007236287234822888],
+   ["duration_bucket", "8", -0.3796869604276311, -0.0016899969997611092, -0.008541119829360651],
+   ["duration_bucket", "9", -0.3794681101226636, -0.0016876780480999715, -0.007997797074508674],
+   ["follow_band", "(10,50]", -0.35370166065196107, -0.0005671671254174545, -0.0067715437764902025],
+   ["follow_band", "(100,150]", -0.3489896661302007, -0.0007214067339605807, -0.004755020299863313],
+   ["follow_band", "(150,250]", -0.3443921933235985, -0.0009424085676147764, -0.0034110874739574225],
+   ["follow_band", "(250,500]", -0.34449417504808283, -0.001870770472793186, -0.001903375484938071],
+   ["follow_band", "(50,100]", -0.35308772870453076, -0.0007014470082536442, -0.0057649984051176125],
+   ["follow_band", "0 to (0,10]", -0.3481837004375141, -0.0003114367904052169, -0.02745546717771018],
+   ["follow_band", "500+", -0.3360101830682371, -0.0043311199370313705, -0.0014858918195210648],
+   ["overall", "all", -0.34624536836541453, -0.0016603063830265313, -0.00552943557676628],
+   ["tenure_band", "181-365", -0.3582819233224815, -0.0027588484823276803, -0.011917513830603155],
+   ["tenure_band", "366-730", -0.35088494703623163, -0.0019836080315781563, -0.0061533579414074675],
+   ["tenure_band", "730+", -0.3432738805691006, -0.0012681061317881444, -0.004218469716163662],
+   ["tenure_band", "8-14 to 91-180", -0.35772982701803463, -0.004131143362854815, -0.012145100940265467]
   ]}
  }
 }
