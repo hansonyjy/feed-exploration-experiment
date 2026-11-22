@@ -1,0 +1,23 @@
+{
+  "name": "feed-exploration-dashboard",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Static dashboard for the feed exploration analysis; reads only ../exports (D61).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@observablehq/plot": "0.6.19"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "7.0.2",
+    "vite": "8.3.6",
+    "vitest": "5.1.0"
+  }
+}
