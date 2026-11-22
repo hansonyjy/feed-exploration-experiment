@@ -15,6 +15,8 @@ export interface Page {
   notes: string[];
   // Text for the header strip when both inference methods agree on this page's results, else null.
   agreement?: (data: Data) => string | null;
+  // Plain note shown in the strip instead of an agreement line (no check mark).
+  stripNote?: string;
   render: (root: HTMLElement, data: Data) => void;
 }
 
@@ -35,7 +37,7 @@ function compact(n: number): string {
 }
 
 // Experiment header strip on every page: who and what was measured (headline_facts, from Comparison A).
-function strip(data: Data, agreement: string | null): HTMLElement {
+function strip(data: Data, agreement: string | null, note?: string): HTMLElement {
   const main = data.tables.headline_facts[0];
   const item = (k: string, v: string | Node) => el("div", { class: "strip-item" }, el("span", { class: "strip-k" }, k), el("span", { class: "strip-v" }, v));
   const badge = link(PREREG, "Pre-registered");
@@ -48,24 +50,31 @@ function strip(data: Data, agreement: string | null): HTMLElement {
     item("Random requests", compact(num(main, "n_random_requests"))),
     item("Window", "Apr 23 to May 8, 2022"),
     item("Surface", "Tab 1 feed"),
-    el("div", { class: "strip-flags" }, badge, ...(agreement ? [el("span", { class: "agree" }, agreement)] : [])),
+    badge,
+    ...(agreement ? [el("span", { class: "agree" }, agreement)] : []),
+    ...(note ? [el("span", { class: "strip-note" }, note)] : []),
   );
 }
 
 // Shell shared by every page: header strip, title (the answer), content, About drawer.
+let current = 0; // the latest navigation; an older load that finishes later must not draw
+
 export async function renderPage(page: Page, root: HTMLElement): Promise<void> {
+  const token = ++current;
   root.replaceChildren();
   const body = el("div", { class: "page-body", "aria-busy": "true" }, el("p", { class: "muted" }, "Loading data…"));
   root.append(body);
   try {
     const files = [...new Set<PageFile>(["headline", ...page.data])];
     const data = merge(await Promise.all(files.map(loadPage)));
+    if (token !== current) return;
     body.replaceChildren();
     body.removeAttribute("aria-busy");
-    root.prepend(strip(data, page.agreement ? page.agreement(data) : null), el("h1", {}, page.title));
+    root.prepend(strip(data, page.agreement ? page.agreement(data) : null, page.stripNote), el("h1", {}, page.title));
     page.render(body, data);
     root.append(about([el("p", {}, el("strong", {}, "Question: "), page.question), ...page.notes], data.sources));
   } catch (err) {
+    if (token !== current) return;
     body.replaceChildren(el("p", { class: "error", role: "alert" }, `Could not load data: ${(err as Error).message}`));
   }
 }

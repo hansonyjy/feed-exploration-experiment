@@ -9,6 +9,7 @@ export const budget: Page = {
   title: "Most segments can take the full 1.388%; dance videos cannot",
   question: "How much exploration can a segment take before a guardrail breaks?",
   data: ["budget"],
+  stripNote: "Budget derived from Comparison A estimates",
   notes: [
     "The simulator assumes a linear effect within the observed range of exploration shares (0.658% to 1.388% of feed impressions). Shares above 1.388% were never observed and need a new test.",
   ],

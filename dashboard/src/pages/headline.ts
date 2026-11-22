@@ -160,6 +160,55 @@ function scorecard(data: Data): HTMLElement {
   );
 }
 
+function millions(n: number): string {
+  return `${(n / 1e6).toFixed(1)}M`;
+}
+
+// "How this was built": scale numbers (build_facts, from committed files), pipeline, methods.
+function howBuilt(f: Row): HTMLElement {
+  const stat = (value: string, label: string) =>
+    el("div", { class: "stat" }, el("span", { class: "stat-value" }, value), el("span", { class: "stat-label" }, label));
+  const snapshot = String(f.bytes_snapshot_date);
+  const steps: [string, string][] = [
+    ["Raw logs", `${millions(num(f, "raw_log_rows"))} rows`],
+    ["BigQuery", "date-partitioned"],
+    ["dbt staging", `${num(f, "n_models_staging")} models`],
+    ["Intermediate", `${num(f, "n_models_intermediate")} models`],
+    ["Marts", `${num(f, "n_models_marts")} models`],
+    ["Python", "bootstrap, regression"],
+    ["exports/", "CSV, JSON"],
+    ["This site", "static"],
+  ];
+  return el(
+    "section",
+    { class: "built", "aria-labelledby": "built-title" },
+    el("h2", { id: "built-title" }, "How this was built"),
+    el(
+      "div",
+      { class: "stats" },
+      stat(millions(num(f, "raw_log_rows")), "raw log rows"),
+      stat(num(f, "n_users_dataset").toLocaleString("en-US"), "users"),
+      stat(millions(num(f, "n_videos")), "videos"),
+      stat(`${(num(f, "bytes_billed_total") / 1e9).toFixed(1)} GB`, `BigQuery bytes billed, through ${snapshot}`),
+      stat(`${num(f, "n_models")} · ${num(f, "n_tests")}`, "dbt models · tests"),
+    ),
+    el(
+      "ol",
+      { class: "pipeline", "aria-label": "Pipeline" },
+      ...steps.map(([name, sub]) => el("li", {}, el("span", { class: "step-name" }, name), el("span", { class: "step-sub" }, sub))),
+    ),
+    el(
+      "ul",
+      { class: "methods" },
+      el("li", {}, el("strong", {}, "Within-request comparison."), " Each random video is compared with the recommended videos in the same feed request."),
+      el("li", {}, el("strong", {}, "User-clustered bootstrap."), " 2,000 resamples of users, cross-checked with a fixed-effects regression."),
+      el("li", {}, el("strong", {}, "Pre-registered."), " Metrics, tests and parameters were fixed before any outcome was read."),
+      el("li", {}, el("strong", {}, "Corrected segment tests."), " Benjamini-Hochberg, with Benjamini-Yekutieli as a stricter check."),
+      el("li", {}, el("strong", {}, "Duration-adjusted effective view."), " A view counts if it lasts at least as long as the median view of videos of similar length."),
+    ),
+  );
+}
+
 interface Step {
   label: string;
   y1: number;
@@ -300,6 +349,7 @@ export const headline: Page = {
         ),
       ),
       scorecard(data),
+      howBuilt(one(data, "build_facts")),
     );
     // Redraw when the column width changes (first layout, rotation, window resize).
     let drawn = 0;

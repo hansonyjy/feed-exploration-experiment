@@ -63,13 +63,24 @@ export interface KeyNumber {
   label: string;
 }
 
+// Numbers (with their units) in Plex Mono, connecting words ("of", "vs") in Plex Sans.
+const CONNECTORS = new Set(["of", "vs", "to", "and"]);
+function readoutValue(value: string): HTMLElement {
+  const out = el("span", { class: "readout-value" });
+  value.split(" ").forEach((tok, i) => {
+    if (i > 0) out.append(" ");
+    out.append(el("span", { class: CONNECTORS.has(tok) ? "readout-word" : "readout-num" }, tok));
+  });
+  return out;
+}
+
 // Pages still being built: one finding, one key number, the due date in small text.
 export function preview(finding: string, key: KeyNumber, due: string): HTMLElement {
   return el(
     "section",
     { class: "preview" },
     el("p", { class: "finding" }, finding),
-    el("div", { class: "readout" }, el("span", { class: "readout-value" }, key.value), el("span", { class: "readout-label" }, key.label)),
+    el("div", { class: "readout" }, readoutValue(key.value), el("span", { class: "readout-label" }, key.label)),
     el("p", { class: "due" }, `The full interactive view lands ${due}.`),
   );
 }
