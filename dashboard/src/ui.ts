@@ -1,6 +1,7 @@
 // Small DOM helpers and the "About this view" drawer every page carries (D61).
+import type { Source } from "./data";
 
-const REPO = "https://github.com/hansonyjy/feed-exploration-experiment/blob/main";
+const REPO = "https://github.com/hansonyjy/feed-exploration-experiment";
 
 export function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -17,8 +18,9 @@ export function link(href: string, text: string): HTMLAnchorElement {
   return el("a", { href }, text);
 }
 
+// Pinned to the commit the site was built from (see vite.config.ts).
 export function repoLink(path: string, text = path): HTMLAnchorElement {
-  return link(`${REPO}/${path}`, text);
+  return link(`${REPO}/blob/${__COMMIT__}/${path}`, text);
 }
 
 export function dataLink(path: string): HTMLAnchorElement {
@@ -27,9 +29,12 @@ export function dataLink(path: string): HTMLAnchorElement {
   return link(`${import.meta.env.BASE_URL}${path.replace(/^exports\//, "")}`, path);
 }
 
-export function about(notes: (Node | string)[], sources: string[]): HTMLDetailsElement {
-  const list = el("ul");
-  for (const s of sources) list.append(el("li", {}, dataLink(s)));
+export function about(notes: (Node | string)[], sources: Source[]): HTMLDetailsElement {
+  const unique = [...new Map(sources.map((s) => [s.path, s])).values()];
+  const list = el("ul", { class: "sources" });
+  for (const s of unique) {
+    list.append(el("li", {}, dataLink(s.path), ` · ${s.rows_kept.toLocaleString("en-US")} rows`));
+  }
   return el(
     "details",
     { class: "about" },
@@ -45,7 +50,7 @@ export function about(notes: (Node | string)[], sources: string[]): HTMLDetailsE
       " · ",
       repoLink("docs/decisions.md", "decision log"),
       " · ",
-      repoLink("docs/data_quality.md", "data quality and health checks"),
+      repoLink("docs/data_quality.md", "data quality checks"),
       " · ",
       repoLink("docs/analysis_plan.md", "pre-registered plan"),
       ".",
@@ -53,6 +58,22 @@ export function about(notes: (Node | string)[], sources: string[]): HTMLDetailsE
   );
 }
 
-export function placeholder(text: string): HTMLElement {
-  return el("div", { class: "placeholder", role: "note" }, text);
+export interface KeyNumber {
+  value: string;
+  label: string;
+}
+
+export function card(k: KeyNumber, extra = ""): HTMLElement {
+  return el("div", { class: `card ${extra}`.trim() }, el("p", { class: "card-value" }, k.value), el("p", { class: "card-label" }, k.label));
+}
+
+// Pages still being built: one finding, one key number, the due date in small text.
+export function preview(finding: string, key: KeyNumber, due: string): HTMLElement {
+  return el(
+    "section",
+    { class: "preview" },
+    el("p", { class: "finding" }, finding),
+    card(key),
+    el("p", { class: "due" }, `The full interactive view lands ${due}.`),
+  );
 }
