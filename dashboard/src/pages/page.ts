@@ -13,6 +13,8 @@ export interface Page {
   question: string;
   data: PageFile[];
   notes: string[];
+  // Notes for the About drawer that depend on the data (for example a snapshot date).
+  dataNotes?: (data: Data) => string[];
   // Text for the header strip when both inference methods agree on this page's results, else null.
   agreement?: (data: Data) => string | null;
   // Plain note shown in the strip instead of an agreement line (no check mark).
@@ -46,7 +48,7 @@ function strip(data: Data, agreement: string | null, note?: string): HTMLElement
   return el(
     "div",
     { class: "strip", role: "group", "aria-label": "Experiment summary" },
-    item("Users", compact(num(main, "n_users"))),
+    item("Users analyzed", compact(num(main, "n_users"))),
     item("Random requests", compact(num(main, "n_random_requests"))),
     item("Window", "Apr 23 to May 8, 2022"),
     item("Surface", "Tab 1 feed"),
@@ -72,7 +74,8 @@ export async function renderPage(page: Page, root: HTMLElement): Promise<void> {
     body.removeAttribute("aria-busy");
     root.prepend(strip(data, page.agreement ? page.agreement(data) : null, page.stripNote), el("h1", {}, page.title));
     page.render(body, data);
-    root.append(about([el("p", {}, el("strong", {}, "Question: "), page.question), ...page.notes], data.sources));
+    const notes = [...page.notes, ...(page.dataNotes ? page.dataNotes(data) : [])];
+    root.append(about([el("p", {}, el("strong", {}, "Question: "), page.question), ...notes], data.sources));
   } catch (err) {
     if (token !== current) return;
     body.replaceChildren(el("p", { class: "error", role: "alert" }, `Could not load data: ${(err as Error).message}`));

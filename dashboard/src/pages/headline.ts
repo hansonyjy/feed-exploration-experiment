@@ -168,7 +168,6 @@ function millions(n: number): string {
 function howBuilt(f: Row): HTMLElement {
   const stat = (value: string, label: string) =>
     el("div", { class: "stat" }, el("span", { class: "stat-value" }, value), el("span", { class: "stat-label" }, label));
-  const snapshot = String(f.bytes_snapshot_date);
   const steps: [string, string][] = [
     ["Raw logs", `${millions(num(f, "raw_log_rows"))} rows`],
     ["BigQuery", "date-partitioned"],
@@ -187,10 +186,11 @@ function howBuilt(f: Row): HTMLElement {
       "div",
       { class: "stats" },
       stat(millions(num(f, "raw_log_rows")), "raw log rows"),
-      stat(num(f, "n_users_dataset").toLocaleString("en-US"), "users"),
+      stat(num(f, "n_users_dataset").toLocaleString("en-US"), "users in dataset"),
       stat(millions(num(f, "n_videos")), "videos"),
-      stat(`${(num(f, "bytes_billed_total") / 1e9).toFixed(1)} GB`, `BigQuery bytes billed, through ${snapshot}`),
-      stat(`${num(f, "n_models")} · ${num(f, "n_tests")}`, "dbt models · tests"),
+      stat(`${Math.round(num(f, "bytes_billed_total") / 1e9)} GB`, "scanned in BigQuery"),
+      stat(String(num(f, "n_models")), "dbt models"),
+      stat(String(num(f, "n_tests")), "tests"),
     ),
     el(
       "ol",
@@ -301,6 +301,12 @@ export const headline: Page = {
     "Guardrail: a metric that may get worse by at most 2% relative, at the level of the whole feed. The two guardrails are hate (the user presses the dislike button) and fast skip (watched for less than 3 seconds).",
     "Intervals come from resampling users (2,000 times) and are cross-checked with a regression. A relative interval is the absolute interval divided by the recommended rate.",
   ],
+  dataNotes(data) {
+    const f = one(data, "build_facts");
+    return [
+      `BigQuery bytes: total billed by query jobs in this project through ${f.bytes_snapshot_date}, from a snapshot written by scripts/export_build_stats.py.`,
+    ];
+  },
   agreement(data) {
     const f = one(data, "headline_facts");
     return f.all_methods_agree === true ? `Bootstrap and regression agree on all ${f.n_metrics} metrics` : null;
