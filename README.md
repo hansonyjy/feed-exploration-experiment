@@ -1,6 +1,6 @@
 # Feed Exploration Experiment
 
-**Status: in progress.** Results, dashboard and memo land here when the analysis is done.
+**In progress: dashboard and memo land by Dec 8.**
 
 How much of a short-video feed can go to exploration, and for which users? This project uses a
 public dataset where a short-video app randomly replaced some recommended videos, and treats each

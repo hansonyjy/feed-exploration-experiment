@@ -71,3 +71,25 @@ seeds:
         data_tests: [not_null]
       - name: n_reference_rows
         description: Reference impressions in the bucket.
+
+  - name: category_labels
+    description: >
+      English labels for the first-level categories used as category segments (D61). name_zh is
+      category_l1_name from the supplementary category file (stg_video_categories), as provided;
+      label_en is a translation for charts. `other` is the segment built in int_random_item_segments
+      (videos without a category, or categories under 1,000 random exposures). Labels only; no model
+      reads this seed for any estimate.
+    config:
+      column_types:
+        category_segment: string
+        name_zh: string
+        label_en: string
+    columns:
+      - name: category_segment
+        description: First-level category id as a string, or `other`; matches category_segment in segments_prod.csv.
+        data_tests: [unique, not_null]
+      - name: name_zh
+        description: Chinese name as provided; null for `other`.
+      - name: label_en
+        description: English label shown on the dashboard.
+        data_tests: [unique, not_null]
