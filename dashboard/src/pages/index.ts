@@ -1,39 +1,13 @@
-import { num } from "../data";
-import { pp } from "../format";
 import { preview } from "../ui";
 import { decomposition } from "./decomposition";
 import { headline } from "./headline";
+import { segments } from "./segments";
 import type { Page } from "./page";
 
 export const PAGES: Page[] = [
   headline,
   decomposition,
-  {
-    path: "/segments",
-    nav: "Segments",
-    title: "The cost depends more on what is shown than on who sees it",
-    question: "Which content and which users absorb exploration best?",
-    data: ["segments"],
-    notes: [
-      "Segments come from data before the test period only (Apr 8 to 21, 2022). Each segment is compared with the rest of its group, with a correction for testing many segments at once.",
-    ],
-    render(root, data) {
-      const labels = new Map(data.tables.category_labels.map((r) => [String(r.category_segment), String(r.label_en)]));
-      const cats = data.tables.segments.filter(
-        (r) => r.dimension === "category_segment" && r.metric === "effective_view" && r.interpretable === true,
-      );
-      const worst = cats.reduce((a, b) => (num(b, "estimate") < num(a, "estimate") ? b : a));
-      const best = cats.reduce((a, b) => (num(b, "estimate") > num(a, "estimate") ? b : a));
-      const name = (r: (typeof cats)[number]) => labels.get(String(r.segment))!.toLowerCase();
-      root.append(
-        preview(
-          `Every segment pays a large cost, but the type of video matters most: random ${name(worst)} videos cost the most and random ${name(best)} videos the least. User groups differ by a few points.`,
-          { value: `${pp(num(worst, "estimate"))} vs ${pp(num(best, "estimate"))}`, label: `Effective views, random ${name(worst)} vs random ${name(best)} videos` },
-          "by Dec 2",
-        ),
-      );
-    },
-  },
+  segments,
   {
     path: "/budget",
     nav: "Budget simulator",
