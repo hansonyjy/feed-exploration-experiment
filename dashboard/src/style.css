@@ -130,7 +130,7 @@ h2 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
 
 /* Scorecard table */
 .scorecard { padding-top: 24px; }
-.table-wrap { overflow-x: auto; border-top: 1px solid var(--rule-strong); }
+.table-wrap { position: relative; overflow-x: auto; border-top: 1px solid var(--rule-strong); }
 table { width: auto; border-collapse: collapse; font-size: 14px; }
 th, td { padding: 7px 12px; text-align: left; border-bottom: 1px solid var(--rule); white-space: nowrap; }
 thead th { font-weight: 500; color: var(--ink-3); font-size: 12px; padding-top: 8px; padding-bottom: 8px; }
