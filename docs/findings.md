@@ -189,23 +189,47 @@ supplementary file's labels.
 Binding guardrails: hate and fast skip, each limited to a 2% relative worsening of the feed; session
 exit is not identifiable and is left out (D53, D54, D57). Share s interpolated only between 0.658% and
 1.388% of tab-1 exposures; the baseline is the D48 recommended rate (user segments: within segment;
-item segments: overall; D59).
+item segments: overall; D59). Hate changes are given in absolute pp of tab-1 impressions first, then
+relative. Hate is rare (0.051% overall), so the 2% limit is about +0.0010 pp absolute, roughly one extra
+hate per 100,000 tab-1 impressions (user segments: 2% of their own baseline).
 
-- **Overall: no guardrail binds in the observed range.** At the top of the range (1.388%), hate rises
-  1.60% and fast skip 1.32% at the feed level, both under 2%. The supported share is therefore at least
-  1.388%; the data cannot say how much higher it could go (no extrapolation). At 1.388%, the expected
-  cost is 4.8 fewer effective views, 0.023 fewer new-author follows and 0.077 fewer new-category effective
+**1.388% is the highest share observed in the logs, not an optimum.** The budget can only say that no
+guardrail is crossed up to that share; what happens above it is unknown, and a higher share needs a new
+test that runs it (no extrapolation).
+
+### Actionable results
+- **Overall: no guardrail binds up to 1.388%.** At 1.388%, hate rises +0.00081 pp [+0.00062, +0.00101]
+  (+1.60% relative) and fast skip +0.42 pp (+1.32%), both under the limit. At 1.388%, the expected cost
+  is 4.8 fewer effective views, 0.023 fewer new-author follows and 0.077 fewer new-category effective
   views per 1,000 tab-1 impressions.
-- **Fast skip never binds** in any segment (largest: gaming random items, 1.80% at 1.388%).
-- **Hate binds in seven segments:**
-  - Dance random items: below the observed range (hate rises about 2.3% to 4.3% already at 0.658%); the
-    interval stays above 2%, so this one is robust.
-  - Within the range: users with 181-365 days of tenure (0.80%), short-drama items (1.09%), music
-    (1.12%), anime (1.19%), art (1.31%) and pre-period activity tercile 2 (1.36%). Each of these has a
-    hate interval that crosses 2% in the range, so the binding point is uncertain.
-- **32 of 45 rows are flagged** because a guardrail's interval crosses 2% somewhere in the range; in all
-  of them the guardrail is hate, whose intervals are wide because hate is rare. Fast skip is never
-  flagged.
+- **Dance random items: the only robust hate binding.** Hate already exceeds the limit at the bottom of
+  the observed range: at 0.658%, +0.0017 pp [+0.0012, +0.0022] (+3.3% relative [+2.3%, +4.3%]) against a
+  limit of +0.0010 pp, so the binding share lies below 0.658% and the interval stays above the limit.
+  Dance is the one segment where the data supports limiting exploration content.
+- **Fast skip never binds** in any segment (largest: gaming random items, +0.58 pp at 1.388%, +1.80%).
+
+### Watch list (binding point uncertain)
+Six segments cross the hate limit inside the observed range, but each one's interval at 1.388% runs
+from below the limit to above it, so the data cannot say whether or where they bind. They are not a
+basis for a lower share; they are candidates to watch in a new test.
+
+| Segment | Binding share (point) | Hate at 1.388% [95% CI] | Limit (2% of baseline) |
+|---|---:|---|---:|
+| Tenure 181-365 days (users) | 0.80% | +0.0021 pp [+0.0010, +0.0035] | +0.0012 pp |
+| Short drama (items) | 1.09% | +0.0013 pp [+0.0007, +0.0018] | +0.0010 pp |
+| Music (items) | 1.12% | +0.0013 pp [+0.0007, +0.0019] | +0.0010 pp |
+| Anime (items) | 1.19% | +0.0012 pp [+0.0008, +0.0017] | +0.0010 pp |
+| Art (items) | 1.31% | +0.0011 pp [+0.0004, +0.0018] | +0.0010 pp |
+| Activity tercile 2 (users) | 1.36% | +0.0011 pp [+0.0007, +0.0016] | +0.0011 pp |
+
+- **The tenure 181-365 result is isolated.** Both neighbouring tenure bands stay under the limit at
+  1.388% (merged band 8-14 to 91-180 days: +0.0013 pp against a limit of +0.0025 pp; 366-730 days:
+  +0.0012 pp against +0.0014 pp), so there is no gradient with tenure. It is also the smallest tenure
+  band (1,743 users), and its hate contrast with the rest of the dimension is a BH lead (bootstrap only),
+  not a finding (see Segments).
+- **32 of 45 rows are flagged** because a guardrail's interval crosses the limit somewhere in the range;
+  in all of them the guardrail is hate, whose intervals are wide because hate is rare. Fast skip is
+  never flagged.
 - Item-segment rows (category, duration) answer which content to explore with, not which users; the
   budget does not add exploration beyond the observed range for any segment.
 
@@ -221,11 +245,11 @@ item segments: overall; D59).
   exploration best depends on absolute vs relative terms. New-category engagement from random slots
   matches recommended slots for active users and falls short for low-activity users (partly mechanical).
 
-## Exploration budget (D54, D56)
+## Exploration budget (D54, D56, D57)
 - The budget uses the item-level guardrails only; session-level impact is not identifiable from these
-  logs, and the budget says so (D54). Otherwise computed exactly as in D48.
-- D54 reported hate with its interval because it was inconclusive on dev. Hate is now a finding (D56);
-  whether it constrains the budget as in D48 is an open question for the owner.
+  logs, and the budget says so (D54).
+- Hate is a finding (D56) and constrains the budget as in D48 (D57, decided after A results and before
+  any B, C, segment or budget outcome).
 
 ## Appendix: stability from dev to prod
 Dev (5% hashed user sample, 1,237 users, run 2026-11-18 with provisional 5%-sample edges and thresholds)
