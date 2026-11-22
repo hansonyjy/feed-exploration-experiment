@@ -2,6 +2,45 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-22 · D61 · Phase 3: dashboard scope, stack, deadline and workflow
+- Decided 2026-11-22 by the owner after all prod results were seen. Reporting and scope only: no
+  estimate, metric, sample or test changes. Supersedes the Dashboard Spec and Timeline in design.md.
+- Deadline: the whole project (four web pages, three Tableau Public views, the decision memo, README and
+  dbt docs site) is merged by 2026-12-08.
+- Pages (each answers one question; the design.md methods page moves into an "About this view" drawer
+  on every page, linking findings.md, decisions.md, the health checks and the dbt docs):
+  1. Headline result. Titled with the answer, and opens with a decision box: (a) at least 1.388% is
+     supported with no guardrail crossed; (b) keep dance out of the random pool; (c) most of the cost is
+     targeting, so the next step is a 2-3% targeted-exploration test. Then the 11-metric forest plot
+     (absolute first), the naive vs duration-adjusted toggle, robustness variants and the D23
+     missing-duration note. Feeds: comparison_a_prod.csv (session_exit rows left out, D53),
+     missing_duration_by_arm_prod.csv.
+  2. Content vs targeting. C's decomposition, the B-to-C bridge and C's sample. Feeds: comparison_c,
+     comparison_b, bridge_b_c, comparison_c_sample, comparison_c_vs_a, health/hc02b_pool_attributes.
+  3. Segments. Dot plot with intervals, metric picker, absolute/relative toggle, BH/BY markers; merged
+     category groups greyed and not interpreted (D40). Feed: segments_prod.csv.
+  4. Exploration-budget simulator. Share slider limited to the observed range (0.658% to 1.388%; beyond
+     it is shown as untested and needing a new test), segment picker, guardrail limit (pre-registered 2%
+     default; other values labelled what-if). Hate in absolute pp first. The page states that the
+     simulator assumes a linear effect within the observed range (feed change = share x the segment's
+     relative effect, as in D48/D59). Feed: exploration_budget_prod.csv.
+- Category names: a committed seed (dbt/seeds/category_labels.csv) from the supplementary file's labels,
+  so charts do not hard-code them.
+- Stack: a committed script (scripts/build_dashboard_data.py) turns exports/*.csv into JSON in
+  exports/dashboard/ and flat CSVs in exports/tableau/; the app (Vite, TypeScript, Observable Plot,
+  pinned versions) reads only exports/ and deploys to GitHub Pages from main. Tests check the simulator
+  against the budget export and every JSON value against its source CSV. No BigQuery.
+- Tableau Public (the owner publishes): the headline forest plot, a segment heatmap of effective-view
+  cost, and hate at 1.388% vs the limit per segment (actionable vs watch list).
+- Before the repo goes public (the owner flips visibility): scan the full history for secrets,
+  credentials, profiles.yml and raw data; check commit emails; check for any TikTok internal information.
+- Workflow: a small PR per step or page so the owner can merge daily (this replaces "one phase per
+  branch" for Phase 3). Merge commits only.
+- Schedule: Nov 23-24 scan, D61, label seed, data build, Pages skeleton; Nov 25-28 pages 1 and 4;
+  Nov 29-Dec 2 pages 2 and 3; Dec 3-4 Tableau CSVs and views; Dec 5-6 memo, README, dbt docs; Dec 7
+  number check and mobile pass; Dec 8 buffer and merge.
+- If the schedule slips: simplify page 3 first, then cut Tableau views. The memo and README are never cut.
+
 ## 2026-11-21 · D60 · B-C bridge and the reading of B's hate result (reporting only)
 - Post-results: decided 2026-11-21 by the owner after the prod B and C results were seen. Adds a
   decomposition to the report; no estimate changes.
