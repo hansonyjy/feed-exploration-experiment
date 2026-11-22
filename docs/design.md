@@ -157,7 +157,7 @@ If time slips, the must-haves are Comparison A, the metric framework and the exp
 | Randomization differs from the paper | Run health checks first; adjust the design and state it openly |
 | BigQuery costs creep up | Partitioning, 5% dev sample, maximum bytes billed, $5 budget alert |
 | Time runs short | Session analysis and Tableau can slip to January |
-| Conflict of interest with the TikTok internship | Public data only; no TikTok internal information |
+| Conflict of interest with an upcoming internship in the industry | Public data only |
 
 ## Facts to Verify in the Data First
 
