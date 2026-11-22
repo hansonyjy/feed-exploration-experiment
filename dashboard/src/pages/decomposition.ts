@@ -7,7 +7,7 @@ import type { Page } from "./page";
 export const decomposition: Page = {
   path: "/content-vs-targeting",
   nav: "Content vs targeting",
-  title: "Most of the cost of a random slot is targeting, not content",
+  title: "The same videos do well when they reach the right people",
   question: "Is a random slot costly because the videos are worse, or because they reach the wrong person?",
   data: ["decomposition"],
   notes: [
@@ -23,7 +23,7 @@ export const decomposition: Page = {
     const gap = (c: string) => pp(num(f, c)).replace("+", "");
     root.append(
       preview(
-        `When the random pool's videos are recommended, they do almost as well as other recommended videos. Of the ${gap("total_gap")} effective-view gap, ${gap("targeting_gap")} comes from targeting and only ${gap("content_gap")} from the videos themselves.`,
+        `Of the ${gap("total_gap")} effective-view gap between a user's recommended and random videos, ${gap("targeting_gap")} comes from targeting and only ${gap("content_gap")} from the videos themselves.`,
         { value: `${Math.round(num(f, "targeting_share") * 100)}%`, label: "of the effective-view gap is targeting" },
         "by Dec 2",
       ),
