@@ -55,4 +55,4 @@ measured exploration slot. Full plan: `docs/design.md`. Locked metrics and param
 ## Data and license
 KuaiRand (CC BY-SA 4.0): https://kuairand.com/ and https://arxiv.org/abs/2208.08696.
 Attribute in the README. Exported derived data in `exports/` is shared under CC BY-SA 4.0.
-Public data only: never use or reference any TikTok internal information.
+Public data only: never use non-public information from any employer.
