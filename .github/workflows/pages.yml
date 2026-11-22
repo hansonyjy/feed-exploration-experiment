@@ -1,0 +1,62 @@
+# Build the static dashboard from committed exports and publish it to GitHub Pages (D61).
+# Pull requests and branch pushes run the checks and the build; deploys run from main or by hand.
+name: Dashboard
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["dashboard/**", "exports/**", "dbt/seeds/**", "scripts/build_dashboard_data.py", ".github/workflows/pages.yml"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Data files match the exports
+        run: python scripts/build_dashboard_data.py --check
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+      - name: Install
+        working-directory: dashboard
+        run: npm ci
+      - name: Typecheck
+        working-directory: dashboard
+        run: npm run typecheck
+      - name: Test
+        working-directory: dashboard
+        run: npm test
+      - name: Build
+        working-directory: dashboard
+        run: npm run build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dashboard/dist
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
