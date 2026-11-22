@@ -1,6 +1,6 @@
 # Feed Exploration Experiment: Analysis Design Doc
 
-Nov 15, 2026 · Hanson Yang. Living copy: https://claude.ai/artifact/VdySEjqtLtJKaJpDGcC1Jd
+Nov 15, 2026 · Hanson Yang.
 Locked metric definitions and parameters live in `docs/analysis_plan.md`.
 
 ## TL;DR
@@ -144,7 +144,9 @@ Pages 2 and 4 are also rebuilt in Tableau Public from the same marts.
 | Dec 13 to Dec 20 | Session analysis, segments, exploration budget (move) |
 | Dec 21 to Dec 27 | Dashboard, dbt docs |
 | Dec 28 to Jan 2 | Memo, README, Tableau, final checks |
-| Jan 3 | Resume-ready |
+| Jan 3 | Project complete |
+
+This timeline is superseded by D61 in `docs/decisions.md`.
 
 If time slips, the must-haves are Comparison A, the metric framework and the exploration budget.
 
@@ -157,7 +159,7 @@ If time slips, the must-haves are Comparison A, the metric framework and the exp
 | Randomization differs from the paper | Run health checks first; adjust the design and state it openly |
 | BigQuery costs creep up | Partitioning, 5% dev sample, maximum bytes billed, $5 budget alert |
 | Time runs short | Session analysis and Tableau can slip to January |
-| Conflict of interest with an upcoming internship in the industry | Public data only |
+| Using non-public information | Public data only |
 
 ## Facts to Verify in the Data First
 
