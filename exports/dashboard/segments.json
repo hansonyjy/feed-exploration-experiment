@@ -1,6 +1,7 @@
 {
  "page": "segments",
  "sources": {"segments": {"path": "exports/segments_prod.csv", "sha256": "a06eae063c37ac95607a572a47b21a458b37f1aa3207d94ace6bc1043746a00b", "rows_kept": 220}, "merge_map": {"path": "dbt/seeds/segment_merge_map.csv", "sha256": "15e831756fd7fc60b35763751423f4c743c7265eacc7d977e03400f227fdd56e", "rows_kept": 68}, "category_labels": {"path": "dbt/seeds/category_labels.csv", "sha256": "b095aad3fa7cfe3dfc5cb489d0c46aa920749eafed32a010b2d5adfb8cd0f9c5", "rows_kept": 39}},
+ "derived": {"segments_facts": {"script": "scripts/build_dashboard_data.py", "from": ["exports/segments_prod.csv", "dbt/seeds/category_labels.csv"]}},
  "tables": {
   "segments": {"columns": ["dimension", "segment", "metric", "n_users", "n_requests", "estimate", "ci_low", "ci_high", "baseline_rec", "relative", "reg_coef", "reg_p", "contrast", "contrast_ci_low", "contrast_ci_high", "contrast_boot_p", "contrast_reg_coef", "contrast_reg_se", "contrast_reg_p", "bh_q_reg", "bh_q_boot", "by_q_reg", "by_q_boot", "finding_bh", "finding_by", "lead_bh", "effect_agree", "interpretable", "segment_note"], "types": ["str", "str", "str", "int", "int", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "bool", "bool", "bool", "bool", "bool", "str"], "rows": [
    ["activity_tercile", "2", "effective_view", 8869, 375966, -0.35915361680063196, -0.3621131410532166, -0.35622691037131876, 0.56283276643376, -0.63811781797338, -0.35836882782660473, 0.0, -0.019238186252973966, -0.022880044218614354, -0.015682931174243363, 0.0005, -0.020313833434619885, 0.001997593560182013, 0.0, 0.0, 0.0006875, 0.0, 0.0030062490516637556, true, true, false, true, true, null],
@@ -334,6 +335,9 @@
    ["38", "读书", "Books"],
    ["39", "影视综", "Film, TV and variety"],
    ["other", null, "Other (no category, or under 1,000 random exposures)"]
+  ]},
+  "segments_facts": {"columns": ["worst_category", "worst_label", "worst_estimate", "best_category", "best_label", "best_estimate", "effective_view_methods_agree_all"], "types": ["str", "str", "float", "str", "str", "float", "bool"], "rows": [
+   ["3", "Gaming", -0.42241855840608844, "9", "Comedy", -0.283417672002918, true]
   ]}
  }
 }

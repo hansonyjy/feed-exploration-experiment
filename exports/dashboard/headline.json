@@ -1,6 +1,7 @@
 {
  "page": "headline",
  "sources": {"comparison_a": {"path": "exports/comparison_a_prod.csv", "sha256": "1ef89f4a532a0d12ab04b9308a0d3b97dff4bd0d872fed25779254aaadcdf5d5", "rows_kept": 63}, "missing_duration": {"path": "exports/missing_duration_by_arm_prod.csv", "sha256": "36e3d5602c66bf51603c6e46eb4ff14789de60064369b391c9ae8dcacce3daa2", "rows_kept": 2}},
+ "derived": {"scorecard": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_a_prod.csv"]}, "waterfall": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_c_prod.csv", "exports/comparison_a_prod.csv"]}, "headline_facts": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_a_prod.csv", "exports/exploration_budget_prod.csv"]}},
  "tables": {
   "comparison_a": {"columns": ["analysis", "metric", "variant", "weighting", "estimate", "ci_low", "ci_high", "baseline_rec", "relative", "n_users", "n_units", "reg_coef", "reg_se", "reg_p", "diag_bucket_coef", "diag_bucket_se", "diag_bucket_p", "bootstrap_and_regression_agree"], "types": ["str", "str", "str", "str", "float", "float", "float", "float", "float", "int", "int", "float", "float", "float", "float", "float", "float", "bool"], "rows": [
    ["A_request", "effective_view", "main", "equal_user", -0.34624536836541453, -0.3480337262064047, -0.34452867341628246, 0.5482530394220824, -0.6315429983395885, 26955, 1081088, -0.34468958534290517, 0.0009763902717588245, 0.0, -0.334301423511067, 0.0009907072435563476, 0.0, true],
@@ -70,6 +71,25 @@
   "missing_duration": {"columns": ["is_rand", "n_items", "missing_rate"], "types": ["int", "int", "float"], "rows": [
    [0, 118902398, 0.07814593444953061],
    [1, 1153471, 0.03107577043549426]
+  ]},
+  "scorecard": {"columns": ["metric", "recommended_rate", "random_rate", "estimate", "ci_low", "ci_high", "relative", "relative_ci_low", "relative_ci_high", "methods_agree"], "types": ["str", "float", "float", "float", "float", "float", "float", "float", "float", "bool"], "rows": [
+   ["effective_view", 0.5482530394220824, 0.20200767105666784, -0.34624536836541453, -0.3480337262064047, -0.34452867341628246, -0.6315429983395885, -0.6348049188624101, -0.628411789161174, true],
+   ["naive_completion", 0.23355055648433476, 0.034150979324967384, -0.19939957715936737, -0.20085582679667496, -0.19796076590864517, -0.8537747893259332, -0.860010054440385, -0.847614190642801, true],
+   ["watch_time_ms", 23456.824802051917, 7100.390139107469, -16356.434662944448, -16519.731304794703, -16195.659851799186, -0.6972996047407767, -0.7042611881276283, -0.6904455308197744, true],
+   ["like_", 0.02437128784796797, 0.0049372584875716705, -0.019434029360396298, -0.020102887023365133, -0.018789268457632034, -0.7974149532691466, -0.8248594472631151, -0.7709591948871364, true],
+   ["comment_", 0.0035426998980322235, 0.0003090994857855118, -0.0032336004122467117, -0.003431090822016358, -0.003047722047550636, -0.9127503049419456, -0.9684960399615394, -0.8602823087678071, true],
+   ["forward_", 0.0012409764847210367, 0.0003405697789932605, -0.0009004067057277762, -0.0009949346366239227, -0.0008083540937827473, -0.725563068127098, -0.8017352857798731, -0.6513855046693007, true],
+   ["profile_enter", 0.026114929890675622, 0.005383799301402061, -0.02073113058927356, -0.021273691297728152, -0.020200749510213927, -0.793842092475831, -0.8146179747288527, -0.773532595905097, true],
+   ["new_author_follow", 0.001959999659699107, 0.00029969327667257566, -0.0016603063830265313, -0.0018183774695955098, -0.0015016792865033878, -0.8470952404560195, -0.9277437680140523, -0.7661630343006901, true],
+   ["new_category_effective_view", 0.017611551168122064, 0.012082115591355785, -0.00552943557676628, -0.006289950815048058, -0.004812321708689495, -0.3139664146548818, -0.35714916619231335, -0.2732480326548452, true],
+   ["hate", 0.0005282972473932245, 0.0011108016559500213, 0.0005825044085567969, 0.00044441909746580056, 0.0007275398319853433, 1.1026073132711682, 0.8412292504999721, 1.3771410613536998, true],
+   ["fast_skip", 0.33129461634790036, 0.6356350280697562, 0.30434041172185594, 0.30245828701711575, 0.3061766745375232, 0.9186397747021063, 0.9129586539960465, 0.9241824630678567, true]
+  ]},
+  "waterfall": {"columns": ["recommended_rate", "content_gap", "targeting_gap", "random_rate", "total_gap", "targeting_share", "n_users", "a_gap"], "types": ["float", "float", "float", "float", "float", "float", "int", "float"], "rows": [
+   [0.5490179699697239, 0.02082072764816754, 0.3359385555706461, 0.19225868675091018, 0.3567592832188136, 0.9416392827670377, 22335, 0.34624536836541453]
+  ]},
+  "headline_facts": {"columns": ["n_users", "n_random_requests", "n_metrics", "all_methods_agree", "top_share"], "types": ["int", "int", "int", "bool", "float"], "rows": [
+   [26955, 1081088, 11, true, 0.01388]
   ]}
  }
 }

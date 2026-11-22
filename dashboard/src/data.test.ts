@@ -20,7 +20,9 @@ describe("committed page data", () => {
       const data = parsePage(raw);
       expect(data.page).toBe(page);
       for (const [name, rows] of Object.entries(data.tables)) {
-        expect(rows.length).toBe(raw.sources[name].rows_kept);
+        // Source tables keep their row count; derived tables are listed under "derived".
+        if (raw.sources[name]) expect(rows.length).toBe(raw.sources[name].rows_kept);
+        else expect(raw.derived?.[name]).toBeDefined();
       }
     });
   }

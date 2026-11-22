@@ -18,6 +18,7 @@ export interface Source {
 export interface RawPage {
   page: string;
   sources: Record<string, Source>;
+  derived?: Record<string, { script: string; from: string[] }>;
   tables: Record<string, RawTable>;
 }
 

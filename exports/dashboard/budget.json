@@ -1,6 +1,7 @@
 {
  "page": "budget",
  "sources": {"budget": {"path": "exports/exploration_budget_prod.csv", "sha256": "29a100cb0a00a549d5fbdd116fb2d46f68bfe965e40f8fc6e8801e2600499b92", "rows_kept": 45}, "category_labels": {"path": "dbt/seeds/category_labels.csv", "sha256": "b095aad3fa7cfe3dfc5cb489d0c46aa920749eafed32a010b2d5adfb8cd0f9c5", "rows_kept": 39}},
+ "derived": {"budget_facts": {"script": "scripts/build_dashboard_data.py", "from": ["exports/exploration_budget_prod.csv"]}},
  "tables": {
   "budget": {"columns": ["dimension", "segment", "hate_baseline", "hate_rel_effect", "hate_rel_low", "hate_rel_high", "hate_feed_change_at_low", "hate_feed_change_at_high", "hate_feed_change_at_high_ci_low", "hate_feed_change_at_high_ci_high", "hate_interval_crosses_limit", "fast_skip_baseline", "fast_skip_rel_effect", "fast_skip_rel_low", "fast_skip_rel_high", "fast_skip_feed_change_at_low", "fast_skip_feed_change_at_high", "fast_skip_feed_change_at_high_ci_low", "fast_skip_feed_change_at_high_ci_high", "fast_skip_interval_crosses_limit", "recommended_share", "recommended_share_label", "binding_guardrail", "any_interval_crosses_limit", "effective_view_change_per_1000_impressions", "new_author_follow_change_per_1000_impressions", "new_category_effective_view_change_per_1000_impressions"], "types": ["str", "str", "float", "float", "float", "float", "float", "float", "float", "float", "bool", "float", "float", "float", "float", "float", "float", "float", "float", "bool", "float", "str", "str", "bool", "float", "float", "float"], "rows": [
    ["active_group", "full_active", 0.0003356484249145291, 1.1337820305380866, 0.7644961745209401, 1.5612535410428543, 0.00746028576094061, 0.015736894583868642, 0.010611206902350649, 0.02167019914967482, true, 0.3347996880102884, 0.9007622981894231, 0.8939429920205322, 0.9075353680187427, 0.005927015922086404, 0.012502580698869193, 0.012407928729244986, 0.012596590908100148, false, 0.01388, "at least 1.388% (top of the observed range)", "none in range", true, -4.667799206938959, -0.01555856609620149, 0.0007377731391002186],
@@ -89,6 +90,9 @@
    ["38", "读书", "Books"],
    ["39", "影视综", "Film, TV and variety"],
    ["other", null, "Other (no category, or under 1,000 random exposures)"]
+  ]},
+  "budget_facts": {"columns": ["n_segments", "n_no_guardrail_crossed"], "types": ["int", "int"], "rows": [
+   [44, 37]
   ]}
  }
 }
