@@ -41,6 +41,9 @@ PAGES: dict[str, dict[str, tuple[str, object, list[str]]]] = {
         "comparison_a": ("exports/comparison_a_prod.csv", not_session_exit,
                          ["analysis", "metric", "variant", "weighting"]),
         "missing_duration": ("exports/missing_duration_by_arm_prod.csv", keep_all, ["is_rand"]),
+        "load_tables": ("docs/load_manifest.md", keep_all, ["table"]),
+        "dbt_nodes": ("exports/build/dbt_nodes.csv", keep_all, ["resource_type", "name"]),
+        "bytes_billed": ("exports/build/bytes_billed_by_month.csv", keep_all, ["month_pt"]),
     },
     "decomposition": {
         "comparison_c": ("exports/comparison_c_prod.csv", keep_all, ["metric", "variant", "term"]),
@@ -96,9 +99,23 @@ def convert(value: str, kind: str):
     return value
 
 
+def load_manifest_csv(text: str) -> list[str]:
+    """The 'BigQuery tables' table of docs/load_manifest.md, as CSV lines (counts only)."""
+    section = text.split("## BigQuery tables", 1)[1].split("\n## ", 1)[0]
+    out = ["table,parquet_rows,bigquery_rows,event_dates"]
+    for line in section.splitlines():
+        cells = [c.strip().strip("`") for c in line.strip().strip("|").split("|")]
+        if len(cells) == 4 and cells[1].replace(",", "").isdigit():
+            out.append(",".join([cells[0], cells[1].replace(",", ""), cells[2].replace(",", ""), cells[3]]))
+    return out
+
+
 def read_table(path: str, keep, key: list[str]) -> tuple[dict, dict]:
     raw = (REPO_ROOT / path).read_bytes()
-    reader = csv.DictReader(raw.decode("utf-8").splitlines())
+    lines = raw.decode("utf-8").splitlines()
+    if path.endswith(".md"):
+        lines = load_manifest_csv(raw.decode("utf-8"))
+    reader = csv.DictReader(lines)
     columns = list(reader.fieldnames or [])
     rows = [r for r in reader if keep(r)]
     types = {c: column_type([r[c] for r in rows]) for c in columns}
@@ -162,6 +179,17 @@ def derive_headline(src: dict) -> dict:
     rec, content, targeting = c["total"]["baseline_rec_all"], c["content"]["estimate"], c["targeting"]["estimate"]
     shares = [r["recommended_share"] for r in recs(src["budget"]) if r["recommended_share"] is not None]
     ev = a["effective_view"]
+    loads = {r["table"]: r for r in recs(src["load_tables"])}
+    nodes = recs(src["dbt_nodes"])
+    models = [n for n in nodes if n["resource_type"] == "model"]
+    billed = recs(src["bytes_billed"])
+    build = [[
+        sum(loads[t]["bigquery_rows"] for t in ("log_random_treat", "log_standard_pre", "log_standard_treat")),
+        loads["user_features"]["bigquery_rows"], loads["video_features_basic"]["bigquery_rows"],
+        sum(r["bytes_billed"] for r in billed), max(r["snapshot_date"] for r in billed),
+        len(models), *(sum(n["layer"] == layer for n in models) for layer in ("staging", "intermediate", "marts")),
+        sum(n["resource_type"] == "test" for n in nodes), sum(n["resource_type"] == "seed" for n in nodes),
+    ]]
     return {
         "scorecard": (as_table(["metric", "recommended_rate", "random_rate", "estimate", "ci_low", "ci_high",
                                 "relative", "relative_ci_low", "relative_ci_high", "methods_agree"], score),
@@ -175,6 +203,10 @@ def derive_headline(src: dict) -> dict:
                                     [[ev["n_users"], ev["n_units"], len(score),
                                       all(r[-1] is True for r in score), max(shares)]]),
                            ["comparison_a", "budget"]),
+        "build_facts": (as_table(["raw_log_rows", "n_users_dataset", "n_videos", "bytes_billed_total",
+                                  "bytes_snapshot_date", "n_models", "n_models_staging", "n_models_intermediate",
+                                  "n_models_marts", "n_tests", "n_seeds"], build),
+                        ["load_tables", "dbt_nodes", "bytes_billed"]),
     }
 
 
@@ -297,6 +329,15 @@ def content_checks(texts: dict[str, str]) -> list[str]:
     (hf,) = records(texts["headline"], "headline_facts")
     if hf["top_share"] != 0.01388:
         errors.append(f"headline: top observed share is {hf['top_share']}, expected 0.01388 (D48)")
+
+    for r in records(texts["headline"], "load_tables"):
+        if r["parquet_rows"] != r["bigquery_rows"]:
+            errors.append(f"build: {r['table']} row counts differ between parquet and BigQuery")
+    (bf,) = records(texts["headline"], "build_facts")
+    if bf["n_models"] != bf["n_models_staging"] + bf["n_models_intermediate"] + bf["n_models_marts"]:
+        errors.append("build: dbt models are not all in staging, intermediate or marts")
+    if not (bf["raw_log_rows"] > 0 and bf["n_tests"] > 0 and bf["bytes_billed_total"] > 0):
+        errors.append("build: a build statistic is missing")
 
     b = records(texts["budget"], "budget")
     if len(b) != 45 or not any(r["dimension"] == "overall" for r in b):
