@@ -33,7 +33,7 @@ Each entry: date, decision, alternatives considered, reason. Newest first.
 - Tableau Public (the owner publishes): the headline forest plot, a segment heatmap of effective-view
   cost, and hate at 1.388% vs the limit per segment (actionable vs watch list).
 - Before the repo goes public (the owner flips visibility): scan the full history for secrets,
-  credentials, profiles.yml and raw data; check commit emails; check for any TikTok internal information.
+  credentials, profiles.yml and raw data; check commit emails; check for any non-public information from any employer.
 - Workflow: a small PR per step or page so the owner can merge daily (this replaces "one phase per
   branch" for Phase 3). Merge commits only.
 - Schedule: Nov 23-24 scan, D61, label seed, data build, Pages skeleton; Nov 25-28 pages 1 and 4;
@@ -556,8 +556,8 @@ Each entry: date, decision, alternatives considered, reason. Newest first.
 
 ## 2026-11-15 · D4 · BigQuery + dbt on KuaiRand-27K
 - Alternatives: DuckDB locally; KuaiRand-1K only.
-- Reason: 27K gives 300M+ impressions and enough users per segment. BigQuery and dbt match the stack
-  of the target employers. Expected cost: under $3 total with the controls in CLAUDE.md.
+- Reason: 27K gives 300M+ impressions and enough users per segment. BigQuery and dbt are a common
+  production stack for analysis at this scale. Expected cost: under $3 total with the controls in CLAUDE.md.
 
 ## 2026-11-15 · D3 · Segments from pre-period data only
 - Reason: segment membership cannot be affected by the treatment window.
