@@ -2,6 +2,122 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-21 · D60 · B-C bridge and the reading of B's hate result (reporting only)
+- Post-results: decided 2026-11-21 by the owner after the prod B and C results were seen. Adds a
+  decomposition to the report; no estimate changes.
+- What was seen: B's effective-view gap (equal weight per video, all pool exposures) is -25.0 pp; C's
+  targeting gap (users and their days, C's sample) is 33.6 pp in recommended-minus-random terms.
+- Bridge, mirroring the A-C bridge (D59 addendum), in random-minus-recommended terms for every metric
+  (main run): B on all pool exposures -> B on C's sample (the same equal-video estimator restricted to
+  pool exposures on C's kept user-days) = sample part -> minus C's targeting gap = weighting part
+  (equal video weight vs users weighted by their days). The two parts add up to the full difference.
+- B's hate result is labelled underpowered, not contradictory: its 95% interval (-0.012 to +0.060 pp)
+  includes both zero and A's +0.058 pp, and its minimum detectable effect at 80% power is about
+  0.05 pp (2.8 x the video-bootstrap standard error), close to A's effect.
+- The negative watch-time content gap is explained by pool length, citing HC 2 (data_quality.md;
+  exports/health/hc02b_pool_attributes.csv): median duration 81 s for pool videos vs 34 s for
+  standard-exposed videos (distinct videos; the standard side from the dev sample).
+
+## 2026-11-20 · D59 · Segment test and budget details left open by D57
+- Decided 2026-11-20 while writing the Phase 2 scripts, before any segment or budget outcome was read.
+- Segment metrics: the five the budget uses, effective view (cost), new-author follow and new-category
+  effective view (benefit), hate and fast skip (guardrails). Main run only, equal user weight.
+- Segment contrast (D57): segment minus the rest of its dimension on merged segments. Bootstrap: users
+  resampled jointly for both sides (2,000 draws, seed 20261115), with a two-sided bootstrap p-value of
+  2 x min(share of draws <= 0, share >= 0), floored at 1/2,000. Regression: request fixed effects with
+  is_rand and is_rand x in_segment, weights giving each user a total of 1 on each side, SEs clustered by
+  user; the interaction is the contrast.
+- Multiple testing: BH (q = 0.10) and BY run per metric across all contrasts of all dimensions, on the
+  regression p-values and on the bootstrap p-values separately. A contrast is a finding only if it passes
+  in both and the two signs agree; otherwise it is a lead (BH) and noted as such. BY is the robustness
+  check for the negative correlation of contrasts within a dimension (D57).
+- Budget baseline (D57 item 4): for user segments (activity, tenure, active group, follow band), the D48
+  baseline computed within the segment (per user-day recommended rate, then the user's mean over days,
+  then the mean over users; rows with a valid duration, as in A's main run). For item segments (the
+  random item's duration bucket or category), the feed is not split by the random item's type, so the
+  overall D48 baseline is used; the numerator (the segment's A estimate) stays segment-specific.
+- Budget intervals: the feed-level change at share s is s x A / baseline, with A's bootstrap interval
+  (the baseline is treated as fixed). A segment is flagged if 2% lies inside [0.658% x lo, 1.388% x hi]
+  for the relative effect interval [lo, hi], i.e. its interval crosses the limit in the observed range.
+  The recommended share is the largest s in [0.658%, 1.388%] that keeps every binding guardrail (hate,
+  fast skip; D57) at or below 2% at the point estimate; if a guardrail binds below 0.658%, the share is
+  reported as "below the observed range", never extrapolated; if none binds, "at least 1.388% (top of the
+  observed range)".
+- Addendum (owner, 2026-11-20, before any prod Comparison C outcome was read; the dev C run was a code
+  check whose estimates were not inspected): because the same-day rule keeps only part of the random
+  items (43% on dev), C also reports Comparison A restricted to C's sample (the kept user-days; main
+  run, equal user weight, bootstrap and request fixed-effects regression as in A), and compares the
+  sample's users with all users who received a random item: activity-tercile shares and random items
+  per user (mean and median). The C vs A note then separates a sample difference (A on all requests vs
+  A on C's sample) from the weighting difference (A on C's sample vs C's total gap). The owner also
+  confirmed the overall D48 baseline for item segments.
+
+## 2026-11-20 · D58 · How the minimum-detectable-effect merge (D39, D40) is computed
+- Decided 2026-11-20 while building Phase 2, before any segment outcome was read. Implementation of the
+  pre-registered rule; it changes no locked input.
+- Variance and within-user correlation come from tab-1 pre-period recommended impressions only, through
+  a placebo within-request difference that mirrors Comparison A: in each pre-period request with at
+  least two recommended items with a valid duration, one item is picked by a fixed hash
+  (`farm_fingerprint` of user, time and video) and d = its effective view minus the mean of the others
+  (`int_segment_power_inputs`). sigma^2 = variance of d; rho = one-way ANOVA intraclass correlation of d
+  by user (unequal group sizes).
+- Design: the segment's equal-user Comparison A estimate. Var = sum over users of
+  sigma^2 x (rho + (1 - rho) / m_u), divided by N^2, where m_u is the user's main-run random requests in
+  the segment (treatment-window counts only) and N the segment's users.
+  MDE = (1.96 + 0.84) x sqrt(Var) (two-sided alpha = 0.05, 80% power). A segment merges if MDE > 1 pp.
+- sigma^2 and rho are computed within each user segment (activity, tenure, active group, follow band).
+  For item segments (duration bucket, category of the random item) the pre-period cannot be split by
+  the random item, so the overall sigma^2 and rho are used, with segment-specific m_u.
+- Merge order (D40): with the smaller adjacent segment in the dimension's natural order (activity:
+  no_pre_period, 1, 2, 3; active group: new_or_low, middle, full, high; tenure and follow: band order;
+  duration: bucket 1-10); categories merge with the smallest segment. Repeat and recompute until every
+  segment passes. `unknown` users are excluded from that dimension's tests (D14) and stay in overall
+  results.
+- The resulting map is computed on full data (D27) and committed as `dbt/seeds/segment_merge_map.csv` on
+  its own before any segment outcome is read (D57). A dev run of the script checks the code only.
+- Addendum (2026-11-21, before any segment outcome was read): a first map was generated on prod, found
+  to skip `no_pre_period` (374 users had no MDE, because they have no pre-period requests to estimate
+  sigma^2 and rho from, so the segment was never tested for merging), and discarded uncommitted before
+  any segment outcome was read. Such segments now use the overall sigma^2 and rho, as item segments do,
+  and the script stops if any MDE cannot be computed (commit 83a0560). The rerun merged `no_pre_period`
+  into tercile 1 and changed nothing else. rho estimates below zero are set to 0 (most segments; the
+  placebo differences are nearly uncorrelated within user).
+- The map was confirmed by the owner and committed on its own as 9929e2c (44 final segments, every MDE
+  at or below 0.97 pp). Category merges stay as D40 makes them; the segment report interprets only
+  unmerged categories and labels merged category groups as power-based groupings with no topical
+  meaning.
+
+## 2026-11-20 · D57 · Phase 2 choices: budget guardrails, segment tests, Comparison C weighting, budget inputs
+- Decided 2026-11-20 by the owner when approving the Phase 2 plan: after the Comparison A results (dev
+  and prod) were seen, and before any Comparison B, Comparison C, segment or budget outcome was read.
+  Item 1 reverses part of D54 and is a post-results deviation from that decision; items 2-4 fill in
+  details analysis_plan.md leaves open.
+1. **Hate constrains the budget as in D48.** D54 kept hate out of the binding constraints because it was
+   inconclusive on dev. On prod it is a finding (D56), so that premise is gone. What was seen: prod A,
+   hate +0.058 pp (+110%). The budget's binding guardrails are hate and fast skip; session exit stays out
+   (D53, D54).
+2. **What Benjamini-Hochberg corrects.** Every segment's effect against zero is expected to be
+   significant, so that test cannot speak to H4. The tested contrast is each segment's Comparison A
+   effect minus the effect in the rest of its dimension, with "rest" defined on the merged segments
+   (after the D14/D46/D47 and minimum-detectable-effect merges). BH at q = 0.10 runs across all segments
+   of all dimensions, separately for each metric. Effects against zero are reported too. Contrasts within
+   a dimension are negatively correlated (each segment is part of the others' "rest"), which BH does not
+   assume away cleanly, so a Benjamini-Yekutieli run (valid under any dependence) is reported as
+   robustness, and the report says so.
+3. **Comparison C within day.** Random items cluster in the high regime, so each user's days are weighted
+   by that user's random items that day. All three terms (rec(all), rec(pool), rand) use the same
+   user-days, which keeps the decomposition exactly additive; user-days with no recommended pool item
+   drop for all three terms, and the share of random items kept is reported. Users are then equally
+   weighted, as in A. C's total gap is reported next to A's estimate; they differ by construction (A
+   compares items in the same request; C compares arm rates over a user's day), and the report explains
+   the difference as a weighting difference, not a contradiction.
+4. **Budget inputs.** rand - rec is the segment's Comparison A estimate (main run), divided by the
+   segment's own recommended-rate baseline (the D48 baseline computed within the segment). The feed-level
+   change s x (rand - rec) / rec uses the bootstrap interval as well as the point estimate, and segments
+   whose interval crosses the 2% limit inside the observed range (0.658% to 1.388%) are flagged.
+- Also fixed now: the segment merge map (`dbt/seeds/segment_merge_map.csv`) is committed on its own
+  before any segment outcome is read.
+
 ## 2026-11-20 · D56 · Hate classified by the pre-registered headline rule on prod
 - Decided 2026-11-20 by the owner after the prod Comparison A results were seen. Not a deviation: it
   applies the pre-registered rule ("a headline result requires both methods to agree in sign and
