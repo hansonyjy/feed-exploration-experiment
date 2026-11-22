@@ -10,7 +10,6 @@ import {
   guardrailChange,
   status,
   type Change,
-  type Guardrail,
   type Status,
 } from "../simulate";
 import { el } from "../ui";
@@ -49,25 +48,37 @@ const USER_LABELS: Record<string, string> = {
   "follow_band/500+": "Follows over 500 accounts",
 };
 
-const STATUS_TEXT: Record<Status, { badge: string; detail: string }> = {
-  actionable: { badge: "Actionable", detail: "The guardrail crosses the limit inside the observed range, even at the low end of its interval. Limit exploration here." },
-  watch: { badge: "Watch list", detail: "The point estimate crosses the limit inside the observed range, but the interval is too wide to say. Watch it in the next test." },
-  none: { badge: "No binding", detail: "No guardrail crosses the limit up to 1.388%, the highest share in the data." },
-};
+const BADGE: Record<Status, string> = { actionable: "Actionable", watch: "Watch list", none: "No binding" };
 
 function key(r: Row): string {
   return `${r.dimension}/${r.segment}`;
 }
 
-function labeler(data: Data): (r: Row) => string {
+interface Labels {
+  label: (r: Row) => string;
+  mixed: (r: Row) => boolean;
+  members: (r: Row) => string;
+}
+
+// Merged category groups were formed for sample size only (D40): they get a neutral numbered name,
+// are shown in grey and are not interpreted; their member categories are listed in the tooltip.
+function labeler(data: Data): Labels {
   const cats = new Map(data.tables.category_labels.map((c) => [String(c.category_segment), String(c.label_en)]));
-  return (r: Row) => {
+  const groups = data.tables.budget
+    .filter((r) => r.dimension === "category_segment" && String(r.segment).includes("+"))
+    .map((r) => String(r.segment))
+    .sort();
+  const mixed = (r: Row) => r.dimension === "category_segment" && String(r.segment).includes("+");
+  const label = (r: Row) => {
     const seg = String(r.segment);
     if (r.dimension === "overall") return "Whole feed";
-    if (r.dimension === "category_segment") return seg.includes("+") ? `Merged categories ${seg}` : cats.get(seg) ?? seg;
+    if (mixed(r)) return `Mixed category group ${groups.indexOf(seg) + 1} (not interpreted)`;
+    if (r.dimension === "category_segment") return cats.get(seg) ?? seg;
     if (r.dimension === "duration_bucket") return `Length decile ${seg.replace("+", " and ")}`;
     return USER_LABELS[key(r)] ?? seg;
   };
+  const members = (r: Row) => (mixed(r) ? String(r.segment).split("+").map((c) => cats.get(c) ?? c).join(", ") : "");
+  return { label, mixed, members };
 }
 
 // Percentage points with enough digits for rare events (hate changes are around 0.001 pp).
@@ -102,33 +113,58 @@ function guardrailRow(name: string, c: Change, limit: number): HTMLElement {
   );
 }
 
-function overview(rows: Row[], label: (r: Row) => string, limit: number, selected: string, width: number): Element {
-  const pts = rows
+interface Point {
+  key: string;
+  label: string;
+  value: number;
+  low: number;
+  high: number;
+  status: Status;
+  mixed: boolean;
+  tip: string;
+}
+
+function points(rows: Row[], labels: Labels, limit: number): Point[] {
+  return rows
     .map((r) => {
       const c = guardrailChange(r, "hate", SHARE_MAX);
-      return { key: key(r), label: label(r), value: c.relative, low: c.relativeLow, high: c.relativeHigh, status: status(r, limit) };
+      const mixed = labels.mixed(r);
+      const label = labels.label(r);
+      const tip = `${label}${mixed ? `\nCategories: ${labels.members(r)}` : ""}\nHate at 1.388%: ${pctFine(c.relative)} (${pctFine(c.relativeLow)} to ${pctFine(c.relativeHigh)})`;
+      return { key: key(r), label, value: c.relative, low: c.relativeLow, high: c.relativeHigh, status: status(r, limit), mixed, tip };
     })
     .sort((a, b) => b.value - a.value);
+}
+
+function overview(pts: Point[], domain: [number, number], limit: number, selected: string, width: number, showLimitLabel: boolean): Element {
   const narrow = width < 600;
-  const color = (p: { status: Status }) => (p.status === "none" ? "var(--ink-2)" : "var(--bad)");
-  const maxX = Math.max(limit, ...pts.map((p) => p.high)) * 1.05;
+  const max = narrow ? 24 : 40;
+  const short = (s: string) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
+  const color = (p: Point) => (p.mixed ? "var(--ink-3)" : p.status === "none" ? "var(--ink-2)" : "var(--bad)");
+  const marginLeft = narrow ? 150 : 260;
   return Plot.plot({
     width,
-    height: pts.length * 17 + 40,
-    marginLeft: narrow ? 150 : 230,
+    height: pts.length * 18 + (showLimitLabel ? 46 : 30),
+    marginLeft,
     marginRight: 16,
     marginTop: 24,
+    marginBottom: showLimitLabel ? 22 : 6,
     style: { fontFamily: "var(--sans)", fontSize: narrow ? "11px" : "12px" },
-    x: { domain: [Math.min(0, ...pts.map((p) => p.low)), maxX], label: null, tickFormat: (d: number) => pct(d), grid: true, axis: "top" },
-    y: { domain: pts.map((p) => p.label), label: null, tickSize: 0, tickFormat: (d: string) => { const max = narrow ? 24 : 34; return d.length > max ? `${d.slice(0, max - 1)}…` : d; } },
+    x: { domain, label: null, tickFormat: (d: number) => pct(d), grid: true, axis: "top" },
+    y: { domain: pts.map((p) => p.label), axis: null },
     marks: [
+      // Selected row: a light band inside the plot area only.
+      Plot.barX(pts.filter((p) => p.key === selected), { y: "label", x1: domain[0], x2: domain[1], fill: "var(--row-hover)" }),
       Plot.ruleX([0], { stroke: "var(--ink-3)" }),
       Plot.ruleX([limit], { stroke: "var(--bad)", strokeDasharray: "4,3" }),
-      Plot.text([limit], { x: (d: number) => d, frameAnchor: "bottom", dy: -4, dx: 4, textAnchor: "start", text: () => `limit ${(limit * 100).toFixed(1)}%`, fill: "var(--bad)", fontFamily: "var(--mono)" }),
-      Plot.barX(pts.filter((p) => p.key === selected), { y: "label", x1: Math.min(0, ...pts.map((p) => p.low)), x2: maxX, fill: "var(--accent-weak)" }),
-      Plot.ruleY(pts, { y: "label", x1: "low", x2: "high", stroke: color, strokeOpacity: 0.7 }),
-      Plot.dot(pts.filter((p) => p.status !== "watch"), { y: "label", x: "value", fill: color, r: 3.2 }),
-      Plot.dot(pts.filter((p) => p.status === "watch"), { y: "label", x: "value", stroke: "var(--bad)", fill: "var(--bg)", strokeWidth: 1.5, r: 3.4 }),
+      ...(showLimitLabel
+        ? [Plot.text([limit], { x: (d: number) => d, frameAnchor: "bottom", dy: 14, dx: 4, textAnchor: "start", text: () => `limit ${(limit * 100).toFixed(1)}%`, fill: "var(--bad)", fontFamily: "var(--mono)" })]
+        : []),
+      Plot.text(pts, { y: "label", text: (p: Point) => short(p.label), frameAnchor: "left", textAnchor: "end", dx: -8, fill: (p: Point) => (p.mixed ? "var(--ink-3)" : "var(--ink)") }),
+      Plot.ruleY(pts, { y: "label", x1: "low", x2: "high", stroke: color, strokeOpacity: 0.75 }),
+      Plot.dot(pts.filter((p) => p.mixed || p.status !== "watch"), { y: "label", x: "value", fill: color, r: 3.2 }),
+      Plot.dot(pts.filter((p) => !p.mixed && p.status === "watch"), { y: "label", x: "value", stroke: "var(--bad)", fill: "var(--bg)", strokeWidth: 1.5, r: 3.4 }),
+      Plot.tip(pts, Plot.pointerY({ y: "label", x: "value", title: "tip" })),
     ],
   });
 }
@@ -148,9 +184,9 @@ export const budget: Page = {
   render(root, data) {
     const rows = data.tables.budget;
     const estimates = new Map(data.tables.budget_estimates.map((e) => [key(e), e]));
-    const label = labeler(data);
+    const labels = labeler(data);
     const facts = data.tables.budget_facts[0];
-    const state = { seg: "overall/all", share: SHARE_MAX, limit: PREREG_LIMIT };
+    const state = { seg: "overall/all", share: SHARE_MAX, limit: PREREG_LIMIT, all: false };
 
     // Controls
     const select = el("select", { id: "seg", class: "control" });
@@ -158,9 +194,9 @@ export const budget: Page = {
       const group = el("optgroup", { label: d.group });
       rows
         .filter((r) => r.dimension === d.key)
-        .map((r) => ({ r, l: label(r) }))
+        .map((r) => ({ r, l: labels.label(r) }))
         .sort((a, b) => (d.key === "category_segment" ? a.l.localeCompare(b.l) : 0))
-        .forEach(({ r, l }) => group.append(el("option", { value: key(r) }, l)));
+        .forEach(({ r, l }) => group.append(el("option", { value: key(r), ...(labels.mixed(r) ? { title: labels.members(r) } : {}) }, l)));
       select.append(group);
     }
     const slider = el("input", {
@@ -197,7 +233,6 @@ export const budget: Page = {
 
     // Outputs
     const badge = el("div", { class: "status" });
-    const bindingLine = el("p", { class: "binding-line" });
     const tbody = el("tbody");
     const table = el(
       "div",
@@ -221,10 +256,11 @@ export const budget: Page = {
       ),
     );
     const costs = el("div", { class: "stats sim-costs" });
-    const outputs = el("div", { class: "sim-outputs", "aria-live": "polite" }, badge, bindingLine, table, el("h3", {}, "Cost per 1,000 feed impressions"), costs);
+    const outputs = el("div", { class: "sim-outputs", "aria-live": "polite" }, badge, table, el("h3", {}, "Cost per 1,000 feed impressions"), costs);
 
-    const chart = el("figure", { class: "overview-chart" });
+    const chart = el("div", { class: "overview-chart" });
     const chartNote = el("p", { class: "section-note" });
+    const toggle = el("button", { type: "button", class: "link-button", "aria-expanded": "false" });
 
     root.append(
       el(
@@ -240,19 +276,41 @@ export const budget: Page = {
       el(
         "section",
         { class: "overview", "aria-labelledby": "overview-title" },
-        el("h2", { id: "overview-title" }, "Hate at 1.388% against its limit, every segment"),
+        el("h2", { id: "overview-title" }, "Hate at 1.388% against its limit"),
         chartNote,
         chart,
+        toggle,
       ),
     );
 
     const stat = (value: string, l: string) => el("div", { class: "stat" }, el("span", { class: "stat-value" }, value), el("span", { class: "stat-label" }, l));
     let drawnWidth = 0;
+    // Default view: segments that bind (actionable or watch list), the whole feed and the selection.
+    // Expanded: every row, grouped into the whole feed, content and users, on one shared axis.
     const drawChart = () => {
       const w = Math.min(chart.clientWidth, 1100);
       if (w <= 0) return;
       drawnWidth = w;
-      chart.replaceChildren(overview(rows, label, state.limit, state.seg, w));
+      const all = points(rows, labels, state.limit);
+      const lo = Math.min(0, ...all.map((p) => p.low));
+      const hi = Math.max(state.limit, ...all.map((p) => p.high)) * 1.05;
+      const domain: [number, number] = [lo, hi];
+      const dim = new Map(rows.map((r) => [key(r), String(r.dimension)]));
+      const content = (k: string) => ["category_segment", "duration_bucket"].includes(dim.get(k)!);
+      const groups: [string | null, Point[]][] = state.all
+        ? [
+            ["Whole feed", all.filter((p) => dim.get(p.key) === "overall")],
+            ["Content: the random video", all.filter((p) => content(p.key))],
+            ["Users", all.filter((p) => dim.get(p.key) !== "overall" && !content(p.key))],
+          ]
+        : [[null, all.filter((p) => p.status !== "none" || dim.get(p.key) === "overall" || p.key === state.seg)]];
+      chart.replaceChildren(
+        ...groups.map(([title, pts], i) =>
+          el("figure", { class: "overview-group" }, ...(title ? [el("figcaption", {}, title)] : []), overview(pts, domain, state.limit, state.seg, w, i === groups.length - 1)),
+        ),
+      );
+      toggle.textContent = state.all ? "Show fewer segments" : `Show all ${rows.length} segments`;
+      toggle.setAttribute("aria-expanded", String(state.all));
     };
 
     const update = () => {
@@ -263,14 +321,17 @@ export const budget: Page = {
       limitTag.className = what ? "tag tag-whatif" : "tag";
       const st = status(row, state.limit);
       badge.className = `status status-${st}`;
-      badge.replaceChildren(el("span", { class: "status-badge" }, STATUS_TEXT[st].badge), el("span", { class: "status-detail" }, STATUS_TEXT[st].detail));
       const b = binding(row, state.limit);
-      const gName = (g: Guardrail | null) => (g === "fast_skip" ? "Fast skip" : "Hate");
-      bindingLine.textContent = !b.inRange
-        ? `No guardrail reaches the ${(state.limit * 100).toFixed(1)}% limit up to 1.388%.`
-        : b.belowRange
-          ? `${gName(b.guardrail)} is already past the ${(state.limit * 100).toFixed(1)}% limit at 0.658%, the lowest share in the data.`
-          : `${gName(b.guardrail)} reaches the ${(state.limit * 100).toFixed(1)}% limit at a share of ${fmtShare(b.share!)}.`;
+      const gName = b.guardrail === "fast_skip" ? "Fast skip" : "Hate";
+      const lim = `${(state.limit * 100).toFixed(1)}% limit`;
+      const where = b.belowRange ? "already at 0.658%, the lowest share in the data" : `at a share of ${fmtShare(b.share ?? SHARE_MAX)}`;
+      const line =
+        st === "none"
+          ? `No guardrail reaches the ${lim} up to 1.388%, the highest share in the data.`
+          : st === "actionable"
+            ? `${gName} crosses the ${lim} ${where}, even at the low end of its interval.`
+            : `${gName} crosses the ${lim} ${where}, but its interval is too wide to be sure.`;
+      badge.replaceChildren(el("span", { class: "status-badge" }, BADGE[st]), el("span", { class: "status-detail" }, line));
       tbody.replaceChildren(
         guardrailRow("Hate (dislike button)", guardrailChange(row, "hate", state.share), state.limit),
         guardrailRow("Fast skip (under 3 s)", guardrailChange(row, "fast_skip", state.share), state.limit),
@@ -281,10 +342,14 @@ export const budget: Page = {
         stat(per1000(c.newAuthorFollow), "follows of a new creator"),
         stat(per1000(c.newCategoryEffectiveView), "effective views in a new category"),
       );
-      chartNote.textContent = `Relative change in the hate rate at a 1.388% share, with its 95% interval, sorted. Red filled: actionable. Red outline: watch list. The dashed line is the ${what ? "what-if " : ""}limit of ${(state.limit * 100).toFixed(1)}%. The selected segment is shaded.`;
+      chartNote.textContent = `Relative change in the hate rate at a 1.388% share, with its 95% interval, sorted. Red filled: actionable. Red outline: watch list. Grey: mixed category groups, formed for sample size and not interpreted (hover for their categories). The dashed line is the ${what ? "what-if " : ""}limit of ${(state.limit * 100).toFixed(1)}%. The selected segment is shaded.`;
       drawChart();
     };
 
+    toggle.addEventListener("click", () => {
+      state.all = !state.all;
+      drawChart();
+    });
     select.addEventListener("change", () => {
       state.seg = select.value;
       update();
