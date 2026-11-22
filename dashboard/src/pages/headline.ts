@@ -50,11 +50,6 @@ const SVG = "http://www.w3.org/2000/svg";
 const AXIS = { min: -1, max: 1.5, ticks: [-1, -0.5, 0, 0.5, 1, 1.5], width: 290, pad: 18 };
 const ax = (v: number) => AXIS.pad + ((v - AXIS.min) / (AXIS.max - AXIS.min)) * (AXIS.width - 2 * AXIS.pad);
 
-export const TITLES = {
-  answer: "At least 1.388% of the feed can go to exploration with no guardrail crossed",
-  insight: "Exploration is cheap. Untargeted exploration is not.",
-};
-
 function one(data: Data, table: string): Row {
   return data.tables[table][0];
 }
@@ -249,7 +244,7 @@ function waterfall(w: Row, width: number): Element {
 export const headline: Page = {
   path: "/",
   nav: "Headline result",
-  title: TITLES.answer,
+  title: "Exploration’s real cost is bad targeting, not bad videos",
   question: "What does a random slot cost compared with a recommended one, and what should the feed do about it?",
   data: ["headline"],
   notes: [
@@ -264,10 +259,10 @@ export const headline: Page = {
   render(root, data) {
     const w = one(data, "waterfall");
     const topShare = share(num(one(data, "headline_facts"), "top_share"));
-    const decision1 =
-      this.title === TITLES.answer
-        ? [el("strong", {}, `At least ${topShare} is supported with no guardrail crossed.`), " It is the highest share in the data, not an optimum. Higher shares need a new test."]
-        : [el("strong", {}, `At least ${topShare} of the feed can go to exploration with no guardrail crossed.`), " It is the highest share in the data, not an optimum. Higher shares need a new test."];
+    const decision1 = [
+      el("strong", {}, `At least ${topShare} of the feed can go to exploration with no guardrail crossed.`),
+      " It is the highest share in the data, not an optimum. Higher shares need a new test.",
+    ];
 
     const chart = el("figure", { class: "hero-chart" });
     root.append(
