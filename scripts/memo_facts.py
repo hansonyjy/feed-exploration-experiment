@@ -99,11 +99,20 @@ def build() -> list[dict]:
         share = sum(float(r["n_random"]) for r in cells) / sum(float(r["n_exposures"]) for r in cells)
         add(f"insertion_rate_{regime}", share, f"{share * 100:.3f}%", "health/hc01b_sample_ratio_tab1_regime.csv")
 
-    # Power for the next experiment (scripts/power_next_experiment.py).
+    # Power for the next experiment, two tiers (scripts/power_next_experiment.py).
     pw = rows("exports/memo/power_next_experiment.csv")[0]
-    add("power_users_per_arm", int(pw["users_per_arm"]), f"{int(pw['users_per_arm']):,}", "memo/power_next_experiment.csv")
-    add("power_users_total", int(pw["users_total_four_arms"]), f"{int(pw['users_total_four_arms']):,}", "memo/power_next_experiment.csv")
-    add("power_sd_user_rate", float(pw["sd_user_rate"]), f"{float(pw['sd_user_rate']) * 100:.1f} pp", "memo/power_next_experiment.csv")
+    num = lambda k: float(pw[k])
+    add("power_slot_users_per_arm", int(pw["slot_users_per_arm"]), f"{int(pw['slot_users_per_arm']):,}", "memo/power_next_experiment.csv")
+    add("power_slot_delta", num("slot_delta"), f"{num('slot_delta') * 100:.0f} pp", "memo/power_next_experiment.csv")
+    add("power_feed_users_per_arm", int(pw["feed_users_per_arm"]), f"{int(pw['feed_users_per_arm']):,}", "memo/power_next_experiment.csv")
+    add("power_feed_users_total", int(pw["feed_users_total_four_arms"]), f"{int(pw['feed_users_total_four_arms']):,}", "memo/power_next_experiment.csv")
+    add("power_feed_delta", num("feed_delta"), f"{num('feed_delta') * 100:.1f} pp", "memo/power_next_experiment.csv")
+    add("power_feed_sd", num("feed_ev_sd"), f"{num('feed_ev_sd') * 100:.1f} pp", "memo/power_next_experiment.csv")
+    add("power_hate_mde_pp", num("hate_mde_at_feed_n"), f"{num('hate_mde_at_feed_n') * 100:.4f} pp", "memo/power_next_experiment.csv")
+    add("power_hate_mde_relative", num("hate_mde_at_feed_n") / num("hate_mean"), f"{num('hate_mde_at_feed_n') / num('hate_mean') * 100:.0f}%", "memo/power_next_experiment.csv")
+    add("power_hate_limit_pp", num("hate_limit_abs"), f"{num('hate_limit_abs') * 100:.4f} pp", "memo/power_next_experiment.csv")
+    add("power_hate_users_for_limit", int(pw["hate_users_per_arm_for_limit"]), f"{int(pw['hate_users_per_arm_for_limit']) / 1e6:.1f} million", "memo/power_next_experiment.csv")
+    add("power_hate_needs_more_users", pw["hate_needs_more_users"] == "True", "yes" if pw["hate_needs_more_users"] == "True" else "no", "memo/power_next_experiment.csv")
     return facts
 
 

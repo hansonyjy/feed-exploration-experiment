@@ -21,6 +21,14 @@ missing_duration_recommended,0.07814593444953061,7.81%,missing_duration_by_arm_p
 missing_duration_random,0.03107577043549426,3.11%,missing_duration_by_arm_prod.csv
 insertion_rate_low,0.0062995961545968225,0.630%,health/hc01b_sample_ratio_tab1_regime.csv
 insertion_rate_high,0.013875992662037203,1.388%,health/hc01b_sample_ratio_tab1_regime.csv
-power_users_per_arm,8077,"8,077",memo/power_next_experiment.csv
-power_users_total,32308,"32,308",memo/power_next_experiment.csv
-power_sd_user_rate,0.19640411853663026,19.6 pp,memo/power_next_experiment.csv
+power_slot_users_per_arm,231,231,memo/power_next_experiment.csv
+power_slot_delta,0.05,5 pp,memo/power_next_experiment.csv
+power_feed_users_per_arm,201921,"201,921",memo/power_next_experiment.csv
+power_feed_users_total,807684,"807,684",memo/power_next_experiment.csv
+power_feed_delta,0.002,0.2 pp,memo/power_next_experiment.csv
+power_feed_sd,0.19640411853663034,19.6 pp,memo/power_next_experiment.csv
+power_hate_mde_pp,8.467989352791742e-05,0.0085 pp,memo/power_next_experiment.csv
+power_hate_mde_relative,0.15964991829005762,16%,memo/power_next_experiment.csv
+power_hate_limit_pp,1.0608197540579757e-05,0.0011 pp,memo/power_next_experiment.csv
+power_hate_users_for_limit,12866455,12.9 million,memo/power_next_experiment.csv
+power_hate_needs_more_users,True,yes,memo/power_next_experiment.csv
