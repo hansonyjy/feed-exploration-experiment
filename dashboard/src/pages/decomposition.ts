@@ -86,6 +86,7 @@ function dumbbell(rows: Row[], keys: string[], width: number): Element {
   });
   const narrow = width < 560;
   const max = Math.max(...bells.flatMap((b) => [b.rec, b.rnd])) * 1.12;
+  const small = (b: Bell) => Math.abs(b.rec - b.rnd) < max * 0.18;
   return Plot.plot({
     width,
     height: bells.length * 40 + 36,
@@ -100,7 +101,9 @@ function dumbbell(rows: Row[], keys: string[], width: number): Element {
       Plot.link(bells, { y1: "label", y2: "label", x1: "rec", x2: "rnd", stroke: (b: Bell) => (b.bad ? "var(--bad)" : "var(--ink-3)"), strokeWidth: 2 }),
       Plot.dot(bells, { y: "label", x: "rec", fill: "var(--ink)", r: 5 }),
       Plot.dot(bells, { y: "label", x: "rnd", fill: "var(--bg)", stroke: "var(--accent)", strokeWidth: 2, r: 5 }),
-      Plot.text(bells, { y: "label", x: (b: Bell) => (b.rec + b.rnd) / 2, text: "gap", dy: -11, fill: (b: Bell) => (b.bad ? "var(--bad)" : "var(--ink-2)"), fontFamily: "var(--mono)", fontSize: 11 }),
+      // Gap label above the bar, or to the right of the dots when the bar is too short to hold it.
+      Plot.text(bells.filter((b) => !small(b)), { y: "label", x: (b: Bell) => (b.rec + b.rnd) / 2, text: "gap", dy: -11, fill: (b: Bell) => (b.bad ? "var(--bad)" : "var(--ink-2)"), fontFamily: "var(--mono)", fontSize: 11 }),
+      Plot.text(bells.filter(small), { y: "label", x: (b: Bell) => Math.max(b.rec, b.rnd), text: "gap", dx: 10, textAnchor: "start", fill: (b: Bell) => (b.bad ? "var(--bad)" : "var(--ink-2)"), fontFamily: "var(--mono)", fontSize: 11 }),
     ],
   });
 }
@@ -111,9 +114,9 @@ function cell(v: number, lo: number, hi: number, seconds: boolean, significant: 
     "td",
     { class: `num${significant ? "" : " ns"}` },
     el("span", { class: "delta" }, value(v, seconds)),
-    el("span", { class: "ci-text cell-ci" }, significant ? range(lo, hi, seconds, d) : "not significant"),
+    el("span", { class: "ci-text cell-ci" }, significant ? range(lo, hi, seconds, d) : "not a finding"),
   );
-  if (!significant) td.title = `95% interval ${range(lo, hi, seconds, d)}; bootstrap and regression do not agree`;
+  if (!significant) td.title = `95% interval ${range(lo, hi, seconds, d)}; not a finding, because bootstrap and regression do not both find an effect`;
   return td;
 }
 
@@ -128,8 +131,9 @@ function decompositionTable(data: Data): HTMLElement {
       const s = !!m.seconds;
       const name = el("th", { scope: "row", class: "c-metric" }, m.label);
       if (m.primary) name.append(el("span", { class: "tag" }, "primary"));
-      if (s) name.append(el("sup", { class: "fn" }, "*"));
+
       const share = num(r, "targeting_share");
+      const opposite = Math.sign(num(r, "content")) !== Math.sign(num(r, "targeting"));
       body.append(
         el(
           "tr",
@@ -138,7 +142,9 @@ function decompositionTable(data: Data): HTMLElement {
           cell(num(r, "total"), num(r, "total_ci_low"), num(r, "total_ci_high"), s, r.total_agree === true),
           cell(num(r, "content"), num(r, "content_ci_low"), num(r, "content_ci_high"), s, r.content_agree === true),
           cell(num(r, "targeting"), num(r, "targeting_ci_low"), num(r, "targeting_ci_high"), s, r.targeting_agree === true),
-          el("td", { class: "num delta" }, `${Math.round(share * 100)}%`),
+          opposite
+            ? el("td", { class: "num delta" }, "n/a", el("sup", { class: "fn" }, "*"))
+            : el("td", { class: "num delta" }, `${Math.round(share * 100)}%`),
         ),
       );
     }
@@ -150,7 +156,7 @@ function decompositionTable(data: Data): HTMLElement {
     el(
       "p",
       { class: "section-note" },
-      "Random minus recommended for the same user on the same day, split into a content part (the random pool's videos) and a targeting part (who they were shown to). Targeting share is the targeting part divided by the whole gap. Grey: not significant, because bootstrap and regression do not agree.",
+      "Random minus recommended for the same user on the same day, split into a content part (the random pool's videos) and a targeting part (who they were shown to). Targeting share is the targeting part divided by the whole gap. Grey: not a finding. Both methods must find an effect for it to count.",
     ),
     el(
       "div",
@@ -177,7 +183,7 @@ function decompositionTable(data: Data): HTMLElement {
     el(
       "p",
       { class: "figure-note" },
-      `* Watch time: pool videos are longer (median ${Math.round(num(pool, "pool_median_s"))} s vs ${Math.round(num(pool, "standard_median_s"))} s for other videos, health check 2), so they hold attention longer whoever sees them. That is why the content part is positive here and targeting is more than the whole gap.`,
+      `* Parts have opposite signs: pool videos are longer (median ${Math.round(num(pool, "pool_median_s"))} s vs ${Math.round(num(pool, "standard_median_s"))} s for other videos, health check 2), so their content part is positive.`,
     ),
   );
 }
@@ -185,7 +191,7 @@ function decompositionTable(data: Data): HTMLElement {
 function hateLine(data: Data): HTMLElement {
   const h = data.tables.hate_facts[0];
   const p3 = (x: number) => pp(x, 3);
-  const content = h.c_content_agree === true ? `the videos themselves add ${p3(num(h, "c_content_rise"))}` : `the content part (${p3(num(h, "c_content_rise"))}) is not significant`;
+  const content = h.c_content_agree === true ? `the videos themselves add ${p3(num(h, "c_content_rise"))}` : `the content part (${p3(num(h, "c_content_rise"))}) is not a finding`;
   return el(
     "section",
     { class: "hate-line", "aria-labelledby": "hate-title" },
@@ -269,11 +275,19 @@ export const decomposition: Page = {
           { class: "hero-main" },
           el("h2", { id: "bells-title" }, "Same video, different audience"),
           el("p", { class: "subtitle" }, `${nVideos.toLocaleString("en-US")} videos shown in both arms`),
+          el(
+            "p",
+            { class: "legend" },
+            el("span", { class: "key key-rec", "aria-hidden": "true" }, "●"),
+            " Recommended",
+            el("span", { class: "key key-rnd", "aria-hidden": "true" }, "○"),
+            " Shown at random",
+          ),
           panels,
           el(
             "p",
             { class: "figure-note" },
-            `Filled dot: the video's rate when recommended. Open dot: its rate when shown at random. For effective view, the same videos reach ${rate(num(ev, "recommended_rate"))} when recommended and ${rate(num(ev, "random_rate"))} at random (${pct(num(ev, "relative"))}). Each video counts equally; the two panels use different scales.`,
+            `For effective view, the same videos reach ${rate(num(ev, "recommended_rate"))} when recommended and ${rate(num(ev, "random_rate"))} at random (${pct(num(ev, "relative"))}). Each video counts equally; the two panels use different scales.`,
           ),
         ),
       ),

@@ -262,3 +262,7 @@ select.control { width: 100%; }
 .hate-line p { max-width: 92ch; color: var(--ink-2); margin: 0; }
 .bridge table { width: auto; }
 .bridge td.num, .bridge th { font-size: 13px; }
+.legend { font-size: 13px; color: var(--ink-2); margin: 4px 0 0; }
+.legend .key { font-size: 14px; }
+.legend .key-rec { color: var(--ink); }
+.legend .key-rnd { color: var(--accent); margin-left: 16px; }
