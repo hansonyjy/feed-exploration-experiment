@@ -8,6 +8,7 @@ raw/
 !dbt/seeds/*.csv
 !exports/diagnostics/*.csv
 !exports/build/*.csv
+!exports/memo/*.csv
 
 # Credentials and local config
 .env

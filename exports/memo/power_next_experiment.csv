@@ -1,0 +1,2 @@
+n_users_measured,mean_user_rate,sd_user_rate,median_items_per_user,delta,alpha,comparisons,power,users_per_arm,users_total_four_arms
+26956,0.5503510719433353,0.19640411853663026,98,0.01,0.05,3,0.8,8077,32308
