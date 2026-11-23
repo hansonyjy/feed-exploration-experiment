@@ -14,7 +14,7 @@ export interface Page {
   data: PageFile[];
   notes: string[];
   // Notes for the About drawer that depend on the data (for example a snapshot date).
-  dataNotes?: (data: Data) => string[];
+  dataNotes?: (data: Data) => (string | Node)[];
   // Text for the header strip when both inference methods agree on this page's results, else null.
   agreement?: (data: Data) => string | null;
   // Plain note shown in the strip instead of an agreement line (no check mark).
@@ -68,7 +68,10 @@ export async function renderPage(page: Page, root: HTMLElement): Promise<void> {
   root.append(body);
   try {
     const files = [...new Set<PageFile>(["headline", ...page.data])];
-    const data = merge(await Promise.all(files.map(loadPage)));
+    const loaded = await Promise.all(files.map(loadPage));
+    const data = merge(loaded);
+    // The About drawer lists this page's own data; the strip's headline file is listed only on page 1.
+    data.sources = merge(loaded.filter((p) => page.data.includes(p.page as PageFile))).sources;
     if (token !== current) return;
     body.replaceChildren();
     body.removeAttribute("aria-busy");
