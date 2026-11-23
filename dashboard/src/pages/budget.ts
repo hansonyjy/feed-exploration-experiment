@@ -270,7 +270,7 @@ export const budget: Page = {
     // Default view: segments that bind (actionable or watch list), the whole feed and the selection.
     // Expanded: every row, grouped into the whole feed, content and users, on one shared axis.
     const drawChart = () => {
-      const w = Math.min(chart.clientWidth, 1100);
+      const w = chart.clientWidth;
       if (w <= 0) return;
       drawnWidth = w;
       const all = points(rows, labels, state.limit);
@@ -353,7 +353,7 @@ export const budget: Page = {
       update();
     });
     new ResizeObserver(() => {
-      if (Math.min(chart.clientWidth, 1100) !== drawnWidth) drawChart();
+      if (chart.clientWidth !== drawnWidth) drawChart();
     }).observe(chart);
     update();
   },

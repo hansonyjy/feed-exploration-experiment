@@ -174,7 +174,7 @@ export const segments: Page = {
 
     let drawn = 0;
     const draw = () => {
-      const w = Math.min(charts.clientWidth, 1000);
+      const w = charts.clientWidth;
       if (w <= 0) return;
       drawn = w;
       const mode = state.mode;
@@ -241,7 +241,7 @@ export const segments: Page = {
       });
     }
     new ResizeObserver(() => {
-      if (Math.min(charts.clientWidth, 1000) !== drawn) draw();
+      if (charts.clientWidth !== drawn) draw();
     }).observe(charts);
   },
 };
