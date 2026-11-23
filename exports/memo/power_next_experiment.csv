@@ -1,2 +1,2 @@
-n_users_measured,mean_user_rate,sd_user_rate,median_items_per_user,delta,alpha,comparisons,power,users_per_arm,users_total_four_arms
-26956,0.5503510719433353,0.19640411853663026,98,0.01,0.05,3,0.8,8077,32308
+alpha,comparisons,power,slot_delta,slot_n_users_measured,slot_ev_mean,slot_ev_sd,median_slots_per_user,slot_users_per_arm,feed_delta,feed_n_users_measured,feed_ev_mean,feed_ev_sd,feed_users_per_arm,feed_users_total_four_arms,hate_mean,hate_sd,hate_limit_abs,hate_mde_at_feed_n,hate_users_per_arm_for_limit,hate_needs_more_users
+0.05,3,0.8,0.05,26998,0.2012018004190996,0.1659126323047366,21,231,0.002,26956,0.5503510719433355,0.19640411853663034,201921,807684,0.0005304098770289879,0.008315743484528721,1.0608197540579757e-05,8.467989352791742e-05,12866455,True
