@@ -1,0 +1,26 @@
+name,value,display,source
+feed_effective_view_change_pp,-0.004805885712911954,0.48 pp,comparison_a_prod.csv x 1.388%
+feed_effective_view_change_relative,-0.008765816816953488,0.88%,comparison_a_prod.csv x 1.388%
+robust_effective_view_main,-0.34624536836541453,"−34.6 pp [−34.8, −34.5]",comparison_a_prod.csv A_request/main
+robust_effective_view_excl_ad_pool,-0.3458894098521059,"−34.6 pp [−34.8, −34.4]",comparison_a_prod.csv A_request/ad_pool_excluded
+robust_effective_view_excl_top_user_days,-0.34632977113490987,"−34.6 pp [−34.8, −34.5]",comparison_a_prod.csv A_request/top_user_day_excluded
+robust_effective_view_within_user,-0.35546447858846036,"−35.5 pp [−35.7, −35.4]",comparison_a_prod.csv A_within_user/main
+robust_effective_view_holds,True,yes,comparison_a_prod.csv variants
+robust_hate_main,0.0005825044085567969,"+0.058 pp [+0.044, +0.073]",comparison_a_prod.csv A_request/main
+robust_hate_excl_ad_pool,0.0005802277277530847,"+0.058 pp [+0.044, +0.072]",comparison_a_prod.csv A_request/ad_pool_excluded
+robust_hate_excl_top_user_days,0.0005803833093217426,"+0.058 pp [+0.044, +0.073]",comparison_a_prod.csv A_request/top_user_day_excluded
+robust_hate_within_user,0.0005589722752917349,"+0.056 pp [+0.041, +0.071]",comparison_a_prod.csv A_within_user/main
+robust_hate_holds,True,yes,comparison_a_prod.csv variants
+targeting_share_holds,True,yes,comparison_c_prod.csv variants
+targeting_share_main_methods_agree,True,yes,comparison_c_prod.csv
+a_all_metrics_agree,True,yes,comparison_a_prod.csv
+hate_methods_agree,True,yes,comparison_a_prod.csv
+segments_effective_view_agree,True,yes,segments_prod.csv
+random_rows_on_tab1,0.9932263066171244,99.3%,health/hc07_random_by_tab.csv
+missing_duration_recommended,0.07814593444953061,7.81%,missing_duration_by_arm_prod.csv
+missing_duration_random,0.03107577043549426,3.11%,missing_duration_by_arm_prod.csv
+insertion_rate_low,0.0062995961545968225,0.630%,health/hc01b_sample_ratio_tab1_regime.csv
+insertion_rate_high,0.013875992662037203,1.388%,health/hc01b_sample_ratio_tab1_regime.csv
+power_users_per_arm,8077,"8,077",memo/power_next_experiment.csv
+power_users_total,32308,"32,308",memo/power_next_experiment.csv
+power_sd_user_rate,0.19640411853663026,19.6 pp,memo/power_next_experiment.csv
