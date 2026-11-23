@@ -291,3 +291,5 @@ select.control { width: 100%; }
 .marker-head { font-size: 11px; }
 .seg-panel svg { display: block; max-width: 100%; height: auto; color: var(--ink-2); background: transparent; }
 .callout-lines { font-size: 15px; }
+.memo-link { margin: 0 0 12px; font-size: 14px; }
+.memo-link a { font-weight: 500; }
