@@ -84,3 +84,9 @@ export function preview(finding: string, key: KeyNumber, due: string): HTMLEleme
     el("p", { class: "due" }, `The full interactive view lands ${due}.`),
   );
 }
+
+// Chart labels on narrow screens: keep mixed category groups' numbers visible, truncate the rest.
+export function chartLabel(label: string, narrow: boolean, max: number): string {
+  if (narrow) label = label.replace(/^Mixed category group (\d+) \(not interpreted\)$/, "Mixed group $1");
+  return label.length > max ? `${label.slice(0, max - 1)}…` : label;
+}

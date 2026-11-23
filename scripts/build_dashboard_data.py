@@ -276,7 +276,55 @@ def derive_segments(src: dict) -> dict:
     cats = [r for r in ev if r["dimension"] == "category_segment" and r["interpretable"] is True]
     worst = min(cats, key=lambda r: r["estimate"])
     best = max(cats, key=lambda r: r["estimate"])
-    return {**segment_labels(src), "segments_facts": (as_table(
+    labs = {(r[0], r[1]): r for r in segment_labels(src)["segment_labels"][0]["rows"]}
+    all_rows = recs(src["segments"])
+    # Points for the dot plot: relative interval = absolute interval / the segment's recommended rate.
+    # Marker for the contrast with the rest of the dimension (D57, D59): "strong" if it is a finding under
+    # both BH and BY (both methods, same sign), "bh" if under BH only, "none" otherwise.
+    points = []
+    for r in all_rows:
+        marker = "strong" if r["finding_by"] is True else "bh" if r["finding_bh"] is True else "none"
+        base = r["baseline_rec"]
+        points.append([r["dimension"], r["segment"], r["metric"], r["estimate"], r["ci_low"], r["ci_high"], base,
+                       r["relative"], r["ci_low"] / base, r["ci_high"] / base, marker, r["effect_agree"],
+                       r["n_users"]])
+    a = a_main(src)
+    reference = [[m, a[m]["estimate"], a[m]["relative"]] for m in ("effective_view", "new_author_follow",
+                                                                    "new_category_effective_view", "hate", "fast_skip")]
+    by = {(r["dimension"], r["segment"], r["metric"]): r for r in all_rows}
+    buckets = {r["duration_bucket"]: r for r in recs(src["duration_buckets"])}
+    dur = [r for r in ev if r["dimension"] == "duration_bucket"]
+    upper = lambda s: buckets[max(int(x) for x in s.split("+"))]["upper_inclusive_ms"]
+    short = [r["estimate"] for r in dur if upper(r["segment"]) is not None and upper(r["segment"]) <= 60000]
+    long_ = [r["estimate"] for r in dur if upper(r["segment"]) is None or upper(r["segment"]) > 60000]
+    t3, t1 = by[("activity_tercile", "3", "effective_view")], by[("activity_tercile", "no_pre_period+1", "effective_view")]
+    callouts = [[worst["segment"], labels[worst["segment"]], worst["estimate"], best["segment"], labels[best["segment"]],
+                 best["estimate"], max(short), min(short), max(long_), min(long_),
+                 labs[("activity_tercile", "3")][2], t3["estimate"], t3["relative"], t3["baseline_rec"],
+                 labs[("activity_tercile", "no_pre_period+1")][2], t1["estimate"], t1["relative"], t1["baseline_rec"]]]
+    nc = lambda d, s: by[(d, s, "new_category_effective_view")]
+    ncr = [nc("activity_tercile", "2"), nc("activity_tercile", "3"), nc("activity_tercile", "no_pre_period+1"),
+           nc("active_group", "new_or_low+middle_active")]
+    new_cat = [[labs[("activity_tercile", "2")][2], ncr[0]["estimate"], ncr[0]["effect_agree"],
+                labs[("activity_tercile", "3")][2], ncr[1]["estimate"], ncr[1]["effect_agree"],
+                labs[("activity_tercile", "no_pre_period+1")][2], ncr[2]["estimate"], ncr[2]["effect_agree"],
+                labs[("active_group", "new_or_low+middle_active")][2], ncr[3]["estimate"], ncr[3]["effect_agree"]]]
+    page3 = {
+        "segment_points": (as_table(["dimension", "segment", "metric", "estimate", "ci_low", "ci_high", "baseline_rec",
+                                     "relative", "relative_ci_low", "relative_ci_high", "marker", "effect_agree",
+                                     "n_users"], points), ["segments"]),
+        "segment_reference": (as_table(["metric", "estimate", "relative"], reference), ["comparison_a"]),
+        "segment_callouts": (as_table(
+            ["worst_category", "worst_label", "worst_estimate", "best_category", "best_label", "best_estimate",
+             "short_min_cost", "short_max_cost", "long_min_cost", "long_max_cost", "most_active_label",
+             "most_active_estimate", "most_active_relative", "most_active_baseline", "low_active_label",
+             "low_active_estimate", "low_active_relative", "low_active_baseline"], callouts),
+            ["segments", "duration_buckets"]),
+        "new_category_note": (as_table(
+            ["mid_label", "mid_estimate", "mid_agree", "most_label", "most_estimate", "most_agree", "low_label",
+             "low_estimate", "low_agree", "group_label", "group_estimate", "group_agree"], new_cat), ["segments"]),
+    }
+    return {**segment_labels(src), **page3, "segments_facts": (as_table(
         ["worst_category", "worst_label", "worst_estimate", "best_category", "best_label", "best_estimate",
          "effective_view_methods_agree_all"],
         [[worst["segment"], labels[worst["segment"]], worst["estimate"], best["segment"], labels[best["segment"]],
@@ -532,6 +580,25 @@ def content_checks(texts: dict[str, str]) -> list[str]:
     if not (dur and dur[0]["label"] and any(r["label"].startswith("Videos under") for r in dur)
             and any(r["label"].startswith("Videos over") for r in dur)):
         errors.append("budget: duration labels do not cover the shortest and longest buckets")
+
+    pts = records(texts["segments"], "segment_points")
+    if len(pts) != len(records(texts["segments"], "segments")):
+        errors.append("segments: point rows differ from the export")
+    for r in pts:
+        if abs(r["relative"] - r["estimate"] / r["baseline_rec"]) > 1e-9:
+            errors.append(f"segments: relative effect for {r['dimension']}/{r['segment']}/{r['metric']} is wrong")
+        if not r["relative_ci_low"] <= r["relative"] <= r["relative_ci_high"]:
+            errors.append(f"segments: relative interval excludes the estimate for {r['segment']}/{r['metric']}")
+    src_rows = {(r["dimension"], r["segment"], r["metric"]): r for r in records(texts["segments"], "segments")}
+    for r in pts:
+        s = src_rows[(r["dimension"], r["segment"], r["metric"])]
+        if s["finding_by"] is True and s["finding_bh"] is not True:
+            errors.append(f"segments: {r['segment']}/{r['metric']} is a BY finding but not a BH finding")
+    (co,) = records(texts["segments"], "segment_callouts")
+    if not (co["worst_estimate"] < co["best_estimate"] and co["long_max_cost"] < co["short_min_cost"]
+            and co["most_active_estimate"] > co["low_active_estimate"]
+            and co["most_active_relative"] < co["low_active_relative"]):
+        errors.append("segments: a callout's claim no longer holds in the data")
 
     b = records(texts["budget"], "budget")
     if len(b) != 45 or not any(r["dimension"] == "overall" for r in b):
