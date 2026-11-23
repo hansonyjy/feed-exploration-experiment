@@ -217,11 +217,57 @@ def derive_headline(src: dict) -> dict:
 def derive_decomposition(src: dict) -> dict:
     c = c_main(src, "effective_view")
     total, content, targeting = (c[k]["estimate"] for k in ("total", "content", "targeting"))
-    return {"decomposition_facts": (as_table(
-        ["total_gap", "content_gap", "targeting_gap", "targeting_share", "effective_view_methods_agree"],
-        [[total, content, targeting, targeting / total,
-          all(c[k]["bootstrap_and_regression_agree"] is True for k in ("total", "content", "targeting"))]]),
-        ["comparison_c"])}
+    # B: each pool video's rate when recommended vs when random (random = recommended + difference).
+    b = {r["metric"]: r for r in recs(src["comparison_b"]) if r["variant"] == "main"}
+    dumbbell = [[m, b[m]["baseline_rec"], b[m]["baseline_rec"] + b[m]["estimate"], b[m]["estimate"], b[m]["ci_low"],
+                 b[m]["ci_high"], b[m]["relative"], b[m]["bootstrap_and_regression_agree"], b[m]["n_videos"]]
+                for m in A_METRICS]
+    # C in random-minus-recommended terms (the export is recommended minus random), as on page 1.
+    decomp = []
+    for m in A_METRICS:
+        cm = c_main(src, m)
+        row = [m]
+        for term in ("total", "content", "targeting"):
+            r = cm[term]
+            row += [-r["estimate"], -r["ci_high"], -r["ci_low"], r["bootstrap_and_regression_agree"]]
+        row.append(cm["targeting"]["estimate"] / cm["total"]["estimate"])
+        decomp.append(row)
+    pool = {r["video_set"]: json.loads(r["duration_ms_deciles"]) for r in recs(src["pool_attributes"])}
+    bridge = {r["metric"]: r for r in recs(src["bridge_b_c"])}
+    ev = bridge["effective_view"]
+    h, hc, hb = bridge["hate"], c_main(src, "hate"), b["hate"]
+    return {
+        "decomposition_facts": (as_table(
+            ["total_gap", "content_gap", "targeting_gap", "targeting_share", "effective_view_methods_agree"],
+            [[total, content, targeting, targeting / total,
+              all(c[k]["bootstrap_and_regression_agree"] is True for k in ("total", "content", "targeting"))]]),
+            ["comparison_c"]),
+        "dumbbell": (as_table(["metric", "recommended_rate", "random_rate", "estimate", "ci_low", "ci_high", "relative",
+                               "methods_agree", "n_videos"], dumbbell), ["comparison_b"]),
+        "decomposition_table": (as_table(
+            ["metric", "total", "total_ci_low", "total_ci_high", "total_agree", "content", "content_ci_low",
+             "content_ci_high", "content_agree", "targeting", "targeting_ci_low", "targeting_ci_high",
+             "targeting_agree", "targeting_share"], decomp), ["comparison_c"]),
+        # HC 2: median (5th of 11 decile edges) duration of distinct videos; the standard side is the dev sample.
+        "pool_length": (as_table(["pool_median_s", "standard_median_s", "standard_source"],
+                                 [[pool["pool"][5] / 1000, pool["standard_exposed_dev5"][5] / 1000, "dev sample"]]),
+                        ["pool_attributes"]),
+        "bridge_effective_view": (as_table(
+            ["b_all", "b_on_c_sample", "b_on_c_sample_ci_low", "b_on_c_sample_ci_high", "c_targeting", "sample_part",
+             "weighting_part", "share_random_items_kept", "b_n_videos", "b_on_c_sample_n_videos"],
+            [[ev["b_all"], ev["b_on_c_sample"], ev["b_on_c_sample_ci_low"], ev["b_on_c_sample_ci_high"],
+              ev["c_targeting_rand_minus_rec"], ev["sample_part"], ev["weighting_part"], ev["share_random_items_kept"],
+              b["effective_view"]["n_videos"], ev["b_on_c_sample_n_videos"]]]), ["bridge_b_c", "comparison_b"]),
+        "hate_facts": (as_table(
+            ["c_total_rise", "c_content_rise", "c_content_agree", "c_targeting_rise", "c_targeting_agree",
+             "targeting_share", "b_all", "b_all_ci_low", "b_all_ci_high", "b_all_agree", "b_on_c_sample",
+             "b_on_c_sample_ci_low", "b_on_c_sample_ci_high", "b_on_c_sample_agree"],
+            [[-hc["total"]["estimate"], -hc["content"]["estimate"], hc["content"]["bootstrap_and_regression_agree"],
+              -hc["targeting"]["estimate"], hc["targeting"]["bootstrap_and_regression_agree"],
+              hc["targeting"]["estimate"] / hc["total"]["estimate"], hb["estimate"], hb["ci_low"], hb["ci_high"],
+              hb["bootstrap_and_regression_agree"], h["b_on_c_sample"], h["b_on_c_sample_ci_low"],
+              h["b_on_c_sample_ci_high"], h["b_on_c_sample_agree"]]]), ["comparison_c", "comparison_b", "bridge_b_c"]),
+    }
 
 
 def derive_segments(src: dict) -> dict:
@@ -411,6 +457,24 @@ def content_checks(texts: dict[str, str]) -> list[str]:
         terms = {r["term"]: r["estimate"] for r in c if r["variant"] == "main" and r["metric"] == m}
         if abs(terms["total"] - terms["content"] - terms["targeting"]) > 1e-9 * max(1.0, abs(terms["total"])):
             errors.append(f"decomposition: C terms do not add up for {m}")
+
+    for r in records(texts["decomposition"], "dumbbell"):
+        if abs(r["random_rate"] - r["recommended_rate"] - r["estimate"]) > 1e-9:
+            errors.append(f"decomposition: B random rate for {r['metric']} is not recommended + difference")
+    for r in records(texts["decomposition"], "decomposition_table"):
+        if abs(r["total"] - r["content"] - r["targeting"]) > 1e-6 * max(1.0, abs(r["total"])):
+            errors.append(f"decomposition: {r['metric']} content + targeting differs from total")
+        if abs(r["targeting_share"] - r["targeting"] / r["total"]) > 1e-12:
+            errors.append(f"decomposition: {r['metric']} targeting share is wrong")
+        for term in ("total", "content", "targeting"):
+            if not r[f"{term}_ci_low"] <= r[term] <= r[f"{term}_ci_high"]:
+                errors.append(f"decomposition: {r['metric']} {term} outside its interval")
+    (be,) = records(texts["decomposition"], "bridge_effective_view")
+    if abs(be["b_all"] + be["sample_part"] + be["weighting_part"] - be["c_targeting"]) > 1e-9:
+        errors.append("decomposition: B to C bridge parts do not add up")
+    (pl,) = records(texts["decomposition"], "pool_length")
+    if not pl["pool_median_s"] > pl["standard_median_s"] > 0:
+        errors.append("decomposition: pool videos are not longer than standard videos (HC 2)")
 
     seg = records(texts["segments"], "segments")
     mm = records(texts["segments"], "merge_map")
