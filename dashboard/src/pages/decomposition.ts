@@ -296,7 +296,7 @@ export const decomposition: Page = {
     );
     let drawn = 0;
     new ResizeObserver(() => {
-      const w = Math.min(panels.clientWidth, 860);
+      const w = panels.clientWidth;
       if (w <= 0 || w === drawn) return;
       drawn = w;
       panels.replaceChildren(
