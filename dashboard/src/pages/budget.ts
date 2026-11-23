@@ -12,7 +12,7 @@ import {
   type Change,
   type Status,
 } from "../simulate";
-import { el } from "../ui";
+import { chartLabel, el } from "../ui";
 import type { Data, Page } from "./page";
 
 // Every input comes from budget.json (budget, budget_estimates, segment_labels, budget_facts);
@@ -117,7 +117,7 @@ function points(rows: Row[], labels: Labels, limit: number): Point[] {
 function overview(pts: Point[], domain: [number, number], limit: number, selected: string, width: number, showLimitLabel: boolean): Element {
   const narrow = width < 600;
   const max = narrow ? 24 : 46;
-  const short = (s: string) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
+  const short = (s: string) => chartLabel(s, narrow, max);
   const color = (p: Point) => (p.mixed ? "var(--ink-3)" : p.status === "none" ? "var(--ink-2)" : "var(--bad)");
   const marginLeft = narrow ? 150 : 290;
   return Plot.plot({
