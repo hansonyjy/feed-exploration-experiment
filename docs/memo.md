@@ -12,20 +12,20 @@ Decision memo · Hanson Yang · December 2026
 
 ## Context
 
-KuaiRand is a public dataset of viewing logs from Kuaishou, a large short-video app. For a small share of feed requests, the app swapped a recommended video for a random one, so each random slot is a measured exploration slot (26,955 users, 1,081,088 random requests, April 23 to May 8, 2022).
+KuaiRand is a public dataset of viewing logs from Kuaishou, a large short-video app. In some feed requests the app swapped a recommended video for a random one, so each random slot is a measured exploration slot (26,955 users, 1,081,088 random requests, April 23 to May 8, 2022).
 
 ## What we found
 
 - **A random slot costs 34.6 pp of effective views (−63%).** Recommended slots get 54.8%. <span class="tags">Randomized · both methods agree · pre-registered · holds across robustness variants</span>
-- **94% of that gap is targeting, not content.** In the best case, where a targeted slot reaches people as well as the recommender does, a slot would cost about 2.1 pp instead of 35.7 pp. That is an upper bound on what targeting can save. <span class="tags">Randomized · both methods agree · pre-registered · holds across robustness variants</span>
+- **94% of that gap is targeting, not content.** In the best case, where a targeted slot reaches people as well as the recommender does, a slot would cost about 2.1 pp instead of 35.7 pp (an upper bound). <span class="tags">Randomized · both methods agree · pre-registered · holds across robustness variants</span>
 - **Costs vary more by content than by user.** Random gaming videos cost 42.2 pp and comedy 28.3 pp. User groups differ by a few points. <span class="tags">Randomized · both methods agree · pre-registered</span>
 - **Guardrails hold for the whole feed but not for dance.** At 1.388%, hate rises 1.60% and fast skip 1.32% relative to their current rates, both under the 2% limit. Dance videos push hate past the limit even at 0.658%, the lowest share in the data (+3.3%). <span class="tags">Randomized · both methods agree · holds across robustness variants</span>
 
 ## What we don't know
 
 - **Anything above 1.388%.** No higher share was observed; that needs a new test.
-- **Whether exploration pays off later.** Random slots also give fewer new-category effective views (1.21% vs 1.76% of impressions), so the short-run data shows no discovery benefit. The case for exploration rests on long-run effects that a 16-day window cannot measure.
-- **Also:** the periods before and after the May Day rate change are never compared; session exits cannot be identified (decision D53); this is one app, in 2022.
+- **Whether exploration pays off later.** Random slots also give fewer new-category effective views (1.21% vs 1.76%), so there is no short-run discovery benefit; the case rests on long-run effects a 16-day window cannot measure.
+- **Also:** no before-vs-after comparison around May Day; session exits are not identifiable (D53); one app, in 2022.
 
 ## Next experiment
 
@@ -38,12 +38,13 @@ Randomize by user for about four weeks, with dance excluded from the random pool
 | Targeted 2% | 2% | matched to the user's interests |
 | Targeted 3% | 3% | matched to the user's interests |
 
-Random 2% vs targeted 2% measures what targeting saves; targeted 2% vs targeted 3% measures how far the share can go.
+Random vs targeted at 2% measures what targeting saves; targeted 2% vs 3% measures how far the share can go.
 
-- **Metrics:** effective views per impression (primary); hate and fast skip within the same 2% limit (guardrails); 14-day retention, first-week views of new creators, and new categories still watched after two weeks (long run).
-- **Decision rules, set before launch:** ship targeted 3% if both guardrails stay within the 2% limit and its effective-view loss is no worse than random 2%; ship targeted 2% if only that arm passes; otherwise keep 1.388% random without dance. Long-run metrics decide whether to go further. Pre-register metrics and limits before launch, as here.
+- **Metrics:** effective views per impression (primary); hate and fast skip, 2% limit (guardrails); 14-day retention, first-week views of new creators, categories still watched after two weeks (long run).
+- **Decision rules, set before launch:** an arm fails a guardrail if the increase is clearly past the limit (the interval's lower bound above 2%); it goes on watch, not shipped, with the test extended, if the point estimate is above 2% but the interval crosses it; otherwise it passes. Ship targeted 3% if it passes both guardrails and its effective-view loss is no worse than random 2%; ship targeted 2% if only that arm passes; otherwise keep 1.388% random without dance. Long-run metrics decide whether to go further. Pre-register metrics and limits before launch, as here.
 - **Slot level, what targeting saves:** 231 users per arm detect a 5 pp difference in a slot's effective-view rate.
-- **Feed level, how far the share can go:** 201,921 users per arm detect a 0.2 pp change in a user's effective-view rate (SD 19.6 pp). Hate needs far more: at that size it detects only a 16% change, not the 2% limit, which would take 12.9 million users per arm, so hate is judged on point estimates, as here. Both: 80% power, alpha 0.05 over three comparisons.
+- **Feed level, how far the share can go:** 201,921 users per arm detect a 0.2 pp change in a user's effective-view rate (SD 19.6 pp). At that size the test detects hate changes of about 16%, so the hate rule screens for clear harm rather than proving there is none. Both: 80% power, alpha 0.05 over three comparisons.
+- CUPED with each user's pre-period hate and effective-view rates would cut the required sample; size it after that adjustment.
 
 <div class="page-break"></div>
 
