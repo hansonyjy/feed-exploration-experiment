@@ -1,7 +1,7 @@
 {
  "page": "decomposition",
  "sources": {"comparison_c": {"path": "exports/comparison_c_prod.csv", "sha256": "363116eb379a92f304798cdf586eae3d6eca19093dafef53aafb376aa54e7bd4", "rows_kept": 123}, "comparison_b": {"path": "exports/comparison_b_prod.csv", "sha256": "77474317e24b5b7cf96dc7ef65d4035bc5223e11b3b9fb83752166f420faaf11", "rows_kept": 41}, "bridge_b_c": {"path": "exports/bridge_b_c_prod.csv", "sha256": "8f4e198f246af3a9c56f1b6cdf8ad281cbc4e18f4a6864bf4db3a61dabb9dcdf", "rows_kept": 11}, "comparison_c_vs_a": {"path": "exports/comparison_c_vs_a_prod.csv", "sha256": "24fda5346cffcadb0d229a03eb143e30b11dcead8cfd32887395595223df1888", "rows_kept": 11}, "comparison_c_sample": {"path": "exports/comparison_c_sample_prod.csv", "sha256": "3636237b1e6977fd374e77c8a97c68414db421d405009c5988f60d529b9e63ee", "rows_kept": 2}, "pool_attributes": {"path": "exports/health/hc02b_pool_attributes.csv", "sha256": "4578a561a575570ad5348d5353c4af5f1a318850df211d5f0096c04ab010439f", "rows_kept": 2}},
- "derived": {"decomposition_facts": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_c_prod.csv"]}},
+ "derived": {"decomposition_facts": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_c_prod.csv"]}, "dumbbell": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_b_prod.csv"]}, "decomposition_table": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_c_prod.csv"]}, "pool_length": {"script": "scripts/build_dashboard_data.py", "from": ["exports/health/hc02b_pool_attributes.csv"]}, "bridge_effective_view": {"script": "scripts/build_dashboard_data.py", "from": ["exports/bridge_b_c_prod.csv", "exports/comparison_b_prod.csv"]}, "hate_facts": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_c_prod.csv", "exports/comparison_b_prod.csv", "exports/bridge_b_c_prod.csv"]}},
  "tables": {
   "comparison_c": {"columns": ["analysis", "metric", "variant", "term", "weighting", "estimate", "ci_low", "ci_high", "baseline_rec_all", "relative_to_rec_all", "n_users", "n_user_days", "share_random_items_kept", "reg_coef", "reg_se", "reg_p", "bootstrap_and_regression_agree", "a_estimate_rec_minus_rand", "b_estimate_rec_minus_rand"], "types": ["str", "str", "str", "str", "str", "float", "float", "float", "float", "float", "int", "int", "float", "float", "float", "float", "bool", "float", "float"], "rows": [
    ["C_decomposition", "effective_view", "main", "total", "equal_user_day_weighted", 0.3567592832188136, 0.3543739601264884, 0.3592239299386139, 0.5490179699697239, 0.6498134901458462, 22335, 72287, 0.43549273191568555, 0.3567592832188135, 0.0012340180580731285, 0.0, true, 0.34624536836541453, null],
@@ -207,6 +207,41 @@
   ]},
   "decomposition_facts": {"columns": ["total_gap", "content_gap", "targeting_gap", "targeting_share", "effective_view_methods_agree"], "types": ["float", "float", "float", "float", "bool"], "rows": [
    [0.3567592832188136, 0.02082072764816754, 0.3359385555706461, 0.9416392827670377, true]
+  ]},
+  "dumbbell": {"columns": ["metric", "recommended_rate", "random_rate", "estimate", "ci_low", "ci_high", "relative", "methods_agree", "n_videos"], "types": ["str", "float", "float", "float", "float", "float", "float", "bool", "int"], "rows": [
+   ["effective_view", 0.46494367721769647, 0.2152601693152235, -0.24968350790247298, -0.25723766083838845, -0.24241717427806408, -0.5370188264450059, true, 5591],
+   ["naive_completion", 0.11887380766277515, 0.03642169985566866, -0.08245210780710649, -0.08653223443502979, -0.0784057727877252, -0.6936103875885691, true, 5591],
+   ["watch_time_ms", 22196.012501721732, 7462.03770895183, -14733.974792769903, -15353.359737517156, -14114.055723216416, -0.6638117901414498, true, 5591],
+   ["like_", 0.02029341574886617, 0.004994984112577214, -0.015298431636288955, -0.0172175695789162, -0.01352012575958237, -0.7538618350705059, true, 5591],
+   ["comment_", 0.003171667059927364, 0.0003916901489556526, -0.0027799769109717112, -0.003675675675236884, -0.0020495859240808557, -0.8765033840075815, true, 5591],
+   ["forward_", 0.0008729761446542902, 0.00033187227935942414, -0.0005411038652948661, -0.0008014920070747195, -0.0003110471494546812, -0.6198380890570041, true, 5591],
+   ["profile_enter", 0.018364821488209733, 0.0057919358138281175, -0.012572885674381615, -0.014244367577743746, -0.010978185269489807, -0.6846179083446818, true, 5591],
+   ["new_author_follow", 0.0010482027209282596, 0.00025872095617239315, -0.0007894817647558665, -0.0011826876828481523, -0.00046714564558052255, -0.7531766031447839, true, 5591],
+   ["new_category_effective_view", 0.012831068262560459, 0.008650835056355072, -0.004180233206205386, -0.005664275055901018, -0.002787535002838112, -0.32578995923533605, true, 5591],
+   ["hate", 0.0008630643324172944, 0.0011285236388560776, 0.00026545930643878316, -0.00011661423283356842, 0.0006012090505693071, 0.30757765842932866, false, 5591],
+   ["fast_skip", 0.38494806831663164, 0.6194287480277169, 0.23448067971108522, 0.22705240329327003, 0.2420526905132565, 0.6091228895795306, true, 5591]
+  ]},
+  "decomposition_table": {"columns": ["metric", "total", "total_ci_low", "total_ci_high", "total_agree", "content", "content_ci_low", "content_ci_high", "content_agree", "targeting", "targeting_ci_low", "targeting_ci_high", "targeting_agree", "targeting_share"], "types": ["str", "float", "float", "float", "bool", "float", "float", "float", "bool", "float", "float", "float", "bool", "float"], "rows": [
+   ["effective_view", -0.3567592832188136, -0.3592239299386139, -0.3543739601264884, true, -0.02082072764816754, -0.02481908865146759, -0.01685795886320137, true, -0.3359385555706461, -0.3406573482925203, -0.33146555028726815, true, 0.9416392827670377],
+   ["naive_completion", -0.19829084038584618, -0.19989715871326563, -0.19661688786553536, true, -0.05833176283789371, -0.06158735041807856, -0.0550713030041138, true, -0.13995907754795242, -0.1434796126136329, -0.13633131887112676, true, 0.7058272448470725],
+   ["watch_time_ms", -15834.814248868144, -15998.606192926602, -15670.337144063098, true, 4722.859621753643, 4283.1041950436065, 5155.7761889750045, true, -20557.673870621788, -21041.611437053973, -20087.187750804896, true, 1.298257974329647],
+   ["like_", -0.01867107787190679, -0.019403697024057327, -0.01790720286069522, true, -0.005329676522273006, -0.006332317653462367, -0.004282949506630997, true, -0.013341401349633783, -0.014531242921560132, -0.0121230110491194, true, 0.7145490710907354],
+   ["comment_", -0.0030613400431151777, -0.003197395108717158, -0.0029191729626484573, true, -0.00043796729038571525, -0.0008661580265376587, 5.308690228121014e-05, false, -0.002623372752729463, -0.003130136934913875, -0.0021687750138225633, true, 0.8569360854339967],
+   ["forward_", -0.0008661564153305087, -0.0009643632951386813, -0.0007694833336792945, true, -0.00011451648336524032, -0.0003825440223941985, 0.00017567481893872132, false, -0.0007516399319652682, -0.0010444289085795896, -0.0004905596225554559, true, 0.8677877559545141],
+   ["profile_enter", -0.019788088103713228, -0.020365063710888254, -0.019188714068495035, true, -0.0034264051572859924, -0.004598228801440838, -0.002161055455098051, true, -0.016361682946427234, -0.017748073210411067, -0.015067779513353627, true, 0.8268450625786818],
+   ["new_author_follow", -0.0011702292614878048, -0.00132155295514082, -0.001020844039841216, true, -0.0004617617785647577, -0.0007090883434497291, -0.00017701077353110775, true, -0.000708467482923047, -0.0010050945481829875, -0.0004395561003125485, true, 0.6054091332687378],
+   ["new_category_effective_view", -0.007596742462933731, -0.008425373782729052, -0.00678386944804132, true, -0.0008434981224514777, -0.0016667358688087408, -7.82413267165406e-06, true, -0.006753244340482253, -0.007932093880977546, -0.005575403453410001, true, 0.8889658131011942],
+   ["hate", 0.000704151160208229, 0.0004969588004780248, 0.0009401033873956243, true, 0.00017596164873592122, -5.7019198644602026e-05, 0.0004485700168363258, false, 0.0005281895114723078, 0.00020623990586762854, 0.000852645786889024, true, 0.7501081320608967],
+   ["fast_skip", 0.3172675608293001, 0.31446039844238466, 0.32001644127561724, true, 0.008992042752917404, 0.005265043503086828, 0.012916820997102167, true, 0.30827551807638265, 0.3035167624419143, 0.3128168534162491, true, 0.9716578564495744]
+  ]},
+  "pool_length": {"columns": ["pool_median_s", "standard_median_s", "standard_source"], "types": ["float", "float", "str"], "rows": [
+   [81.066, 33.8, "dev sample"]
+  ]},
+  "bridge_effective_view": {"columns": ["b_all", "b_on_c_sample", "b_on_c_sample_ci_low", "b_on_c_sample_ci_high", "c_targeting", "sample_part", "weighting_part", "share_random_items_kept", "b_n_videos", "b_on_c_sample_n_videos"], "types": ["float", "float", "float", "float", "float", "float", "float", "float", "int", "int"], "rows": [
+   [-0.24968350790247298, -0.25816417207281717, -0.26634401236378563, -0.2496272798424968, -0.3359385555706461, -0.008480664170344182, -0.07777438349782895, 0.43549273191568555, 5591, 5131]
+  ]},
+  "hate_facts": {"columns": ["c_total_rise", "c_content_rise", "c_content_agree", "c_targeting_rise", "c_targeting_agree", "targeting_share", "b_all", "b_all_ci_low", "b_all_ci_high", "b_all_agree", "b_on_c_sample", "b_on_c_sample_ci_low", "b_on_c_sample_ci_high", "b_on_c_sample_agree"], "types": ["float", "float", "bool", "float", "bool", "float", "float", "float", "float", "bool", "float", "float", "float", "bool"], "rows": [
+   [0.000704151160208229, 0.00017596164873592122, false, 0.0005281895114723078, true, 0.7501081320608967, 0.00026545930643878316, -0.00011661423283356842, 0.0006012090505693071, false, 0.0006263466629744018, 0.00011002641601750188, 0.00100245714506791, true]
   ]}
  }
 }

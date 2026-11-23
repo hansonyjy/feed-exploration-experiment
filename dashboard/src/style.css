@@ -247,3 +247,22 @@ select.control { width: 100%; }
 .overview-group { margin: 0 0 12px; }
 .overview-group figcaption { font-size: 13px; font-weight: 600; color: var(--ink); margin: 8px 0 0; }
 .overview-chart svg { display: block; max-width: 100%; height: auto; color: var(--ink-2); background: transparent; }
+
+/* Page 2: content vs targeting */
+@media (min-width: 960px) { .hero.hero-bells { grid-template-columns: minmax(0, 1fr); } }
+.bells { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; max-width: 860px; }
+.bell-panel { margin: 0; }
+.bell-panel figcaption { font-size: 13px; font-weight: 600; color: var(--ink); margin-top: 8px; }
+.bell-panel svg { display: block; max-width: 100%; height: auto; color: var(--ink-2); background: transparent; }
+.decomp-table td.num > span { display: block; }
+.decomp-table td.ns .delta, .decomp-table td.ns .cell-ci { color: var(--ink-3); }
+.decomp-table td.ns .cell-ci { font-style: italic; }
+.fn { color: var(--ink-3); margin-left: 2px; }
+.hate-line { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--rule); }
+.hate-line p { max-width: 92ch; color: var(--ink-2); margin: 0; }
+.bridge table { width: auto; }
+.bridge td.num, .bridge th { font-size: 13px; }
+.legend { font-size: 13px; color: var(--ink-2); margin: 4px 0 0; }
+.legend .key { font-size: 14px; }
+.legend .key-rec { color: var(--ink); }
+.legend .key-rnd { color: var(--accent); margin-left: 16px; }
