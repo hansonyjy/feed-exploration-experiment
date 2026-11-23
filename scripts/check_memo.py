@@ -1,10 +1,11 @@
 """Check docs/memo.md: every number traces to findings.md or a committed export, and the PDF is current.
 
 1. Numbers. Each number in the memo (outside the links section) must appear in docs/findings.md or in a
-   committed export (exports/**/*.csv, exports/**/*.json) as a whole number token. Design parameters of
+   committed export (exports/**/*.csv, exports/**/*.json; exports/memo/memo_facts.csv holds the memo's
+   derived numbers) as a whole number token. Design parameters of
    the proposed next experiment and dates are not results, so they are listed below and skipped.
-2. PDF. docs/memo.pdf.source holds the SHA-256 of the memo.md the PDF was built from
-   (scripts/build_memo_pdf.sh); it must match the current memo.md.
+2. PDF. docs/memo.pdf.source holds the SHA-256 of memo.md + memo-waterfall.svg as built into the PDF
+   (scripts/build_memo_pdf.sh); it must match the current files.
 
 Usage: python scripts/check_memo.py   (standard library only; exits 1 on any failure)
 """
@@ -23,6 +24,7 @@ PDF_SOURCE = REPO_ROOT / "docs" / "memo.pdf.source"
 # Phrases that hold numbers but are not results: the next experiment's design, dates, decision ids.
 NOT_RESULTS = [
     "December 2026",          # memo date
+    "until May 1", "from May 3",  # regime dates (data_quality.md HC 1b)
     "April 23 to May 8, 2022",  # data window (findings.md writes it as 2022-04-23 to 05-08)
     "in 2022",
     "decision D53",
@@ -44,7 +46,7 @@ def corpus() -> str:
 
 
 def memo_numbers(text: str) -> list[str]:
-    body = text.split("## Links", 1)[0]
+    body = text.split("### Links", 1)[0]
     for phrase in NOT_RESULTS:
         body = body.replace(phrase, " ")
     lines = [re.sub(r"^\s*\d+\.\s", "", line) for line in body.splitlines()]  # ordered-list markers
@@ -66,7 +68,7 @@ def main() -> int:
             errors.append(f"memo number {tok!r} is not in findings.md or a committed export")
     if "—" in memo or "–" in memo:
         errors.append("memo contains an em or en dash")
-    digest = hashlib.sha256(MEMO.read_bytes()).hexdigest()
+    digest = hashlib.sha256(MEMO.read_bytes() + (REPO_ROOT / "docs" / "memo-waterfall.svg").read_bytes()).hexdigest()
     if not PDF_SOURCE.exists() or PDF_SOURCE.read_text().strip() != digest:
         errors.append("docs/memo.pdf is stale; run scripts/build_memo_pdf.sh")
     for e in errors:
