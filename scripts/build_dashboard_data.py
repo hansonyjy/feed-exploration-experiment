@@ -57,10 +57,14 @@ PAGES: dict[str, dict[str, tuple[str, object, list[str]]]] = {
         "segments": ("exports/segments_prod.csv", keep_all, ["dimension", "segment", "metric"]),
         "merge_map": ("dbt/seeds/segment_merge_map.csv", keep_all, ["dimension", "segment"]),
         "category_labels": ("dbt/seeds/category_labels.csv", keep_all, ["category_segment"]),
+        "duration_buckets": ("dbt/seeds/frozen_duration_buckets.csv", keep_all, ["duration_bucket"]),
+        "band_map": ("dbt/seeds/segment_band_map.csv", keep_all, ["dimension", "band"]),
     },
     "budget": {
         "budget": ("exports/exploration_budget_prod.csv", keep_all, ["dimension", "segment"]),
         "category_labels": ("dbt/seeds/category_labels.csv", keep_all, ["category_segment"]),
+        "duration_buckets": ("dbt/seeds/frozen_duration_buckets.csv", keep_all, ["duration_bucket"]),
+        "band_map": ("dbt/seeds/segment_band_map.csv", keep_all, ["dimension", "band"]),
     },
 }
 
@@ -226,7 +230,7 @@ def derive_segments(src: dict) -> dict:
     cats = [r for r in ev if r["dimension"] == "category_segment" and r["interpretable"] is True]
     worst = min(cats, key=lambda r: r["estimate"])
     best = max(cats, key=lambda r: r["estimate"])
-    return {"segments_facts": (as_table(
+    return {**segment_labels(src), "segments_facts": (as_table(
         ["worst_category", "worst_label", "worst_estimate", "best_category", "best_label", "best_estimate",
          "effective_view_methods_agree_all"],
         [[worst["segment"], labels[worst["segment"]], worst["estimate"], best["segment"], labels[best["segment"]],
@@ -234,11 +238,121 @@ def derive_segments(src: dict) -> dict:
         ["segments", "category_labels"])}
 
 
+# Plain segment labels, generated from the seeds so they never drift from the data (D61).
+TERCILE_ORDER = {"no_pre_period+1": 1, "2": 2, "3": 3}
+ACTIVE_GROUP_ORDER = {"new_or_low+middle_active": 1, "full_active": 2, "high_active": 3}  # make_segment_merges.py
+TERCILE_LABELS = {"no_pre_period+1": "Low-activity or new users", "2": "Mid-activity users", "3": "Most active users"}
+ACTIVE_GROUP_LABELS = {"full_active": "Full-active users (app's label)", "high_active": "High-active users (app's label)",
+                       "new_or_low+middle_active": "New, low or mid-active users (app's label)"}
+
+
+def seconds_text(ms: float) -> str:
+    s = ms / 1000
+    return f"{round(s)} s" if s < 90 else f"{s / 60:.1f} min"
+
+
+def duration_label(segment: str, buckets: dict[int, dict]) -> str:
+    parts = [int(x) for x in segment.split("+")]
+    lo = buckets[min(parts)]["lower_exclusive_ms"]
+    hi = buckets[max(parts)]["upper_inclusive_ms"]
+    if lo is None:
+        return f"Videos under {seconds_text(hi)}"
+    if hi is None:
+        return f"Videos over {seconds_text(lo)}"
+    lo_t, hi_t = seconds_text(lo), seconds_text(hi)
+    if lo_t.split()[1] == hi_t.split()[1]:
+        return f"Videos {lo_t.split()[0]} to {hi_t}"
+    return f"Videos {lo_t} to {hi_t}"
+
+
+def band_range(band: str) -> tuple[int, int | None]:
+    """'8-14' -> (8, 14); '730+' -> (730, None); '0' -> (0, 0); '(10,50]' -> (11, 50)."""
+    if band.endswith("+"):
+        return int(band[:-1]), None
+    if band.startswith("("):
+        lo, hi = band.strip("(]").split(",")
+        return int(lo) + 1, int(hi)
+    if "-" in band:
+        lo, hi = band.split("-")
+        return int(lo), int(hi)
+    return int(band), int(band)
+
+
+def band_label(dimension: str, merged: str, band_map: list[dict]) -> str:
+    source = "register_days_range" if dimension == "tenure_band" else "follow_user_num_range"
+    ranges = [band_range(r["band"]) for r in band_map if r["dimension"] == source and r["merged_band"] == merged]
+    if not ranges:
+        raise SystemExit(f"labels: {dimension} band {merged} is not in segment_band_map.csv")
+    lo = min(r[0] for r in ranges)
+    hi = None if any(r[1] is None for r in ranges) else max(r[1] for r in ranges)
+    if dimension == "tenure_band":
+        return f"Account age {lo} days or more" if hi is None else f"Account age {lo} to {hi} days"
+    return f"Follows {lo} or more accounts" if hi is None else f"Follows {lo} to {hi} accounts"
+
+
+def segment_labels(src: dict) -> dict:
+    cats = {r["category_segment"]: r["label_en"] for r in recs(src["category_labels"])}
+    buckets = {r["duration_bucket"]: r for r in recs(src["duration_buckets"])}
+    band_map = recs(src["band_map"])
+    pairs = [(r["dimension"], r["segment"]) for r in recs(src["budget"])]
+    mixed = sorted(s for d, s in pairs if d == "category_segment" and "+" in s)
+    rows = []
+    for dim, seg in pairs:
+        members = None
+        if dim == "overall":
+            label, group = "Whole feed", "overall"
+        elif dim == "category_segment":
+            group = "content"
+            if "+" in seg:
+                label = f"Mixed category group {mixed.index(seg) + 1} (not interpreted)"
+                members = ", ".join(cats[c] for c in seg.split("+"))
+            else:
+                label = cats[seg]
+        elif dim == "duration_bucket":
+            label, group = duration_label(seg, buckets), "content"
+        elif dim == "activity_tercile":
+            label, group = TERCILE_LABELS[seg], "users"
+        elif dim == "active_group":
+            label, group = ACTIVE_GROUP_LABELS[seg], "users"
+        else:
+            label, group = band_label(dim, seg, band_map), "users"
+        if dim == "duration_bucket":
+            order = min(int(x) for x in seg.split("+"))
+        elif dim in ("tenure_band", "follow_band"):
+            source = "register_days_range" if dim == "tenure_band" else "follow_user_num_range"
+            order = min(r["band_order"] for r in band_map if r["dimension"] == source and r["merged_band"] == seg)
+        elif dim == "activity_tercile":
+            order = TERCILE_ORDER[seg]
+        elif dim == "active_group":
+            order = ACTIVE_GROUP_ORDER[seg]
+        else:
+            order = 0  # categories are listed by name
+        rows.append([dim, seg, label, group, members is not None, members, order])
+    return {"segment_labels": (as_table(["dimension", "segment", "label", "group", "mixed", "members", "order"], rows),
+                               ["budget", "category_labels", "duration_buckets", "band_map"])}
+
+
+COST_METRICS = ["effective_view", "new_author_follow", "new_category_effective_view"]
+
+
 def derive_budget(src: dict) -> dict:
     segs = [r for r in recs(src["budget"]) if r["dimension"] != "overall"]
     clear = [r for r in segs if r["binding_guardrail"] == "none in range"]
-    return {"budget_facts": (as_table(["n_segments", "n_no_guardrail_crossed"], [[len(segs), len(clear)]]),
-                             ["budget"])}
+    # Per-impression A estimates behind the budget's costs (exploration_budget.py: cost per 1,000 =
+    # share x estimate x 1,000), so the simulator can show costs at any share in the range.
+    seg_est = {(r["dimension"], r["segment"], r["metric"]): r["estimate"] for r in recs(src["segments"])}
+    a = a_main(src)
+    costs = []
+    for r in recs(src["budget"]):
+        key = (r["dimension"], r["segment"])
+        est = [a[m]["estimate"] if key == ("overall", "all") else seg_est[(*key, m)] for m in COST_METRICS]
+        costs.append([*key, *est])
+    return {
+        **segment_labels(src),
+        "budget_facts": (as_table(["n_segments", "n_no_guardrail_crossed"], [[len(segs), len(clear)]]), ["budget"]),
+        "budget_estimates": (as_table(["dimension", "segment", *[f"{m}_estimate" for m in COST_METRICS]], costs),
+                             ["budget", "segments", "comparison_a"]),
+    }
 
 
 DERIVED = {"headline": derive_headline, "decomposition": derive_decomposition,
@@ -339,9 +453,34 @@ def content_checks(texts: dict[str, str]) -> list[str]:
     if not (bf["raw_log_rows"] > 0 and bf["n_tests"] > 0 and bf["bytes_billed_total"] > 0):
         errors.append("build: a build statistic is missing")
 
+    for page in ("budget", "segments"):
+        labs = records(texts[page], "segment_labels")
+        names = [r["label"] for r in labs]
+        if len(set(names)) != len(names):
+            errors.append(f"{page}: segment labels are not unique")
+        if any(not n or "+" in n or "_" in n for n in names):
+            errors.append(f"{page}: a segment label still looks technical")
+        have = {(r["dimension"], r["segment"]) for r in labs}
+        want = {(r["dimension"], r["segment"]) for r in records(texts[page], "segments" if page == "segments" else "budget")}
+        if not want <= have:
+            errors.append(f"{page}: segments without a label: {sorted(want - have)}")
+    dur = [r for r in records(texts["budget"], "segment_labels") if r["dimension"] == "duration_bucket"]
+    if not (dur and dur[0]["label"] and any(r["label"].startswith("Videos under") for r in dur)
+            and any(r["label"].startswith("Videos over") for r in dur)):
+        errors.append("budget: duration labels do not cover the shortest and longest buckets")
+
     b = records(texts["budget"], "budget")
     if len(b) != 45 or not any(r["dimension"] == "overall" for r in b):
         errors.append(f"budget: expected 45 rows including overall, found {len(b)}")
+    est = {(r["dimension"], r["segment"]): r for r in records(texts["budget"], "budget_estimates")}
+    for r in b:
+        if r["recommended_share"] is None:
+            continue
+        for m in COST_METRICS:
+            want = r[f"{m}_change_per_1000_impressions"]
+            got = r["recommended_share"] * est[(r["dimension"], r["segment"])][f"{m}_estimate"] * 1000
+            if abs(got - want) > 1e-9:
+                errors.append(f"budget: {m} estimate for {r['dimension']}/{r['segment']} does not reproduce the cost")
     seg_rows = {(r["dimension"], r["segment"]) for r in b if r["dimension"] != "overall"}
     if seg_rows != finals:
         errors.append("budget: segment rows differ from the merge map's final segments")

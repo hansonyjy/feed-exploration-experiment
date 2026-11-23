@@ -245,6 +245,14 @@ basis for a lower share; they are candidates to watch in a new test.
   exploration best depends on absolute vs relative terms. New-category engagement from random slots
   matches recommended slots for active users and falls short for low-activity users (partly mechanical).
 
+## Limitations
+- **No discovery benefit in the short run, and no way to see a long-run one.** Random slots lead to
+  fewer effective views in a new category than recommended slots (1.21% vs 1.76% of impressions,
+  −0.55 pp) and to fewer follows of new creators. So in this data, exploration buys no discovery in the
+  short run. The case for exploration rests on long-run effects, such as users finding new interests
+  and the recommender learning from what they do. The test window is 16 days, and these logs cannot
+  measure those effects.
+
 ## Exploration budget (D54, D56, D57)
 - The budget uses the item-level guardrails only; session-level impact is not identifiable from these
   logs, and the budget says so (D54).
