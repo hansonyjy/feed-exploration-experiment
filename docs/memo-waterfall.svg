@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 210" width="520" height="210" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11">
+<line x1="40" x2="520" y1="182" y2="182" stroke="#e6e7ea"/><text x="34" y="186" text-anchor="end" fill="#8b919c">0%</text>
+<line x1="40" x2="520" y1="128.66666666666666" y2="128.66666666666666" stroke="#e6e7ea"/><text x="34" y="132.66666666666666" text-anchor="end" fill="#8b919c">20%</text>
+<line x1="40" x2="520" y1="75.33333333333331" y2="75.33333333333331" stroke="#e6e7ea"/><text x="34" y="79.33333333333331" text-anchor="end" fill="#8b919c">40%</text>
+<line x1="40" x2="520" y1="22" y2="22" stroke="#e6e7ea"/><text x="34" y="26" text-anchor="end" fill="#8b919c">60%</text>
+<rect x="65" y="35.595208008073634" width="70" height="146.40479199192637" fill="#4b515c"/><text x="100" y="29.595208008073634" text-anchor="middle" fill="#15171b" font-weight="600">54.9%</text><text x="100" y="200" text-anchor="middle" fill="#4b515c">Recommended</text>
+<rect x="185" y="35.595208008073634" width="70" height="5.552194039511349" fill="#8b919c"/><text x="220" y="29.595208008073634" text-anchor="middle" fill="#15171b" font-weight="600">−2.1 pp</text><text x="220" y="200" text-anchor="middle" fill="#4b515c">Content gap</text>
+<rect x="305" y="41.14740204758498" width="70" height="89.58361481883895" fill="#3155d6"/><text x="340" y="35.14740204758498" text-anchor="middle" fill="#15171b" font-weight="600">−33.6 pp</text><text x="340" y="200" text-anchor="middle" fill="#4b515c">Targeting gap</text>
+<rect x="425" y="130.73101686642394" width="70" height="51.26898313357606" fill="#4b515c"/><text x="460" y="124.73101686642394" text-anchor="middle" fill="#15171b" font-weight="600">19.2%</text><text x="460" y="200" text-anchor="middle" fill="#4b515c">Random</text>
+<line x1="135" x2="185" y1="35.595208008073634" y2="35.595208008073634" stroke="#8b919c" stroke-dasharray="3,3"/>
+<line x1="255" x2="305" y1="41.14740204758498" y2="41.14740204758498" stroke="#8b919c" stroke-dasharray="3,3"/>
+<line x1="375" x2="425" y1="130.73101686642394" y2="130.73101686642394" stroke="#8b919c" stroke-dasharray="3,3"/>
+</svg>
