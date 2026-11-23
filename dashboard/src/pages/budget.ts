@@ -15,7 +15,7 @@ import {
 import { el } from "../ui";
 import type { Data, Page } from "./page";
 
-// Every input comes from budget.json (budget, budget_estimates, category_labels, budget_facts);
+// Every input comes from budget.json (budget, budget_estimates, segment_labels, budget_facts);
 // the browser applies the linear rule in simulate.ts, which Vitest checks against the export.
 
 const DIMENSIONS: { key: string; group: string }[] = [
@@ -28,26 +28,6 @@ const DIMENSIONS: { key: string; group: string }[] = [
   { key: "follow_band", group: "Users: accounts followed" },
 ];
 
-const USER_LABELS: Record<string, string> = {
-  "activity_tercile/no_pre_period+1": "Activity tercile 1 or no history",
-  "activity_tercile/2": "Activity tercile 2",
-  "activity_tercile/3": "Activity tercile 3 (most active)",
-  "active_group/full_active": "Full-active users",
-  "active_group/high_active": "High-active users",
-  "active_group/new_or_low+middle_active": "New, low or middle-active users",
-  "tenure_band/8-14 to 91-180": "Account age 8 to 180 days",
-  "tenure_band/181-365": "Account age 181 to 365 days",
-  "tenure_band/366-730": "Account age 366 to 730 days",
-  "tenure_band/730+": "Account age over 730 days",
-  "follow_band/0 to (0,10]": "Follows 0 to 10 accounts",
-  "follow_band/(10,50]": "Follows 11 to 50 accounts",
-  "follow_band/(50,100]": "Follows 51 to 100 accounts",
-  "follow_band/(100,150]": "Follows 101 to 150 accounts",
-  "follow_band/(150,250]": "Follows 151 to 250 accounts",
-  "follow_band/(250,500]": "Follows 251 to 500 accounts",
-  "follow_band/500+": "Follows over 500 accounts",
-};
-
 const BADGE: Record<Status, string> = { actionable: "Actionable", watch: "Watch list", none: "No binding" };
 
 function key(r: Row): string {
@@ -58,27 +38,25 @@ interface Labels {
   label: (r: Row) => string;
   mixed: (r: Row) => boolean;
   members: (r: Row) => string;
+  order: (r: Row) => number;
 }
 
-// Merged category groups were formed for sample size only (D40): they get a neutral numbered name,
-// are shown in grey and are not interpreted; their member categories are listed in the tooltip.
+// Plain labels come from segment_labels, generated from the seeds by scripts/build_dashboard_data.py.
+// Merged category groups (D40) are named "Mixed category group N (not interpreted)", shown in grey,
+// with their member categories in the tooltip.
 function labeler(data: Data): Labels {
-  const cats = new Map(data.tables.category_labels.map((c) => [String(c.category_segment), String(c.label_en)]));
-  const groups = data.tables.budget
-    .filter((r) => r.dimension === "category_segment" && String(r.segment).includes("+"))
-    .map((r) => String(r.segment))
-    .sort();
-  const mixed = (r: Row) => r.dimension === "category_segment" && String(r.segment).includes("+");
-  const label = (r: Row) => {
-    const seg = String(r.segment);
-    if (r.dimension === "overall") return "Whole feed";
-    if (mixed(r)) return `Mixed category group ${groups.indexOf(seg) + 1} (not interpreted)`;
-    if (r.dimension === "category_segment") return cats.get(seg) ?? seg;
-    if (r.dimension === "duration_bucket") return `Length decile ${seg.replace("+", " and ")}`;
-    return USER_LABELS[key(r)] ?? seg;
+  const byKey = new Map(data.tables.segment_labels.map((r) => [key(r), r]));
+  const get = (r: Row) => {
+    const l = byKey.get(key(r));
+    if (!l) throw new Error(`no label for ${key(r)}`);
+    return l;
   };
-  const members = (r: Row) => (mixed(r) ? String(r.segment).split("+").map((c) => cats.get(c) ?? c).join(", ") : "");
-  return { label, mixed, members };
+  return {
+    label: (r: Row) => String(get(r).label),
+    mixed: (r: Row) => get(r).mixed === true,
+    members: (r: Row) => String(get(r).members ?? ""),
+    order: (r: Row) => Number(get(r).order),
+  };
 }
 
 // Percentage points with enough digits for rare events (hate changes are around 0.001 pp).
@@ -138,10 +116,10 @@ function points(rows: Row[], labels: Labels, limit: number): Point[] {
 
 function overview(pts: Point[], domain: [number, number], limit: number, selected: string, width: number, showLimitLabel: boolean): Element {
   const narrow = width < 600;
-  const max = narrow ? 24 : 40;
+  const max = narrow ? 24 : 46;
   const short = (s: string) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
   const color = (p: Point) => (p.mixed ? "var(--ink-3)" : p.status === "none" ? "var(--ink-2)" : "var(--bad)");
-  const marginLeft = narrow ? 150 : 260;
+  const marginLeft = narrow ? 150 : 290;
   return Plot.plot({
     width,
     height: pts.length * 18 + (showLimitLabel ? 46 : 30),
@@ -195,7 +173,11 @@ export const budget: Page = {
       rows
         .filter((r) => r.dimension === d.key)
         .map((r) => ({ r, l: labels.label(r) }))
-        .sort((a, b) => (d.key === "category_segment" ? a.l.localeCompare(b.l) : 0))
+        .sort((a, b) =>
+          d.key === "category_segment"
+            ? Number(labels.mixed(a.r)) - Number(labels.mixed(b.r)) || a.l.localeCompare(b.l, "en", { numeric: true })
+            : labels.order(a.r) - labels.order(b.r),
+        )
         .forEach(({ r, l }) => group.append(el("option", { value: key(r), ...(labels.mixed(r) ? { title: labels.members(r) } : {}) }, l)));
       select.append(group);
     }
