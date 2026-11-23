@@ -51,7 +51,7 @@ function fmt(x: number, mode: Mode): string {
   return mode === "absolute" ? pp(x, sig(x * 100)) : pct(x);
 }
 
-function panel(pts: Point[], domain: [number, number], ref: number, width: number, showAxis: boolean): Element {
+function panel(pts: Point[], domain: [number, number], ref: number, width: number, showAxis: boolean, unit: string): Element {
   const narrow = width < 600;
   const max = narrow ? 22 : 44;
   const short = (s: string) => chartLabel(s, narrow, max);
@@ -61,11 +61,18 @@ function panel(pts: Point[], domain: [number, number], ref: number, width: numbe
     width,
     height: pts.length * 20 + (showAxis ? 30 : 10),
     marginLeft: narrow ? 140 : 280,
-    marginRight: 28,
+    marginRight: 30,
     marginTop: showAxis ? 24 : 4,
     marginBottom: 6,
     style: { fontFamily: "var(--sans)", fontSize: narrow ? "11px" : "12px" },
-    x: { domain, label: null, tickFormat: (d: number) => (Math.abs(domain[1] - domain[0]) < 0.02 ? `${(d * 100).toFixed(2)}` : `${Math.round(d * 100)}`), axis: showAxis ? "top" : null },
+    x: {
+      domain,
+      label: null,
+      // Unit on every tick: pp in absolute mode, % in relative mode.
+      tickFormat: (d: number) => `${Math.abs(domain[1] - domain[0]) < 0.02 ? (d * 100).toFixed(2) : Math.round(d * 100)}${unit === "pp" ? " pp" : "%"}`,
+      axis: showAxis ? "top" : null,
+      ticks: width < 600 ? 3 : 7,
+    },
     y: { domain: pts.map((p) => p.label), axis: null },
     marks: [
       Plot.gridX({ stroke: "var(--rule)", strokeOpacity: 1 }),
@@ -116,7 +123,7 @@ export const segments: Page = {
     const charts = el("div", { class: "seg-panels" });
 
     const p1 = (x: number) => pp(x, 1).replace("+", "");
-    const n1 = (x: number) => `${x < 0 ? "−" : ""}${Math.abs(x * 100).toFixed(1)}`;
+    const n0 = (x: number) => `${x < 0 ? "−" : ""}${Math.round(Math.abs(x * 100))}`;
     root.append(
       el(
         "div",
@@ -131,9 +138,12 @@ export const segments: Page = {
         "section",
         { class: "callouts", "aria-label": "Key differences in effective views" },
         callout(`${p1(num(c, "worst_estimate"))} vs ${p1(num(c, "best_estimate"))}`, `${c.worst_label} videos cost the most, ${String(c.best_label).toLowerCase()} the least.`),
-        callout(
-          `${n1(num(c, "short_min_cost"))} to ${n1(num(c, "short_max_cost"))} vs ${n1(num(c, "long_min_cost"))} to ${n1(num(c, "long_max_cost"))} pp`,
-          "Videos under a minute cost less than longer videos.",
+        el(
+          "div",
+          { class: "callout" },
+          el("span", { class: "callout-value callout-lines" }, `Under 1 min: ${n0(num(c, "short_min_cost"))} to ${n0(num(c, "short_max_cost"))} pp`),
+          el("span", { class: "callout-value callout-lines" }, `Over 1 min: ${n0(num(c, "long_min_cost"))} to ${n0(num(c, "long_max_cost"))} pp`),
+          el("span", { class: "callout-text" }, "Shorter videos cost less."),
         ),
         callout(
           `${p1(num(c, "most_active_estimate"))} (${pct(num(c, "most_active_relative"))})`,
@@ -178,10 +188,19 @@ export const segments: Page = {
       let hi = Math.max(refVal, ...all);
       if (lo > 0 && lo < (hi - lo) * 0.5) lo = 0;
       if (hi < 0 && -hi < (hi - lo) * 0.5) hi = 0;
+      const zeroOff = lo > 0 || hi < 0;
+      const ests = rows.map((r) => pick(r)[0]);
+      const near = ests.reduce((a, b) => (Math.abs(b) < Math.abs(a) ? b : a));
+      const far = ests.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a));
+      const unitText = mode === "absolute" ? " pp" : "%";
+      const r0 = (x: number) => `${x < 0 ? "−" : ""}${Math.round(Math.abs(x * 100))}`;
+      const zeroNote = zeroOff
+        ? ` Axis does not start at zero; all ${ests.every((x) => x < 0) ? "costs" : "estimates"} fall between ${r0(near)} and ${r0(far)}${unitText}.`
+        : "";
       const pad = (hi - lo) * 0.04;
       const domain: [number, number] = [lo - pad, hi + pad];
       const metricLabel = METRICS.find((m) => m.key === state.metric)!.label;
-      caption.textContent = `${metricLabel}, random minus recommended, ${mode === "absolute" ? "in percentage points" : "relative to the segment's recommended rate (%)"}, with 95% intervals. Dashed blue line: the whole feed (${fmt(refVal, mode)}). Diamond: the segment differs from the rest of its group, filled if it passes both BH and the stricter BY, outline if BH only. Grey: mixed category groups, not interpreted.`;
+      caption.textContent = `${metricLabel}, random minus recommended, ${mode === "absolute" ? "in percentage points" : "relative to the segment's recommended rate (%)"}, with 95% intervals. Dashed blue line: the whole feed (${fmt(refVal, mode)}). Diamond: the segment differs from the rest of its group, filled if it passes both BH and the stricter BY, outline if BH only. Grey: mixed category groups, not interpreted.${zeroNote}`;
       const n = data.tables.new_category_note[0];
       const v = (col: string) => {
         const x = num(n, col);
@@ -204,7 +223,7 @@ export const segments: Page = {
               return { key: `${r.dimension}/${r.segment}`, label: String(lab.label), value, low, high, marker: String(r.marker), mixed, tip, order: Number(lab.order) };
             })
             .sort((a, b) => (d.byValue ? Number(a.mixed) - Number(b.mixed) || a.value - b.value : a.order - b.order));
-          blocks.push(el("figure", { class: "seg-panel" }, el("figcaption", {}, d.title), panel(pts, domain, refVal, w, di === 0)));
+          blocks.push(el("figure", { class: "seg-panel" }, el("figcaption", {}, el("span", {}, d.title), el("span", { class: "marker-head" }, "vs rest of group")), panel(pts, domain, refVal, w, di === 0, mode === "absolute" ? "pp" : "%")));
         });
       });
       charts.replaceChildren(...blocks);
