@@ -293,3 +293,5 @@ select.control { width: 100%; }
 .callout-lines { font-size: 15px; }
 .memo-link { margin: 0 0 12px; font-size: 14px; }
 .memo-link a { font-weight: 500; }
+.built-links { margin: 0 0 8px; font-size: 14px; color: var(--ink-2); }
+.built-links a { font-weight: 500; }

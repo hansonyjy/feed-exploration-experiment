@@ -6,7 +6,7 @@ How much of a short-video feed should go to exploration, and what does it cost? 
 
 [![Dashboard build](https://github.com/hansonyjy/feed-exploration-experiment/actions/workflows/pages.yml/badge.svg)](https://github.com/hansonyjy/feed-exploration-experiment/actions/workflows/pages.yml)
 
-**[Live dashboard](https://hansonyjy.github.io/feed-exploration-experiment/)** · **[Decision memo (PDF)](docs/memo.pdf)** · [Findings](docs/findings.md) · [Pre-registered plan](docs/analysis_plan.md)
+**[Live dashboard](https://hansonyjy.github.io/feed-exploration-experiment/)** · **[Decision memo (PDF)](docs/memo.pdf)** · [Data models (dbt docs)](https://hansonyjy.github.io/feed-exploration-experiment/dbt/) · [Findings](docs/findings.md) · [Pre-registered plan](docs/analysis_plan.md)
 
 [![Dashboard page 1: the effective-view waterfall and the decision](docs/img/dashboard-page1.png)](https://hansonyjy.github.io/feed-exploration-experiment/)
 
@@ -30,9 +30,11 @@ A recommender that only shows what it already knows users like never learns anyt
 
 ## How this was built
 
-323.5 million raw log rows · 27,285 users in the dataset · 32.0 million videos · 508 GB scanned in BigQuery · 25 dbt models · 231 tests
+323.5 million raw log rows · 27,285 users in the dataset · 32.0 million videos · 509 GB scanned in BigQuery · 25 dbt models · 235 tests
 
 **Stack:** BigQuery · dbt · Python (pandas, pyfixest) · TypeScript and Observable Plot · GitHub Actions
+
+Every model, column, test and its lineage is browsable in the [dbt docs](https://hansonyjy.github.io/feed-exploration-experiment/dbt/).
 
 ```mermaid
 flowchart LR
@@ -131,9 +133,12 @@ python scripts/build_dashboard_data.py      # exports/*.csv -> exports/dashboard
 python scripts/memo_facts.py                # the memo's and README's derived numbers
 scripts/build_memo_pdf.sh                   # docs/memo.pdf from docs/memo.md
 scripts/screenshot_dashboard.sh             # docs/img/dashboard-page1.png
+scripts/build_dbt_docs.sh                   # exports/dbt/index.html, the dbt docs site
 python scripts/check_memo.py                # numbers trace, PDF is current
 cd dashboard && npm ci && npm run dev       # the site, locally
 ```
+
+The dbt docs site is a snapshot: `scripts/build_dbt_docs.sh` regenerates it from prod metadata (no table data is read), checks it for credentials, emails and local paths, and writes it to `exports/dbt/`, which the Pages build serves at `/dbt/`.
 
 </details>
 
