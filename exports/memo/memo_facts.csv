@@ -21,6 +21,12 @@ missing_duration_recommended,0.07814593444953061,7.81%,missing_duration_by_arm_p
 missing_duration_random,0.03107577043549426,3.11%,missing_duration_by_arm_prod.csv
 insertion_rate_low,0.0062995961545968225,0.630%,health/hc01b_sample_ratio_tab1_regime.csv
 insertion_rate_high,0.013875992662037203,1.388%,health/hc01b_sample_ratio_tab1_regime.csv
+build_raw_log_rows,323464444,323.5 million,dashboard/headline.json build_facts
+build_users_in_dataset,27285,"27,285",dashboard/headline.json build_facts
+build_videos,32038725,32.0 million,dashboard/headline.json build_facts
+build_gb_scanned,508266807296,508 GB,dashboard/headline.json build_facts
+build_dbt_models,25,25,dashboard/headline.json build_facts
+build_dbt_tests,231,231,dashboard/headline.json build_facts
 power_slot_users_per_arm,231,231,memo/power_next_experiment.csv
 power_slot_delta,0.05,5 pp,memo/power_next_experiment.csv
 power_feed_users_per_arm,201921,"201,921",memo/power_next_experiment.csv

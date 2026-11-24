@@ -5,7 +5,7 @@ name: Dashboard
 on:
   push:
     branches: ["**"]
-    paths: ["dashboard/**", "exports/**", "dbt/seeds/**", "docs/memo.*", "docs/findings.md", "scripts/build_dashboard_data.py", "scripts/check_memo.py", "scripts/memo_facts.py", ".github/workflows/pages.yml"]
+    paths: ["dashboard/**", "exports/**", "dbt/seeds/**", "docs/memo.*", "docs/findings.md", "README.md", "scripts/build_dashboard_data.py", "scripts/check_memo.py", "scripts/memo_facts.py", ".github/workflows/pages.yml"]
   pull_request:
   workflow_dispatch:
 
@@ -26,7 +26,7 @@ jobs:
           python-version: "3.12"
       - name: Data files match the exports
         run: python scripts/build_dashboard_data.py --check
-      - name: Memo numbers trace to findings or exports, and the PDF is current
+      - name: Memo and README numbers trace to findings or exports, and the PDF is current
         run: |
           python scripts/memo_facts.py --check
           python scripts/check_memo.py
