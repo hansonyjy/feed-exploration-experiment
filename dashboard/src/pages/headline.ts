@@ -1,7 +1,7 @@
 import * as Plot from "@observablehq/plot";
 import { num, type Row } from "../data";
 import { pct, pp, share, sig } from "../format";
-import { el } from "../ui";
+import { el, repoLink } from "../ui";
 import type { Data, Page } from "./page";
 
 // Every number on this page comes from exports/dashboard/headline.json (scorecard, waterfall,
@@ -321,6 +321,7 @@ export const headline: Page = {
 
     const chart = el("figure", { class: "hero-chart" });
     root.append(
+      el("p", { class: "memo-link" }, repoLink("docs/memo.md", "Read the decision memo"), " · ", repoLink("docs/memo.pdf", "PDF, one page")),
       el(
         "div",
         { class: "lede" },
