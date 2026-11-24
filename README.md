@@ -1,6 +1,6 @@
 # Feed exploration budget
 
-**Exploration’s real cost is bad targeting, not bad videos.**
+**Exploration's real cost is bad targeting, not bad videos.**
 
 How much of a short-video feed should go to exploration, and what does it cost? An analysis of randomized slots in a public dataset.
 
