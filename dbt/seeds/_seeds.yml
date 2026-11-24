@@ -93,3 +93,46 @@ seeds:
       - name: label_en
         description: English label shown on the dashboard.
         data_tests: [unique, not_null]
+
+  - name: segment_merge_map
+    description: >
+      How small segments were merged so every segment can detect a 1 pp effective-view effect (D39, D40,
+      D58). Written once by scripts/make_segment_merges.py from pre-period data and treatment-window counts,
+      before any segment outcome was read, and committed on its own (9929e2c). Never regenerated.
+    config:
+      column_types:
+        dimension: string
+        segment: string
+        final_segment: string
+        segment_order: int64
+        n_users: int64
+        n_random_requests: int64
+        sigma2: float64
+        rho: float64
+        mde_pp: float64
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['dimension', 'segment']
+    columns:
+      - name: dimension
+        description: Segment dimension (activity tercile, activity group, tenure, follows, video length, category).
+        data_tests: [not_null]
+      - name: segment
+        description: Original segment label before merging.
+        data_tests: [not_null]
+      - name: final_segment
+        description: Segment after merging; merged labels are joined with "+".
+        data_tests: [not_null]
+      - name: segment_order
+        description: Position of the original segment in its dimension's natural order.
+      - name: n_users
+        description: Users in the final segment with at least one main-run random request.
+      - name: n_random_requests
+        description: Main-run random requests in the final segment.
+      - name: sigma2
+        description: Variance of the pre-period placebo difference used for the minimum detectable effect.
+      - name: rho
+        description: Within-user correlation of the placebo difference.
+      - name: mde_pp
+        description: Minimum detectable effect of the final segment, in percentage points (at most 1).

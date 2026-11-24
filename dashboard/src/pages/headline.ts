@@ -198,6 +198,12 @@ function howBuilt(f: Row): HTMLElement {
       ...steps.map(([name, sub]) => el("li", {}, el("span", { class: "step-name" }, name), el("span", { class: "step-sub" }, sub))),
     ),
     el(
+      "p",
+      { class: "built-links" },
+      el("a", { href: `${import.meta.env.BASE_URL}dbt/` }, "Data models (dbt docs)"),
+      ": every model, column, test and its lineage.",
+    ),
+    el(
       "ul",
       { class: "methods" },
       el("li", {}, el("strong", {}, "Within-request comparison."), " Each random video is compared with the recommended videos in the same feed request."),
