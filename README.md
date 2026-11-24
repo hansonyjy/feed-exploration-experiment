@@ -1,5 +1,7 @@
 # Feed exploration budget
 
+**Exploration’s real cost is bad targeting, not bad videos.**
+
 How much of a short-video feed should go to exploration, and what does it cost? An analysis of randomized slots in a public dataset.
 
 [![Dashboard build](https://github.com/hansonyjy/feed-exploration-experiment/actions/workflows/pages.yml/badge.svg)](https://github.com/hansonyjy/feed-exploration-experiment/actions/workflows/pages.yml)
@@ -11,11 +13,15 @@ How much of a short-video feed should go to exploration, and what does it cost? 
 ## The answer
 
 - **A random slot costs 34.6 pp of effective views (−63%)** compared with a recommended slot in the same feed request.
-- **94% of that gap is targeting, not content.** The random pool's videos do almost as well when they are recommended; they lose views because they reach the wrong people.
+- **94% of that gap is targeting, not content.** The random pool's videos do almost as well when they are recommended. In the best case, where a targeted slot reaches people as well as the recommender does, a slot would cost about 2.1 pp instead of 35.7 pp (an upper bound).
 - **Content matters more than users.** Random gaming videos cost 42.2 pp and comedy 28.3 pp, while user groups differ by a few points.
 - **Guardrails hold for the whole feed, except for dance.** At 1.388%, hate rises 1.60% and fast skip 1.32% relative to their current rates, both under the 2% limit; dance videos push hate past it even at 0.658%.
 
-**Recommendation:** keep exploration up to 1.388% of the feed, keep dance out of the random pool, and next test 2-3% targeted exploration. The [decision memo](docs/memo.md) has the reasoning and the next experiment.
+- **The feed-level cost is small.** At 1.388%, exploration lowers the feed's effective-view rate by 0.48 pp, 0.88% of its current rate.
+
+**Recommendation:** exploration up to 1.388% of the feed is safe to keep, though its payoff is long-run and was not measured here. Keep dance out of the random pool, and next test 2-3% targeted exploration.
+
+**Next experiment:** randomize by user for about four weeks across four arms (current random 1.388%, random 2%, targeted 2%, targeted 3%), with decision rules set before launch. The [decision memo](docs/memo.md) has the design, the rules and the sample sizes.
 
 ## The question and the data
 
@@ -26,6 +32,8 @@ A recommender that only shows what it already knows users like never learns anyt
 ## How this was built
 
 323.5 million raw log rows · 27,285 users in the dataset · 32.0 million videos · 508 GB scanned in BigQuery · 25 dbt models · 231 tests
+
+**Stack:** BigQuery · dbt · Python (pandas, pyfixest) · TypeScript and Observable Plot · GitHub Actions
 
 ```mermaid
 flowchart LR
@@ -47,8 +55,17 @@ Every number on the dashboard, in the memo and in this README comes from a commi
 - **Pre-registration:** metrics, tests and parameters were fixed before any outcome was read.
 - **Segments:** each segment is compared with the rest of its group, corrected with Benjamini-Hochberg and the stricter Benjamini-Yekutieli.
 - **Primary metric:** duration-adjusted effective view: a view that lasts at least as long as the typical view of a similar-length video, so short videos are not favored the way plain completion favors them.
+- **Robustness:** the results hold with AD-pool videos excluded, with the top 0.1% of user-days excluded, and when compared within each user.
 
 The plan is frozen at the git tag [`prereg-v1`](https://github.com/hansonyjy/feed-exploration-experiment/tree/prereg-v1). Every later change is logged in the [decision log](docs/decisions.md), and changes made after results were seen are marked as post-results deviations.
+
+## Calls that mattered
+
+- **The insertion rate rose around May Day,** so the periods before and after are never compared; every comparison stays within a request or day ([D17](https://github.com/hansonyjy/feed-exploration-experiment/blob/main/docs/decisions.md#2026-11-16--d17--insertion-rate-regimes-and-the-may-day-holiday)).
+- **Session exit showed an effect of about 5 pp, but it was mechanical:** random slots sit more often in a session's first request and final requests log fewer items, so session exit was declared not identifiable ([D53](https://github.com/hansonyjy/feed-exploration-experiment/blob/main/docs/decisions.md#2026-11-18--d53--session-exit-is-not-identifiable-from-these-logs)).
+- **Plain completion favors short videos,** so the primary metric compares each view with the typical view of a similar-length video ([D2](https://github.com/hansonyjy/feed-exploration-experiment/blob/main/docs/decisions.md#2026-11-15--d2--one-pre-registered-primary-metric-duration-adjusted), [D29](https://github.com/hansonyjy/feed-exploration-experiment/blob/main/docs/decisions.md#2026-11-16--d29--effective-view-play_time_ms-at-or-above-the-bucket-median)).
+- **Light users get more random slots,** so every comparison is made within a user first and users are weighted equally ([D21](https://github.com/hansonyjy/feed-exploration-experiment/blob/main/docs/decisions.md#2026-11-16--d21--hc-1-segment-criterion-non-blocking-equal-weight-per-user)).
+- **The segment merge map was committed on its own before any segment outcome was read** (commit [9929e2c](https://github.com/hansonyjy/feed-exploration-experiment/commit/9929e2c), [D58](https://github.com/hansonyjy/feed-exploration-experiment/blob/main/docs/decisions.md#2026-11-20--d58--how-the-minimum-detectable-effect-merge-d39-d40-is-computed)).
 
 ## What this can't tell you
 
@@ -70,6 +87,9 @@ scripts/     Loading, GCP setup, data builds, checks, memo and screenshot builds
 ```
 
 ## Reproduce
+
+<details>
+<summary>Set up GCP, load the data, build with dbt, run the analyses and rebuild the dashboard and memo.</summary>
 
 **Prerequisites:** Python 3.12 with [uv](https://docs.astral.sh/uv/), Node 24, the Google Cloud SDK (`gcloud`, `bq`), and a GCP project with billing. Google Chrome is needed only to rebuild the memo PDF and the README screenshot.
 
@@ -118,6 +138,8 @@ python scripts/check_memo.py                # numbers trace, PDF is current
 cd dashboard && npm ci && npm run dev       # the site, locally
 ```
 
+</details>
+
 ## Data and license
 
 - **KuaiRand:** Gao et al., CIKM 2022 ([kuairand.com](https://kuairand.com/), [arXiv 2208.08696](https://arxiv.org/abs/2208.08696)), licensed CC BY-SA 4.0.
@@ -125,3 +147,7 @@ cd dashboard && npm ci && npm run dev       # the site, locally
 - **Derived data** in `exports/` is shared under CC BY-SA 4.0. Raw data is not stored in this repo.
 
 This project uses public data only.
+
+---
+
+Built by [Hanson Yang](https://github.com/hansonyjy).
