@@ -70,9 +70,7 @@ The plan is frozen at the git tag [`prereg-v1`](https://github.com/hansonyjy/fee
 
 - **Anything above 1.388%.** No higher share was observed; that needs a new test.
 - **Whether exploration pays off later.** Random slots also give fewer new-category effective views (1.21% vs 1.76%), so the short-run data shows no discovery benefit.
-- **Before vs after May Day.** The insertion rate changed around the holiday, so the two periods are never compared.
-- **Session exits.** Whether random slots end sessions early cannot be identified from these logs (decision D53).
-- **Other apps and years.** This is one app, in 2022.
+- **Also:** no before-vs-after comparison around May Day; session exits are not identifiable ([D53](https://github.com/hansonyjy/feed-exploration-experiment/blob/main/docs/decisions.md#2026-11-18--d53--session-exit-is-not-identifiable-from-these-logs)); one app, in 2022.
 
 ## Repository layout
 
