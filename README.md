@@ -1,6 +1,6 @@
 # Feed exploration budget
 
-**Exploration’s real cost is bad targeting, not bad videos.**
+**Exploration's real cost is bad targeting, not bad videos.**
 
 How much of a short-video feed should go to exploration, and what does it cost? An analysis of randomized slots in a public dataset.
 
@@ -13,11 +13,10 @@ How much of a short-video feed should go to exploration, and what does it cost? 
 ## The answer
 
 - **A random slot costs 34.6 pp of effective views (−63%)** compared with a recommended slot in the same feed request.
-- **94% of that gap is targeting, not content.** The random pool's videos do almost as well when they are recommended. In the best case, where a targeted slot reaches people as well as the recommender does, a slot would cost about 2.1 pp instead of 35.7 pp (an upper bound).
+- **The feed-level cost is small.** At 1.388%, exploration lowers the feed's effective-view rate by 0.48 pp, 0.88% of its current rate.
+- **94% of the per-slot gap is targeting, not content.** The random pool's videos do almost as well when they are recommended. In the best case, where a targeted slot reaches people as well as the recommender does, a slot would cost about 2.1 pp instead of 35.7 pp (an upper bound).
 - **Content matters more than users.** Random gaming videos cost 42.2 pp and comedy 28.3 pp, while user groups differ by a few points.
 - **Guardrails hold for the whole feed, except for dance.** At 1.388%, hate rises 1.60% and fast skip 1.32% relative to their current rates, both under the 2% limit; dance videos push hate past it even at 0.658%.
-
-- **The feed-level cost is small.** At 1.388%, exploration lowers the feed's effective-view rate by 0.48 pp, 0.88% of its current rate.
 
 **Recommendation:** exploration up to 1.388% of the feed is safe to keep, though its payoff is long-run and was not measured here. Keep dance out of the random pool, and next test 2-3% targeted exploration.
 
@@ -71,9 +70,7 @@ The plan is frozen at the git tag [`prereg-v1`](https://github.com/hansonyjy/fee
 
 - **Anything above 1.388%.** No higher share was observed; that needs a new test.
 - **Whether exploration pays off later.** Random slots also give fewer new-category effective views (1.21% vs 1.76%), so the short-run data shows no discovery benefit.
-- **Before vs after May Day.** The insertion rate changed around the holiday, so the two periods are never compared.
-- **Session exits.** Whether random slots end sessions early cannot be identified from these logs (decision D53).
-- **Other apps and years.** This is one app, in 2022.
+- **Also:** no before-vs-after comparison around May Day; session exits are not identifiable ([D53](https://github.com/hansonyjy/feed-exploration-experiment/blob/main/docs/decisions.md#2026-11-18--d53--session-exit-is-not-identifiable-from-these-logs)); one app, in 2022.
 
 ## Repository layout
 
