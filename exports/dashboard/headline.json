@@ -1,6 +1,6 @@
 {
  "page": "headline",
- "sources": {"comparison_a": {"path": "exports/comparison_a_prod.csv", "sha256": "1ef89f4a532a0d12ab04b9308a0d3b97dff4bd0d872fed25779254aaadcdf5d5", "rows_kept": 63}, "missing_duration": {"path": "exports/missing_duration_by_arm_prod.csv", "sha256": "36e3d5602c66bf51603c6e46eb4ff14789de60064369b391c9ae8dcacce3daa2", "rows_kept": 2}, "load_tables": {"path": "docs/load_manifest.md", "sha256": "1d1e836c607055321f0b38cedfb191706c1e89f60cfa9bcde7b09a1e12d44005", "rows_kept": 9}, "dbt_nodes": {"path": "exports/build/dbt_nodes.csv", "sha256": "6ff5719811724e9081b98edef7a2b0e071b1c0b700e07488d7bd8ae2f889d961", "rows_kept": 261}, "bytes_billed": {"path": "exports/build/bytes_billed_by_month.csv", "sha256": "5385e5ae230811b41df85a193427afbda0bdf54cc5d6b41d8ecb2e507b38a8bf", "rows_kept": 1}},
+ "sources": {"comparison_a": {"path": "exports/comparison_a_prod.csv", "sha256": "1ef89f4a532a0d12ab04b9308a0d3b97dff4bd0d872fed25779254aaadcdf5d5", "rows_kept": 63}, "missing_duration": {"path": "exports/missing_duration_by_arm_prod.csv", "sha256": "36e3d5602c66bf51603c6e46eb4ff14789de60064369b391c9ae8dcacce3daa2", "rows_kept": 2}, "load_tables": {"path": "docs/load_manifest.md", "sha256": "1d1e836c607055321f0b38cedfb191706c1e89f60cfa9bcde7b09a1e12d44005", "rows_kept": 9}, "dbt_nodes": {"path": "exports/build/dbt_nodes.csv", "sha256": "30e1aedf4d6987de0c0278b55a0c356e42ed0e1e21df28f97f599110251ead54", "rows_kept": 265}, "bytes_billed": {"path": "exports/build/bytes_billed_by_month.csv", "sha256": "dadeedf9f231d4565f247c7b44d8013646959a4f8b7143fb81e9b5a621efb54f", "rows_kept": 1}},
  "derived": {"scorecard": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_a_prod.csv"]}, "waterfall": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_c_prod.csv", "exports/comparison_a_prod.csv"]}, "headline_facts": {"script": "scripts/build_dashboard_data.py", "from": ["exports/comparison_a_prod.csv", "exports/exploration_budget_prod.csv"]}, "build_facts": {"script": "scripts/build_dashboard_data.py", "from": ["docs/load_manifest.md", "exports/build/dbt_nodes.csv", "exports/build/bytes_billed_by_month.csv"]}},
  "tables": {
   "comparison_a": {"columns": ["analysis", "metric", "variant", "weighting", "estimate", "ci_low", "ci_high", "baseline_rec", "relative", "n_users", "n_units", "reg_coef", "reg_se", "reg_p", "diag_bucket_coef", "diag_bucket_se", "diag_bucket_p", "bootstrap_and_regression_agree"], "types": ["str", "str", "str", "str", "float", "float", "float", "float", "float", "int", "int", "float", "float", "float", "float", "float", "float", "bool"], "rows": [
@@ -172,6 +172,7 @@
    ["dbt_utils_expression_is_true_stg_log_random_period_treatment_and_event_date_between_var_treat_start_and_var_treat_end_", "test", null],
    ["dbt_utils_expression_is_true_stg_log_standard__period_pre_and_event_date_between_var_pre_start_and_var_pre_end_or_period_treatment_and_event_date_between_var_treat_start_and_var_treat_end_", "test", null],
    ["dbt_utils_unique_combination_of_columns_segment_band_map_dimension__band", "test", null],
+   ["dbt_utils_unique_combination_of_columns_segment_merge_map_dimension__segment", "test", null],
    ["non_negative_fct_tab1_impression_metrics_watch_time_ms", "test", null],
    ["non_negative_int_exposures_duration_filled_ms", "test", null],
    ["non_negative_int_reference_thresholds_computed_median_play_time_ms", "test", null],
@@ -288,6 +289,9 @@
    ["not_null_segment_band_map_band", "test", null],
    ["not_null_segment_band_map_dimension", "test", null],
    ["not_null_segment_band_map_merged_band", "test", null],
+   ["not_null_segment_merge_map_dimension", "test", null],
+   ["not_null_segment_merge_map_final_segment", "test", null],
+   ["not_null_segment_merge_map_segment", "test", null],
    ["not_null_stg_log_random_event_date", "test", null],
    ["not_null_stg_log_random_impression_id", "test", null],
    ["not_null_stg_log_random_is_rand", "test", null],
@@ -347,7 +351,7 @@
    ["unique_stg_videos_video_id", "test", null]
   ]},
   "bytes_billed": {"columns": ["month_pt", "n_query_jobs", "bytes_billed", "snapshot_date"], "types": ["str", "int", "int", "str"], "rows": [
-   ["2026-11", 751, 508266807296, "2026-11-22"]
+   ["2026-11", 767, 508872884224, "2026-11-23"]
   ]},
   "scorecard": {"columns": ["metric", "recommended_rate", "random_rate", "estimate", "ci_low", "ci_high", "relative", "relative_ci_low", "relative_ci_high", "methods_agree"], "types": ["str", "float", "float", "float", "float", "float", "float", "float", "float", "bool"], "rows": [
    ["effective_view", 0.5482530394220824, 0.20200767105666784, -0.34624536836541453, -0.3480337262064047, -0.34452867341628246, -0.6315429983395885, -0.6348049188624101, -0.628411789161174, true],
@@ -369,7 +373,7 @@
    [26955, 1081088, 11, true, 0.01388]
   ]},
   "build_facts": {"columns": ["raw_log_rows", "n_users_dataset", "n_videos", "bytes_billed_total", "bytes_snapshot_date", "n_models", "n_models_staging", "n_models_intermediate", "n_models_marts", "n_tests", "n_seeds"], "types": ["int", "int", "int", "int", "str", "int", "int", "int", "int", "int", "int"], "rows": [
-   [323464444, 27285, 32038725, 508266807296, "2026-11-22", 25, 5, 14, 6, 231, 5]
+   [323464444, 27285, 32038725, 508872884224, "2026-11-23", 25, 5, 14, 6, 235, 5]
   ]}
  }
 }
