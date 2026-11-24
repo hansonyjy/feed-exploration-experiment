@@ -43,7 +43,8 @@ README = REPO_ROOT / "README.md"
 README_NOT_RESULTS = [
     "April 23 to May 8, 2022", "in 2022", "decision D53", "2-3%",
     "CIKM 2022", "arXiv 2208.08696", "10.5281/zenodo.18159199", "CC BY-SA 4.0", "CC BY 4.0",
-    "KuaiRand-27K", "page 1",
+    "KuaiRand-27K", "page 1", "random 2%", "targeted 2%", "targeted 3%",
+    "commit 9929e2c",
 ]
 CONFIG_FILES = ["pyproject.toml", "dbt/profiles.example.yml", ".github/workflows/pages.yml"]
 
