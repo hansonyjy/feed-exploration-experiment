@@ -14,7 +14,7 @@ How much of a short-video feed should go to exploration, and what does it cost? 
 
 - **A random slot costs 34.6 pp of effective views (−63%)** compared with a recommended slot in the same feed request.
 - **The feed-level cost is small.** At 1.388%, exploration lowers the feed's effective-view rate by 0.48 pp, 0.88% of its current rate.
-- **94% of that gap is targeting, not content.** The random pool's videos do almost as well when they are recommended. In the best case, where a targeted slot reaches people as well as the recommender does, a slot would cost about 2.1 pp instead of 35.7 pp (an upper bound).
+- **94% of the per-slot gap is targeting, not content.** The random pool's videos do almost as well when they are recommended. In the best case, where a targeted slot reaches people as well as the recommender does, a slot would cost about 2.1 pp instead of 35.7 pp (an upper bound).
 - **Content matters more than users.** Random gaming videos cost 42.2 pp and comedy 28.3 pp, while user groups differ by a few points.
 - **Guardrails hold for the whole feed, except for dance.** At 1.388%, hate rises 1.60% and fast skip 1.32% relative to their current rates, both under the 2% limit; dance videos push hate past it even at 0.658%.
 
