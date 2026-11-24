@@ -99,6 +99,18 @@ def build() -> list[dict]:
         share = sum(float(r["n_random"]) for r in cells) / sum(float(r["n_exposures"]) for r in cells)
         add(f"insertion_rate_{regime}", share, f"{share * 100:.3f}%", "health/hc01b_sample_ratio_tab1_regime.csv")
 
+    # Build scale for the README, from the dashboard's build_facts (headline.json), the same numbers as
+    # page 1's "How this was built".
+    import json
+    hb = json.loads((REPO_ROOT / "exports" / "dashboard" / "headline.json").read_text(encoding="utf-8"))["tables"]["build_facts"]
+    bf = dict(zip(hb["columns"], hb["rows"][0]))
+    add("build_raw_log_rows", bf["raw_log_rows"], f"{bf['raw_log_rows'] / 1e6:.1f} million", "dashboard/headline.json build_facts")
+    add("build_users_in_dataset", bf["n_users_dataset"], f"{bf['n_users_dataset']:,}", "dashboard/headline.json build_facts")
+    add("build_videos", bf["n_videos"], f"{bf['n_videos'] / 1e6:.1f} million", "dashboard/headline.json build_facts")
+    add("build_gb_scanned", bf["bytes_billed_total"], f"{round(bf['bytes_billed_total'] / 1e9)} GB", "dashboard/headline.json build_facts")
+    add("build_dbt_models", bf["n_models"], str(bf["n_models"]), "dashboard/headline.json build_facts")
+    add("build_dbt_tests", bf["n_tests"], str(bf["n_tests"]), "dashboard/headline.json build_facts")
+
     # Power for the next experiment, two tiers (scripts/power_next_experiment.py).
     pw = rows("exports/memo/power_next_experiment.csv")[0]
     num = lambda k: float(pw[k])
