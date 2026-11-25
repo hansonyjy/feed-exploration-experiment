@@ -24,7 +24,7 @@ export interface Page {
 
 const PREREG = "https://github.com/hansonyjy/feed-exploration-experiment/tree/prereg-v1";
 
-function merge(pages: PageData[]): Data {
+export function merge(pages: PageData[]): Data {
   const tables: Record<string, Row[]> = {};
   const sources: Source[] = [];
   for (const p of pages) {
@@ -39,7 +39,7 @@ function compact(n: number): string {
 }
 
 // Experiment header strip on every page: who and what was measured (headline_facts, from Comparison A).
-function strip(data: Data, agreement: string | null, note?: string): HTMLElement {
+export function strip(data: Data, agreement: string | null, note?: string): HTMLElement {
   const main = data.tables.headline_facts[0];
   const item = (k: string, v: string | Node) => el("div", { class: "strip-item" }, el("span", { class: "strip-k" }, k), el("span", { class: "strip-v" }, v));
   const badge = link(PREREG, "Pre-registered");

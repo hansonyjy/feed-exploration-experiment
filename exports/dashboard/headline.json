@@ -369,8 +369,8 @@
   "waterfall": {"columns": ["recommended_rate", "content_gap", "targeting_gap", "random_rate", "total_gap", "targeting_share", "n_users", "a_gap"], "types": ["float", "float", "float", "float", "float", "float", "int", "float"], "rows": [
    [0.5490179699697239, 0.02082072764816754, 0.3359385555706461, 0.19225868675091018, 0.3567592832188136, 0.9416392827670377, 22335, 0.34624536836541453]
   ]},
-  "headline_facts": {"columns": ["n_users", "n_random_requests", "n_metrics", "all_methods_agree", "top_share"], "types": ["int", "int", "int", "bool", "float"], "rows": [
-   [26955, 1081088, 11, true, 0.01388]
+  "headline_facts": {"columns": ["n_users", "n_random_requests", "n_metrics", "all_methods_agree", "top_share", "feed_effective_view_change", "feed_effective_view_relative"], "types": ["int", "int", "int", "bool", "float", "float", "float"], "rows": [
+   [26955, 1081088, 11, true, 0.01388, -0.004805885712911954, -0.008765816816953488]
   ]},
   "build_facts": {"columns": ["raw_log_rows", "n_users_dataset", "n_videos", "bytes_billed_total", "bytes_snapshot_date", "n_models", "n_models_staging", "n_models_intermediate", "n_models_marts", "n_tests", "n_seeds"], "types": ["int", "int", "int", "int", "str", "int", "int", "int", "int", "int", "int"], "rows": [
    [323464444, 27285, 32038725, 508872884224, "2026-11-23", 25, 5, 14, 6, 235, 5]

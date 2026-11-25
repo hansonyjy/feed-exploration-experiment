@@ -203,9 +203,13 @@ def derive_headline(src: dict) -> dict:
                                [[rec, content, targeting, rec - content - targeting, c["total"]["estimate"],
                                  targeting / c["total"]["estimate"], c["total"]["n_users"], -ev["estimate"]]]),
                       ["comparison_c", "comparison_a"]),
-        "headline_facts": (as_table(["n_users", "n_random_requests", "n_metrics", "all_methods_agree", "top_share"],
+        # Feed-level effective-view change at the top observed share (D48's linear rule: share x the
+        # random-minus-recommended difference), absolute and relative to the feed's rate.
+        "headline_facts": (as_table(["n_users", "n_random_requests", "n_metrics", "all_methods_agree", "top_share",
+                                     "feed_effective_view_change", "feed_effective_view_relative"],
                                     [[ev["n_users"], ev["n_units"], len(score),
-                                      all(r[-1] is True for r in score), max(shares)]]),
+                                      all(r[-1] is True for r in score), max(shares),
+                                      max(shares) * ev["estimate"], max(shares) * ev["relative"]]]),
                            ["comparison_a", "budget"]),
         "build_facts": (as_table(["raw_log_rows", "n_users_dataset", "n_videos", "bytes_billed_total",
                                   "bytes_snapshot_date", "n_models", "n_models_staging", "n_models_intermediate",
@@ -553,6 +557,8 @@ def content_checks(texts: dict[str, str]) -> list[str]:
     if abs(w["recommended_rate"] - w["random_rate"] - w["total_gap"]) > 1e-9:
         errors.append("headline: waterfall total differs from C's total gap")
     (hf,) = records(texts["headline"], "headline_facts")
+    if abs(hf["feed_effective_view_relative"] - hf["top_share"] * by_metric["effective_view"]["relative"]) > 1e-12:
+        errors.append("headline: feed-level relative change is not share x relative effect")
     if hf["top_share"] != 0.01388:
         errors.append(f"headline: top observed share is {hf['top_share']}, expected 0.01388 (D48)")
 

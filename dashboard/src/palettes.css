@@ -1,0 +1,59 @@
+/* Three palette directions (prototype; one is kept after the owner picks).
+   Each: background, surface, ink, muted text, context marks (grey), one accent for the finding,
+   harm red for guardrails getting worse. Accent vs harm stays distinct under protan, deutan and
+   tritan simulation (scripts in the PR description); no dark mode. */
+
+:root,
+:root[data-palette="harbor"] {
+  --bg: #f6f5f1;
+  --surface: #fdfcf9;
+  --ink: #10233b;
+  --ink-2: #4b5a6b;
+  --ink-3: #6f7b88;
+  --rule: #e2e1db;
+  --rule-strong: #c9cbc6;
+  --context: #c2c8ce;
+  --context-ink: #8e98a3;
+  --accent: #005f73;
+  --accent-ink: #005f73;
+  --accent-weak: #e1eef0;
+  --bad: #d1452b;
+  --bad-weak: #f8e4df;
+  --row-hover: #eeede7;
+}
+
+:root[data-palette="graphite"] {
+  --bg: #f8f8f6;
+  --surface: #ffffff;
+  --ink: #17191e;
+  --ink-2: #4d5159;
+  --ink-3: #6e737b;
+  --rule: #e4e5e7;
+  --rule-strong: #c7cbd1;
+  --context: #c7cbd1;
+  --context-ink: #949aa3;
+  --accent: #2156d9;
+  --accent-ink: #1c49b8;
+  --accent-weak: #e6edfb;
+  --bad: #d2452a;
+  --bad-weak: #fae5df;
+  --row-hover: #f0f1f2;
+}
+
+:root[data-palette="sand"] {
+  --bg: #f3efe6;
+  --surface: #faf8f2;
+  --ink: #1d1b2b;
+  --ink-2: #514c58;
+  --ink-3: #736d66;
+  --rule: #e2dccf;
+  --rule-strong: #cbc3b4;
+  --context: #cfc8bc;
+  --context-ink: #9a938a;
+  --accent: #3a3fd1;
+  --accent-ink: #3236b5;
+  --accent-weak: #e7e6f6;
+  --bad: #c2412f;
+  --bad-weak: #f4e0da;
+  --row-hover: #ece7dc;
+}

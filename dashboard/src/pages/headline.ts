@@ -104,7 +104,7 @@ function ciBar(rel: number, lo: number, hi: number, bad: boolean): SVGSVGElement
   return s;
 }
 
-function scorecard(data: Data): HTMLElement {
+export function scorecard(data: Data): HTMLElement {
   const rows = new Map(data.tables.scorecard.map((r) => [String(r.metric), r]));
   const head = el(
     "thead",
