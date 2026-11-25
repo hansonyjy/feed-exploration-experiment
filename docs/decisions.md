@@ -2,6 +2,23 @@
 
 Each entry: date, decision, alternatives considered, reason. Newest first.
 
+## 2026-11-24 · D62 · Dashboard: one scrolling page with numbered sections, one accent per chart
+- Decided 2026-11-24 by the owner after all results were seen. Presentation only: no estimate, metric,
+  sample or test changes, and every number still comes from the dashboard JSON with --check coverage.
+- Structure: the four tabs become one scrolling page. Hero (answer-first headline, one line of context,
+  four key figures), then 01 What a random slot costs, 02 Why: targeting, not content, 03 Where it hurts
+  most, 04 How much exploration the feed can take (the simulator). A slim sticky nav shows the four
+  numbers. The header strip and How this was built stay. Old tab links (#/content-vs-targeting,
+  #/segments, #/budget) scroll to their sections, so earlier links keep working.
+- Section pattern: question label, finding headline, one hero number, the chart, a one-line How to read
+  this, then collapsible Show the data and About this view.
+- Visual rule: in every chart exactly one thing carries the accent, and it is the finding (01 the primary
+  metric, 02 the targeting bar, 03 the most extreme segment for the chosen metric, 04 the limit line and
+  dance). Everything else is grey context; red marks harm only and is never the accent. Annotations sit on
+  the chart with leader lines.
+- Palette: one light palette, no dark mode; chosen by the owner from three colorblind-checked directions.
+  Display type: Fraunces for headlines and key figures, IBM Plex Sans and Mono for text and numbers.
+
 ## 2026-11-22 · D61 · Phase 3: dashboard scope, stack, deadline and workflow
 - Decided 2026-11-22 by the owner after all prod results were seen. Reporting and scope only: no
   estimate, metric, sample or test changes. Supersedes the Dashboard Spec and Timeline in design.md.
