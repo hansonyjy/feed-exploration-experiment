@@ -165,7 +165,7 @@ function millions(n: number): string {
 }
 
 // "How this was built": scale numbers (build_facts, from committed files), pipeline, methods.
-function howBuilt(f: Row): HTMLElement {
+export function howBuilt(f: Row): HTMLElement {
   const stat = (value: string, label: string) =>
     el("div", { class: "stat" }, el("span", { class: "stat-value" }, value), el("span", { class: "stat-label" }, label));
   const steps: [string, string][] = [
@@ -223,7 +223,7 @@ interface Step {
   value: string;
 }
 
-function waterfall(w: Row, width: number): Element {
+export function waterfall(w: Row, width: number): Element {
   const [rec, content, targeting, random] = ["recommended_rate", "content_gap", "targeting_gap", "random_rate"].map((c) => num(w, c));
   const steps: Step[] = [
     { label: "Recommended", y1: 0, y2: rec, kind: "level", value: rate(rec) },
@@ -234,7 +234,8 @@ function waterfall(w: Row, width: number): Element {
   const narrow = width < 560;
   const gapShare = `${Math.round(num(w, "targeting_share") * 100)}%`;
   const mid = (random + rec - content) / 2;
-  const fill = (s: Step) => (s.kind === "targeting" ? "var(--accent)" : s.kind === "content" ? "var(--ink-3)" : "var(--ink-2)");
+  // One accent: the targeting bar is the finding; levels and the content gap are grey context.
+  const fill = (s: Step) => (s.kind === "targeting" ? "var(--accent)" : s.kind === "content" ? "var(--context-ink)" : "var(--context)");
   return Plot.plot({
     width,
     height: narrow ? 300 : 340,

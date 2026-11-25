@@ -120,7 +120,7 @@ function cell(v: number, lo: number, hi: number, seconds: boolean, significant: 
   return td;
 }
 
-function decompositionTable(data: Data): HTMLElement {
+export function decompositionTable(data: Data): HTMLElement {
   const rows = new Map(data.tables.decomposition_table.map((r) => [String(r.metric), r]));
   const pool = data.tables.pool_length[0];
   const body = el("tbody");
@@ -188,7 +188,7 @@ function decompositionTable(data: Data): HTMLElement {
   );
 }
 
-function hateLine(data: Data): HTMLElement {
+export function hateLine(data: Data): HTMLElement {
   const h = data.tables.hate_facts[0];
   const p3 = (x: number) => pp(x, 3);
   const content = h.c_content_agree === true ? `the videos themselves add ${p3(num(h, "c_content_rise"))}` : `the content part (${p3(num(h, "c_content_rise"))}) is not a finding`;
@@ -205,7 +205,7 @@ function hateLine(data: Data): HTMLElement {
   );
 }
 
-function bridgeTable(data: Data): HTMLElement {
+export function bridgeTable(data: Data): HTMLElement {
   const b = data.tables.bridge_effective_view[0];
   const v = (c: string) => pp(num(b, c), Math.abs(num(b, c)) < 0.01 ? 2 : 1);
   const row = (name: string, val: string, step: string) => el("tr", {}, el("th", { scope: "row", class: "c-metric" }, name), el("td", { class: "num" }, val), el("td", { class: "num" }, step));

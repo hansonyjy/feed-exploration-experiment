@@ -118,7 +118,7 @@ function overview(pts: Point[], domain: [number, number], limit: number, selecte
   const narrow = width < 600;
   const max = narrow ? 24 : 46;
   const short = (s: string) => chartLabel(s, narrow, max);
-  const color = (p: Point) => (p.mixed ? "var(--ink-3)" : p.status === "none" ? "var(--ink-2)" : "var(--bad)");
+  const color = (p: Point) => (p.mixed ? "var(--context)" : p.status === "none" ? "var(--context-ink)" : "var(--bad)");
   const marginLeft = narrow ? 150 : 290;
   return Plot.plot({
     width,
@@ -134,14 +134,16 @@ function overview(pts: Point[], domain: [number, number], limit: number, selecte
       // Selected row: a light band inside the plot area only.
       Plot.barX(pts.filter((p) => p.key === selected), { y: "label", x1: domain[0], x2: domain[1], fill: "var(--row-hover)" }),
       Plot.ruleX([0], { stroke: "var(--ink-3)" }),
-      Plot.ruleX([limit], { stroke: "var(--bad)", strokeDasharray: "4,3" }),
+      Plot.ruleX([limit], { stroke: "var(--accent)", strokeWidth: 2 }),
       ...(showLimitLabel
-        ? [Plot.text([limit], { x: (d: number) => d, frameAnchor: "bottom", dy: 14, dx: 4, textAnchor: "start", text: () => `limit ${(limit * 100).toFixed(1)}%`, fill: "var(--bad)", fontFamily: "var(--mono)" })]
+        ? [Plot.text([limit], { x: (d: number) => d, frameAnchor: "bottom", dy: 14, dx: 4, textAnchor: "start", text: () => `limit ${(limit * 100).toFixed(1)}%`, fill: "var(--accent-ink)", fontFamily: "var(--mono)" })]
         : []),
       Plot.text(pts, { y: "label", text: (p: Point) => short(p.label), frameAnchor: "left", textAnchor: "end", dx: -8, fill: (p: Point) => (p.mixed ? "var(--ink-3)" : "var(--ink)") }),
       Plot.ruleY(pts, { y: "label", x1: "low", x2: "high", stroke: color, strokeOpacity: 0.75 }),
       Plot.dot(pts.filter((p) => p.mixed || p.status !== "watch"), { y: "label", x: "value", fill: color, r: 3.2 }),
       Plot.dot(pts.filter((p) => !p.mixed && p.status === "watch"), { y: "label", x: "value", stroke: "var(--bad)", fill: "var(--bg)", strokeWidth: 1.5, r: 3.4 }),
+      // Plain note on segments past the limit (actionable): the one place red is used.
+      Plot.text(pts.filter((p) => !p.mixed && p.status === "actionable"), { y: "label", x: "high", dx: 8, textAnchor: "start", text: () => (narrow ? "over limit" : "past the limit"), fill: "var(--bad)", fontWeight: 600 }),
       Plot.tip(pts, Plot.pointerY({ y: "label", x: "value", title: "tip" })),
     ],
   });
@@ -258,7 +260,7 @@ export const budget: Page = {
       el(
         "section",
         { class: "overview", "aria-labelledby": "overview-title" },
-        el("h2", { id: "overview-title" }, "Hate at 1.388% against its limit"),
+        el("h2", { id: "overview-title" }, "How much dislikes rise at a 1.388% exploration share"),
         chartNote,
         chart,
         toggle,
@@ -275,7 +277,7 @@ export const budget: Page = {
       drawnWidth = w;
       const all = points(rows, labels, state.limit);
       const lo = Math.min(0, ...all.map((p) => p.low));
-      const hi = Math.max(state.limit, ...all.map((p) => p.high)) * 1.05;
+      const hi = Math.max(state.limit, ...all.map((p) => p.high)) * (w < 600 ? 1.6 : 1.25);
       const domain: [number, number] = [lo, hi];
       const dim = new Map(rows.map((r) => [key(r), String(r.dimension)]));
       const content = (k: string) => ["category_segment", "duration_bucket"].includes(dim.get(k)!);
@@ -324,7 +326,7 @@ export const budget: Page = {
         stat(per1000(c.newAuthorFollow), "follows of a new creator"),
         stat(per1000(c.newCategoryEffectiveView), "effective views in a new category"),
       );
-      chartNote.textContent = `Relative change in the hate rate at a 1.388% share, with its 95% interval, sorted. Red filled: actionable. Red outline: watch list. Grey: mixed category groups, formed for sample size and not interpreted (hover for their categories). The dashed line is the ${what ? "what-if " : ""}limit of ${(state.limit * 100).toFixed(1)}%. The selected segment is shaded.`;
+      chartNote.textContent = `Teal line: the ${what ? "what-if " : ""}limit, ${(state.limit * 100).toFixed(1)}% worse. Filled red: past it even at the low end of its 95% interval. Red outline: past it at the estimate, but the interval is too wide to be sure. Grey: within the limit. The selected segment is shaded.`;
       drawChart();
     };
 
