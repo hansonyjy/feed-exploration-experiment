@@ -1,5 +1,5 @@
-import { loadPage, num, type PageData, type PageFile, type Row, type Source } from "../data";
-import { about, el, link } from "../ui";
+import { num, type PageData, type PageFile, type Row, type Source } from "../data";
+import { el, link } from "../ui";
 
 export interface Data {
   tables: Record<string, Row[]>;
@@ -56,31 +56,4 @@ export function strip(data: Data, agreement: string | null, note?: string): HTML
     ...(agreement ? [el("span", { class: "agree" }, agreement)] : []),
     ...(note ? [el("span", { class: "strip-note" }, note)] : []),
   );
-}
-
-// Shell shared by every page: header strip, title (the answer), content, About drawer.
-let current = 0; // the latest navigation; an older load that finishes later must not draw
-
-export async function renderPage(page: Page, root: HTMLElement): Promise<void> {
-  const token = ++current;
-  root.replaceChildren();
-  const body = el("div", { class: "page-body", "aria-busy": "true" }, el("p", { class: "muted" }, "Loading data…"));
-  root.append(body);
-  try {
-    const files = [...new Set<PageFile>(["headline", ...page.data])];
-    const loaded = await Promise.all(files.map(loadPage));
-    const data = merge(loaded);
-    // The About drawer lists this page's own data; the strip's headline file is listed only on page 1.
-    data.sources = merge(loaded.filter((p) => page.data.includes(p.page as PageFile))).sources;
-    if (token !== current) return;
-    body.replaceChildren();
-    body.removeAttribute("aria-busy");
-    root.prepend(strip(data, page.agreement ? page.agreement(data) : null, page.stripNote), el("h1", {}, page.title));
-    page.render(body, data);
-    const notes = [...page.notes, ...(page.dataNotes ? page.dataNotes(data) : [])];
-    root.append(about([el("p", {}, el("strong", {}, "Question: "), page.question), ...notes], data.sources));
-  } catch (err) {
-    if (token !== current) return;
-    body.replaceChildren(el("p", { class: "error", role: "alert" }, `Could not load data: ${(err as Error).message}`));
-  }
 }
