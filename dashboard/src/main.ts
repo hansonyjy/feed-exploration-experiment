@@ -9,10 +9,6 @@ import "./style.css";
 import "./redesign.css";
 import { renderStory, scrollToHash } from "./redesign";
 
-// Prototype only: ?palette=harbor|graphite|sand previews a palette direction (removed after the pick).
-const palette = new URLSearchParams(location.search).get("palette");
-if (palette) document.documentElement.dataset.palette = palette;
-
 const main = document.getElementById("main")!;
 const navHost = document.getElementById("nav-host")!;
 void renderStory(main, navHost);
